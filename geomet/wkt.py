@@ -4,6 +4,7 @@ except ImportError:
     import StringIO as StringIO
 import tokenize
 
+
 def dump(obj, dest_file):
     pass
 
