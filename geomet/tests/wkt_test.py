@@ -48,6 +48,16 @@ class PointTestCase(unittest.TestCase):
         expected = dict(type='Point', coordinates=[0.0, 1.0])
         self.assertEqual(expected, wkt.loads(pt))
 
+    def test_loads_point_3d(self):
+        pt = 'POINT(0.0 1.0 2.0)'
+        expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
+        self.assertEqual(expected, wkt.loads(pt))
+
+    def test_loads_point_4d(self):
+        pt = 'POINT(0.0 1.0 2.0 4.0)'
+        expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
+        self.assertEqual(expected, wkt.loads(pt))
+
     def test_loads_point_raises_unmatched_paren(self):
         pt = 'POINT(0.0 1.0'
         with self.assertRaises(ValueError) as ar:
