@@ -126,7 +126,7 @@ def __load_point(tokens, string):
         The original WKT string.
 
     :returns:
-        A GeoJSON `dict` representation of the WKT ``string``.
+        A GeoJSON `dict` Point representation of the WKT ``string``.
     """
     if not tokens.next() == '(':
         raise ValueError(INVALID_WKT_FMT % string)
