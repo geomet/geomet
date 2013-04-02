@@ -98,7 +98,28 @@ def dumps(obj, big_endian=False, dims='2D'):
     :returns:
         A WKB binary string representing of the ``obj``.
     """
-    pass
+    geom_type = obj['type']
+
+    exporter = __dumps_registry.get(geom_type)
+    if exporter is None:
+        __unsupported_geom_type(geom_type)
+
+    mapping = __WKB.get(dims)
+    if mapping is None:
+        raise ValueError('Invalid `dims` type. Expected: one of %s. Got: %s'
+                         % (('2D', 'Z', 'M', 'ZM'), dims))
+
+    if dims == '2D':
+        num_dims = 2
+        mapping = WKB_2D
+    elif dims in ('Z', 'M'):
+        num_dims = 3
+    elif dims == 'ZM':
+        num_dims = 4
+
+    type_byte_str = mapping.get(geom_type)
+
+    return exporter(obj, big_endian, type_byte_str, num_dims)
 
 
 def loads(string):
@@ -106,3 +127,46 @@ def loads(string):
     Construct a GeoJson `dict` from WKB (`string`).
     """
     pass
+
+
+def __unsupported_geom_type(geom_type):
+    raise ValueError("Unsupported geometry type '%s'" % geom_type)
+
+
+def __dump_point(obj, big_endian, type_byte_str, num_dims):
+    wkb_string = ''
+
+    if big_endian:
+        wkb_string += BIG_ENDIAN
+    else:
+        wkb_string += LITTLE_ENDIAN
+
+    wkb_string += type_byte_str
+
+    coords = obj['coordinates']
+    num_coord_dims = len(coords)
+    if not len(coords) == num_dims:
+        raise ValueError(
+            'Incorrect number of dimension. Expected: %s. Got: %s'
+            % (num_dims, num_coord_dims)
+        )
+
+    byte_fmt = ''
+    if big_endian:
+        byte_fmt += '>'
+    else:
+        byte_fmt += '<'
+    byte_fmt += 'd' * num_dims
+
+    wkb_string += struct.pack(byte_fmt, *coords)
+    return wkb_string
+
+
+def __dump_linestring(obj, big_endian, type_byte_str, num_dims):
+    pass
+
+
+__dumps_registry = {
+    'Point': __dump_point,
+    'LineString': __dump_linestring,
+}
