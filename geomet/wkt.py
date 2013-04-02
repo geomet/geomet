@@ -35,6 +35,7 @@ def loads(string):
     Construct a GeoJSON `dict` from WKT (`string`).
     """
     sio = StringIO.StringIO(string)
+    # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
     geom_type = tokens.next()
 
