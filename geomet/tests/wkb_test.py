@@ -78,3 +78,14 @@ class PointTestCase(unittest.TestCase):
             data=data,
         )
         self.assertEqual(expected, wkb.dumps(pt, dims='ZM'))
+
+    def test_loads_point_2d(self):
+        pt = (
+            '\x01'  # little endian
+            '\x00\x00\x00\x01'  # type
+            '\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            '\x00\x00\x00\x00\x00\x00\xf0?'  # 1.0
+        )
+
+        expected = dict(type='Point', coordinates=[0.0, 1.0])
+        self.assertEqual(expected, wkb.loads(pt))
