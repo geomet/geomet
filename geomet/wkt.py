@@ -5,6 +5,9 @@ except ImportError:
 import tokenize
 
 
+INVALID_WKT_FMT = 'Invalid WKT: `%s`'
+
+
 def dump(obj, dest_file):
     pass
 
@@ -125,7 +128,7 @@ def __load_point(tokens, string):
         A GeoJSON `dict` representation of the WKT ``string``.
     """
     if not tokens.next() == '(':
-        raise ValueError('Invalid WKT: `%s`' % string)
+        raise ValueError(INVALID_WKT_FMT % string)
 
     coords = []
     try:
@@ -134,7 +137,7 @@ def __load_point(tokens, string):
                 break
             coords.append(float(t))
     except tokenize.TokenError:
-        raise ValueError('Invalid WKT: `%s`' % string)
+        raise ValueError(INVALID_WKT_FMT % string)
 
     return dict(type='Point', coordinates=coords)
 
