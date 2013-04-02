@@ -39,7 +39,7 @@ WKB_Z = {
 WKB_M = {
     'Point': '\x00\x00\x20\x01',
     'LineString': '\x00\x00\x20\x02',
-    'Polygon': '\x00\x00\x00\x03',
+    'Polygon': '\x00\x00\x20\x03',
     'MultiPoint': '\x00\x00\x20\x04',
     'MultiLineString': '\x00\x00\x20\x05',
     'MultiPolygon': '\x00\x00\x20\x06',
