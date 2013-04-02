@@ -134,6 +134,25 @@ def __unsupported_geom_type(geom_type):
 
 
 def __dump_point(obj, big_endian, type_byte_str, num_dims):
+    """
+    Dump a GeoJSON-like `dict` to a WKB string.
+
+    :param dict obj:
+        GeoJson-like `dict` object.
+    :param bool big_endian:
+        If `True`, data values in the generated WKB will be represented using
+        big endian byte order. Else, little endian.
+    :param str type_byte_str:
+        The binary string representation of this type of geometry. Indicates
+        not only the type (point, linestring, etc.) but also the dimension type
+        (2D, Z, M, ZM).
+    :param int num_dims:
+        The number of dimensions in each vertex: 2, 3, or 4.
+
+    :returns:
+        A WKB binary string representing of the Point ``obj``.
+    """
+
     wkb_string = ''
 
     if big_endian:
