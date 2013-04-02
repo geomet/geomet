@@ -1,3 +1,6 @@
+import struct
+
+
 def dump(obj, dest_file):
     pass
 
