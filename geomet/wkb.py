@@ -152,7 +152,6 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
     :returns:
         A WKB binary string representing of the Point ``obj``.
     """
-
     wkb_string = ''
 
     if big_endian:
