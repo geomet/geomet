@@ -6,7 +6,7 @@ def load(source_file):
     pass
 
 
-def dumps(obj, decimals=16):
+def dumps(obj, big_endian=False):
     """
     Dump a GeoJSON-like `dict` to a WKB string.
     """
