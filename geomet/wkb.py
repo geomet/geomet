@@ -222,3 +222,33 @@ __dumps_registry = {
     'Point': __dump_point,
     'LineString': __dump_linestring,
 }
+
+
+def __load_point(big_endian, type_bytes, data_bytes):
+    """
+    Convert byte data for a Point to a GeoJSON `dict`.
+
+    :param bool big_endian:
+        If `True`, interpret the ``data_bytes`` in big endian order, else
+        little endian.
+    :param str type_bytes:
+        4-byte integer (as a binary string) indicating the geometry type
+        (Point) and the dimensions (2D, Z, M or ZM). For consistency, these
+        bytes are expected to always be in big endian order, regardless of the
+        value of ``big_endian``.
+    :param str data_bytes:
+        Coordinate data in a binary string.
+
+    :returns:
+        GeoJSON `dict` representing the Point geometry.
+    """
+    endian_token = '>' if big_endian else '<'
+
+    if type_bytes == WKB_2D['Point']:
+        coords = struct.unpack('%sdd' % endian_token, data_bytes)
+    elif type_bytes in (WKB_Z['Point'], WKB_M['Point']):
+        coords = struct.unpack('%sddd' % endian_token, data_bytes)
+    elif type_bytes == WKB_ZM['Point']:
+        coords = struct.unpack('%sddd' % endian_token, data_bytes)
+
+    return dict(type='Point', coordinates=list(coords))
