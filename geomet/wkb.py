@@ -1,4 +1,5 @@
 import struct
+from itertools import chain
 
 #: '\x00': The first byte of any WKB string. Indicates big endian byte
 #: ordering for the data.
@@ -67,6 +68,13 @@ __WKB = {
     'M': WKB_M,
     'ZM': WKB_ZM,
 }
+
+#: Mapping from binary geometry type (as a 4-byte binary string) to GeoJSON
+#: geometry type.
+__BINARY_TO_GEOM_TYPE = dict(
+    chain(*((reversed(x) for x in wkb_map.iteritems())
+            for wkb_map in __WKB.values()))
+)
 
 
 def dump(obj, dest_file):
