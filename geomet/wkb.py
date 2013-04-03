@@ -11,6 +11,7 @@ LITTLE_ENDIAN = '\x01'
 #: Mapping of GeoJSON geometry types to the "2D" 4-byte binary string
 #: representation for WKB. "2D" indicates that the geometry is 2-dimensional,
 #: X and Y components.
+#: NOTE: Byte ordering is big endian.
 WKB_2D = {
     'Point': '\x00\x00\x00\x01',
     'LineString': '\x00\x00\x00\x02',
@@ -24,6 +25,7 @@ WKB_2D = {
 #: Mapping of GeoJSON geometry types to the "Z" 4-byte binary string
 #: representation for WKB. "Z" indicates that the geometry is 3-dimensional,
 #: with X, Y, and Z components.
+#: NOTE: Byte ordering is big endian.
 WKB_Z = {
     'Point': '\x00\x00\x10\x01',
     'LineString': '\x00\x00\x10\x02',
@@ -37,6 +39,7 @@ WKB_Z = {
 #: Mapping of GeoJSON geometry types to the "M" 4-byte binary string
 #: representation for WKB. "M" indicates that the geometry is 2-dimensional,
 #: with X, Y, and M ("Measure") components.
+#: NOTE: Byte ordering is big endian.
 WKB_M = {
     'Point': '\x00\x00\x20\x01',
     'LineString': '\x00\x00\x20\x02',
@@ -50,6 +53,7 @@ WKB_M = {
 #: Mapping of GeoJSON geometry types to the "ZM" 4-byte binary string
 #: representation for WKB. "ZM" indicates that the geometry is 4-dimensional,
 #: with X, Y, Z, and M ("Measure") components.
+#: NOTE: Byte ordering is big endian.
 WKB_ZM = {
     'Point': '\x00\x00\x30\x01',
     'LineString': '\x00\x00\x30\x02',
@@ -71,6 +75,7 @@ __WKB = {
 
 #: Mapping from binary geometry type (as a 4-byte binary string) to GeoJSON
 #: geometry type.
+#: NOTE: Byte ordering is big endian.
 __BINARY_TO_GEOM_TYPE = dict(
     chain(*((reversed(x) for x in wkb_map.iteritems())
             for wkb_map in __WKB.values()))
