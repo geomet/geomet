@@ -256,3 +256,9 @@ def __load_point(big_endian, type_bytes, data_bytes):
 
 def __load_linestring(big_endian, type_bytes, data_bytes):
     raise NotImplementedError
+
+
+__loads_registry = {
+    'Point': __load_point,
+    'LineString': __load_linestring,
+}
