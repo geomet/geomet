@@ -77,14 +77,14 @@ def load(source_file):
     pass
 
 
-def dumps(obj, big_endian=False, dims='2D'):
+def dumps(obj, big_endian=True, dims='2D'):
     """
     Dump a GeoJSON-like `dict` to a WKB string.
 
     :param dict obj:
         GeoJson-like `dict` object.
     :param bool big_endian:
-        Defaults to `False`. If `True`, data values in the generated WKB will
+        Defaults to `True`. If `True`, data values in the generated WKB will
         be represented using big endian byte order. Else, little endian.
     :param str dims:
         Indicates to WKB representation desired from converting the given
