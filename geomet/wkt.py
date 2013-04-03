@@ -9,11 +9,11 @@ INVALID_WKT_FMT = 'Invalid WKT: `%s`'
 
 
 def dump(obj, dest_file):
-    pass
+    raise NotImplementedError
 
 
 def load(source_file):
-    pass
+    raise NotImplementedError
 
 
 def dumps(obj, decimals=16):
@@ -82,23 +82,23 @@ def __dump_linestring(obj, fmt):
 
 
 def __dump_polygon(obj, decimals):
-    pass
+    raise NotImplementedError
 
 
 def __dump_multipoint(obj, decimals):
-    pass
+    raise NotImplementedError
 
 
 def __dump_multilinestring(obj, decimals):
-    pass
+    raise NotImplementedError
 
 
 def __dump_multipolygon(obj, decimals):
-    pass
+    raise NotImplementedError
 
 
 def __dump_geometrycollection(obj, decimals):
-    pass
+    raise NotImplementedError
 
 
 __dumps_registry = {
@@ -176,23 +176,23 @@ def __load_linestring(tokens, string):
 
 
 def __load_polygon(tokens, string):
-    pass
+    raise NotImplementedError
 
 
 def __load_multipoint(tokens, string):
-    pass
+    raise NotImplementedError
 
 
 def __load_multipolygon(tokens, string):
-    pass
+    raise NotImplementedError
 
 
 def __load_multilinestring(tokens, string):
-    pass
+    raise NotImplementedError
 
 
 def __load_geometrycollection(tokens, string):
-    pass
+    raise NotImplementedError
 
 
 __loads_registry = {
