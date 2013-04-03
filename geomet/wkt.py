@@ -61,7 +61,7 @@ def __dump_point(obj, fmt):
         decimal point when formatting coordinates.
 
     :returns:
-        WKT representation of the input GeoJSON ``obj``.
+        WKT representation of the input GeoJSON Point ``obj``.
     """
     coords = obj['coordinates']
     pt = 'POINT(%s)' % ' '.join(fmt % c for c in coords)
