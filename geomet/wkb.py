@@ -210,7 +210,7 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
 
 
 def __dump_linestring(obj, big_endian, type_byte_str, num_dims):
-    pass
+    raise NotImplementedError
 
 
 __dumps_registry = {
