@@ -83,11 +83,11 @@ __BINARY_TO_GEOM_TYPE = dict(
 
 
 def dump(obj, dest_file):
-    pass
+    raise NotImplementedError
 
 
 def load(source_file):
-    pass
+    raise NotImplementedError
 
 
 def dumps(obj, big_endian=True, dims='2D'):
