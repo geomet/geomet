@@ -28,7 +28,7 @@ class PointTestCase(unittest.TestCase):
             data=('\x00\x00\x00\x00\x00\x00\x00\x00'
                   '\x00\x00\x00\x00\x00\x00\xf0?'),
         )
-        self.assertEqual(expected, wkb.dumps(pt))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
     def test_dumps_point_z(self):
         # Test for an XYZ Point:
@@ -44,7 +44,7 @@ class PointTestCase(unittest.TestCase):
             type='\x00\x00\x10\x01',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, dims='Z'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='Z'))
 
     def test_dumps_point_m(self):
         # Test for an XYM Point:
@@ -60,7 +60,7 @@ class PointTestCase(unittest.TestCase):
             type='\x00\x00\x20\x01',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, dims='M'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='M'))
 
     def test_dumps_point_4d(self):
         # Test for an XYZM Point:
@@ -77,7 +77,7 @@ class PointTestCase(unittest.TestCase):
             type=wkb.WKB_ZM['Point'],
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, dims='ZM'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='ZM'))
 
     def test_loads_point_2d(self):
         pt = (
