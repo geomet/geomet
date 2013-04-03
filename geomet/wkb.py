@@ -134,7 +134,28 @@ def loads(string):
     """
     Construct a GeoJson `dict` from WKB (`string`).
     """
-    pass
+    endianness = string[0]
+    if endianness == BIG_ENDIAN:
+        big_endian = True
+    elif endianness == LITTLE_ENDIAN:
+        big_endian = False
+    else:
+        # TODO: raise error: invalid endianness
+        raise ValueError
+
+    type_bytes = string[1:5]
+    if not big_endian:
+        # To identify the type, order the type bytes in big endian:
+        type_bytes = type_bytes[::-1]
+
+    geom_type = __BINARY_TO_GEOM_TYPE.get(type_bytes)
+    data_bytes = string[5:]  # FIXME: This won't work for GeometryCollections
+
+    importer = __loads_registry.get(geom_type)
+
+    if importer is None:
+        __unsupported_geom_type(geom_type)
+    return importer(big_endian, type_bytes, data_bytes)
 
 
 def __unsupported_geom_type(geom_type):
