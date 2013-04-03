@@ -82,7 +82,7 @@ class PointTestCase(unittest.TestCase):
     def test_loads_point_2d(self):
         pt = (
             '\x01'  # little endian
-            '\x00\x00\x00\x01'  # type
+            '\x01\x00\x00\x00'  # type
             '\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             '\x00\x00\x00\x00\x00\x00\xf0?'  # 1.0
         )
