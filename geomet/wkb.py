@@ -252,3 +252,7 @@ def __load_point(big_endian, type_bytes, data_bytes):
         coords = struct.unpack('%sddd' % endian_token, data_bytes)
 
     return dict(type='Point', coordinates=list(coords))
+
+
+def __load_linestring(big_endian, type_bytes, data_bytes):
+    raise NotImplementedError
