@@ -3,7 +3,19 @@ geomet
 
 GeoMet - Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text), and vice versa
 
-The name "GeoMet" comes from "met", the German word for [mead](http://en.wikipedia.org/wiki/Mead).
+GeoMet is BSD-licensed and is intended to cover all common uses for dealing
+with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM'). The following
+geometry types are supported:
+
+- Point
+- LineString
+- Polygon
+- MultiPoint
+- MultiLineString
+- MultiPolygon
+- GeometryCollection
+
+The name "GeoMet" was inspired by "met", the German word for [mead](http://en.wikipedia.org/wiki/Mead).
 It is also a shortened version of the word "geometry".
 
 ### Example usage ###
