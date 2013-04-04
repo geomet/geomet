@@ -45,6 +45,10 @@ class PointTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=True))
 
+    # We skip this because, right now, we have no way of signalling with
+    # GeoJSON that an object with 3-dimensional coordinates is XYZ or XYM.
+    # XYZ is more common, so we assume this.
+    @unittest.skip
     def test_dumps_point_m(self):
         # Test for an XYM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
