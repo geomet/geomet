@@ -1,7 +1,7 @@
-geomet
+GeoMet
 ======
 
-GeoMet - Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text), and vice versa
+Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text), and vice versa
 
 GeoMet is BSD-licensed and is intended to cover all common uses for dealing
 with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM'). The following
