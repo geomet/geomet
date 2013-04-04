@@ -131,6 +131,9 @@ def dumps(obj, big_endian=True, dims='2D'):
         num_dims = 4
 
     type_byte_str = mapping.get(geom_type)
+    if not big_endian:
+        # reverse the byte ordering for little endian
+        type_byte_str = type_byte_str[::-1]
 
     return exporter(obj, big_endian, type_byte_str, num_dims)
 
