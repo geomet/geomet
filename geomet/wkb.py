@@ -216,7 +216,32 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
 
 
 def __dump_linestring(obj, big_endian, type_byte_str, num_dims):
-    raise NotImplementedError
+    """
+    Dump a GeoJSON-like `dict` to a WKB string.
+
+    Input parameters and output are similar to :func:`__dump_point`.
+    """
+    wkb_string = ''
+
+    if big_endian:
+        wkb_string += BIG_ENDIAN
+    else:
+        wkb_string += LITTLE_ENDIAN
+
+    wkb_string += type_byte_str
+
+    coords = obj['coordinates']
+    if big_endian:
+        byte_fmt = '>'
+    else:
+        byte_fmt = '<'
+    byte_fmt += 'd' * num_dims
+
+    for pt in coords:
+        # TODO: check the len vs. ``num_dims``
+        wkb_string += struct.pack(byte_fmt, *pt)
+
+    return wkb_string
 
 
 __dumps_registry = {
