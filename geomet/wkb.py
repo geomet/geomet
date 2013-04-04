@@ -205,11 +205,10 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
             % (num_dims, num_coord_dims)
         )
 
-    byte_fmt = ''
     if big_endian:
-        byte_fmt += '>'
+        byte_fmt = '>'
     else:
-        byte_fmt += '<'
+        byte_fmt = '<'
     byte_fmt += 'd' * num_dims
 
     wkb_string += struct.pack(byte_fmt, *coords)
