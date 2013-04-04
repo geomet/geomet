@@ -43,7 +43,7 @@ class PointTestCase(unittest.TestCase):
             type='\x00\x00\x10\x01',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=True, dims='Z'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=True))
 
     def test_dumps_point_m(self):
         # Test for an XYM Point:
@@ -56,10 +56,10 @@ class PointTestCase(unittest.TestCase):
         expected = EXP_WKB_FMT
         expected %= dict(
             endian='\x01',
-            type='\x01\x20\x00\x00',
+            type='\x01\x20\x00\x00',  # M type geometry (X, Y, M)
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='M'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
     def test_dumps_point_4d(self):
         # Test for an XYZM Point:
@@ -76,7 +76,7 @@ class PointTestCase(unittest.TestCase):
             type='\x01\x30\x00\x00',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='ZM'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
     def test_loads_point_2d(self):
         pt = (
@@ -139,7 +139,7 @@ class LineStringTestCase(unittest.TestCase):
             type='\x00\x00\x00\x02',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(linestring, dims='2D'))
+        self.assertEqual(expected, wkb.dumps(linestring))
 
     def test_dumps_linestring_z(self):
         pass
