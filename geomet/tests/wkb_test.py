@@ -123,3 +123,30 @@ class PointTestCase(unittest.TestCase):
         )
         expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1, 0.0])
         self.assertEqual(expected, wkb.loads(pt))
+
+
+class LineStringTestCase(unittest.TestCase):
+
+    def test_dumps_linestring_2d(self):
+        linestring = dict(type='LineString', coordinates=[[2.2, 4.4],
+                                                          [3.1, 5.1]])
+        data = ('@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+                '@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+                '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+                '@\x14ffffff')                   # 5.1
+        expected = EXP_WKB_FMT
+        expected %= dict(
+            endian='\x00',
+            type='\x00\x00\x00\x02',
+            data=data,
+        )
+        self.assertEqual(expected, wkb.dumps(linestring, dims='2D'))
+
+    def test_dumps_linestring_z(self):
+        pass
+
+    def test_dumps_linestring_m(self):
+        pass
+
+    def test_dumps_linestring_zm(self):
+        pass
