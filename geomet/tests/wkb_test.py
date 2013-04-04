@@ -89,3 +89,37 @@ class PointTestCase(unittest.TestCase):
 
         expected = dict(type='Point', coordinates=[0.0, 1.0])
         self.assertEqual(expected, wkb.loads(pt))
+
+    def test_loads_point_z(self):
+        pt = (
+            '\x00'  # big endian
+            '\x00\x00\x10\x01'  # type
+            '@\x01\x99\x99\x99\x99\x99\x9a'
+            '@\x11\x99\x99\x99\x99\x99\x9a'
+            '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
+        )
+        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1])
+        self.assertEqual(expected, wkb.loads(pt))
+
+    def test_loads_point_m(self):
+        pt = (
+            '\x00'  # big endian
+            '\x00\x00\x20\x01'  # type
+            '@\x01\x99\x99\x99\x99\x99\x9a'
+            '@\x11\x99\x99\x99\x99\x99\x9a'
+            '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
+        )
+        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1])
+        self.assertEqual(expected, wkb.loads(pt))
+
+    def test_loads_point_zm(self):
+        pt = (
+            '\x00'  # big endian
+            '\x00\x00\x30\x01'  # type
+            '@\x01\x99\x99\x99\x99\x99\x9a'
+            '@\x11\x99\x99\x99\x99\x99\x9a'
+            '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
+            '\x00\x00\x00\x00\x00\x00\x00\x00'
+        )
+        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1, 0.0])
+        self.assertEqual(expected, wkb.loads(pt))
