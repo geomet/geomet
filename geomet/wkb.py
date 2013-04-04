@@ -83,11 +83,30 @@ __BINARY_TO_GEOM_TYPE = dict(
 
 
 def dump(obj, dest_file):
-    raise NotImplementedError
+    """
+    Dump GeoJSON-like `dict` to WKB and write it to the `dest_file`.
+
+    :param dict obj:
+        A GeoJSON-like dictionary. It must at least the keys 'type' and
+        'coordinates'.
+    :param dest_file:
+        Open and writable file-like object.
+    """
+    dest_file.write(dumps(obj))
 
 
 def load(source_file):
-    raise NotImplementedError
+    """
+    Load a GeoJSON `dict` object from a ``source_file`` containing WKB (as a
+    byte string).
+
+    :param source_file:
+        Open and readable file-like object.
+
+    :returns:
+        A GeoJSON `dict` representing the geometry read from the file.
+    """
+    return loads(source_file.read())
 
 
 def dumps(obj, big_endian=True, dims='2D'):
