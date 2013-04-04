@@ -251,7 +251,7 @@ def __load_point(big_endian, type_bytes, data_bytes):
     elif type_bytes in (WKB_Z['Point'], WKB_M['Point']):
         coords = struct.unpack('%sddd' % endian_token, data_bytes)
     elif type_bytes == WKB_ZM['Point']:
-        coords = struct.unpack('%sddd' % endian_token, data_bytes)
+        coords = struct.unpack('%sdddd' % endian_token, data_bytes)
 
     return dict(type='Point', coordinates=list(coords))
 
