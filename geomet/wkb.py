@@ -145,8 +145,8 @@ def loads(string):
     elif endianness == LITTLE_ENDIAN:
         big_endian = False
     else:
-        # TODO: raise error: invalid endianness
-        raise ValueError
+        raise ValueError("Invalid endian byte: '0x%s'. Expected 0x00 or 0x01"
+                         % endianness.encode('hex'))
 
     type_bytes = string[1:5]
     if not big_endian:
