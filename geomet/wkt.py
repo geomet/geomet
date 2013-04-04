@@ -64,7 +64,7 @@ def __dump_point(obj, fmt):
         WKT representation of the input GeoJSON Point ``obj``.
     """
     coords = obj['coordinates']
-    pt = 'POINT(%s)' % ' '.join(fmt % c for c in coords)
+    pt = 'POINT (%s)' % ' '.join(fmt % c for c in coords)
     return pt
 
 
@@ -76,7 +76,7 @@ def __dump_linestring(obj, fmt):
     :func:`__dump_point`.
     """
     coords = obj['coordinates']
-    ls = 'LINESTRING(%s)'
+    ls = 'LINESTRING (%s)'
     ls %= ', '.join(' '.join(fmt % c for c in pt) for pt in coords)
     return ls
 
