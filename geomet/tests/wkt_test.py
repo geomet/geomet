@@ -18,14 +18,14 @@ class PointTestCase(unittest.TestCase):
     def test_dumps_point_2d(self):
         # Tests a typical 2D Point case:
         pt = dict(type='Point', coordinates=[0.0, 1.0])
-        expected = 'POINT(0.0000000000000000 1.0000000000000000)'
+        expected = 'POINT (0.0000000000000000 1.0000000000000000)'
         self.assertEqual(expected, wkt.dumps(pt))
 
     def test_dumps_point_3d(self):
         # Test for an XYZ/XYM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
         expected = (
-            'POINT(0.0000000000000000 1.0000000000000000 2.0000000000000000)'
+            'POINT (0.0000000000000000 1.0000000000000000 2.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(pt))
 
@@ -33,36 +33,36 @@ class PointTestCase(unittest.TestCase):
         # Test for an XYZM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
         expected = (
-            'POINT(0.0000000000000000 1.0000000000000000 2.0000000000000000 '
+            'POINT (0.0000000000000000 1.0000000000000000 2.0000000000000000 '
             '4.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(pt))
 
     def test_dumps_point_6_decimals(self):
         pt = dict(type='Point', coordinates=[-10, -77])
-        expected = 'POINT(-10.000000 -77.000000)'
+        expected = 'POINT (-10.000000 -77.000000)'
         self.assertEqual(expected, wkt.dumps(pt, decimals=6))
 
     def test_loads_point_2d(self):
-        pt = 'POINT(0.0000000000000000 1.0000000000000000)'
+        pt = 'POINT (0.0000000000000000 1.0000000000000000)'
         expected = dict(type='Point', coordinates=[0.0, 1.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_3d(self):
-        pt = 'POINT(0.0 1.0 2.0)'
+        pt = 'POINT (0.0 1.0 2.0)'
         expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_4d(self):
-        pt = 'POINT(0.0 1.0 2.0 4.0)'
+        pt = 'POINT (0.0 1.0 2.0 4.0)'
         expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_raises_unmatched_paren(self):
-        pt = 'POINT(0.0 1.0'
+        pt = 'POINT (0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(pt)
-        self.assertEqual('Invalid WKT: `POINT(0.0 1.0`',
+        self.assertEqual('Invalid WKT: `POINT (0.0 1.0`',
                          ar.exception.message)
 
     def test_loads_point_raises_invalid_wkt(self):
@@ -78,7 +78,7 @@ class LineStringTestCase(unittest.TestCase):
         # Test a typical 2D LineString case:
         ls = dict(type='LineString', coordinates=[[100.0, 0.0], [101.0, 1.0]])
         expected = (
-            'LINESTRING(100.0000000000000000 0.0000000000000000, '
+            'LINESTRING (100.0000000000000000 0.0000000000000000, '
             '101.0000000000000000 1.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(ls))
@@ -87,7 +87,7 @@ class LineStringTestCase(unittest.TestCase):
         ls = dict(type='LineString', coordinates=[[100.0, 0.0, -60.0],
                                                   [101.0, 1.0, -65.25]])
         expected = (
-            'LINESTRING('
+            'LINESTRING ('
             '100.0000000000000000 0.0000000000000000 -60.0000000000000000, '
             '101.0000000000000000 1.0000000000000000 -65.2500000000000000)'
         )
@@ -97,7 +97,7 @@ class LineStringTestCase(unittest.TestCase):
         ls = dict(type='LineString', coordinates=[[100.0, 0.0, -60.0, 0.1],
                                                   [101.0, 1.0, -65.25, 0.2]])
         expected = (
-            'LINESTRING('
+            'LINESTRING ('
             '100.0000000000000000 0.0000000000000000 -60.0000000000000000 '
             '0.1000000000000000, '
             '101.0000000000000000 1.0000000000000000 -65.2500000000000000 '
@@ -107,33 +107,33 @@ class LineStringTestCase(unittest.TestCase):
 
     def test_dumps_linestring_3_decimals(self):
         ls = dict(type='LineString', coordinates=[[100.0, 0.0], [101.0, 1.0]])
-        expected = 'LINESTRING(100.000 0.000, 101.000 1.000)'
+        expected = 'LINESTRING (100.000 0.000, 101.000 1.000)'
         self.assertEqual(expected, wkt.dumps(ls, decimals=3))
 
     def test_loads_linestring_2d(self):
-        ls = 'LINESTRING(0 1, 2 3, 4 5)'
+        ls = 'LINESTRING (0 1, 2 3, 4 5)'
         expected = dict(type='LineString', coordinates=[[0.0, 1.0],
                                                         [2.0, 3.0],
                                                         [4.0, 5.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
     def test_loads_linestring_3d(self):
-        ls = 'LINESTRING(0 1 2, 3 4 5)'
+        ls = 'LINESTRING (0 1 2, 3 4 5)'
         expected = dict(type='LineString', coordinates=[[0.0, 1.0, 2.0],
                                                         [3.0, 4.0, 5.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
     def test_loads_linestring_4d(self):
-        ls = 'LINESTRING(0 1 2 3, 4 5 6 7)'
+        ls = 'LINESTRING (0 1 2 3, 4 5 6 7)'
         expected = dict(type='LineString', coordinates=[[0.0, 1.0, 2.0, 3.0],
                                                         [4.0, 5.0, 6.0, 7.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
     def test_loads_linestring_raises_unmatched_paren(self):
-        ls = 'LINESTRING(0.0 1.0'
+        ls = 'LINESTRING (0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(ls)
-        self.assertEqual('Invalid WKT: `LINESTRING(0.0 1.0`',
+        self.assertEqual('Invalid WKT: `LINESTRING (0.0 1.0`',
                          ar.exception.message)
 
     def test_loads_linestring_raises_invalid_wkt(self):
