@@ -1,7 +1,7 @@
 geomet
 ======
 
-GeoMet - Convert GeoJSON to [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text), and vice versa
+GeoMet - Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text), and vice versa
 
 The name "GeoMet" comes from "met", the German word for [mead](http://en.wikipedia.org/wiki/Mead).
 It is also a shortened version of the word "geometry".
