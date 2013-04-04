@@ -24,7 +24,7 @@ class PointTestCase(unittest.TestCase):
         expected = EXP_WKB_FMT
         expected %= dict(
             endian='\x01',
-            type='\x00\x00\x00\x01',
+            type='\x01\x00\x00\x00',
             data=('\x00\x00\x00\x00\x00\x00\x00\x00'
                   '\x00\x00\x00\x00\x00\x00\xf0?'),
         )
@@ -35,16 +35,16 @@ class PointTestCase(unittest.TestCase):
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
 
         data=('\x00\x00\x00\x00\x00\x00\x00\x00'
-              '\x00\x00\x00\x00\x00\x00\xf0?'
-              '\x00\x00\x00\x00\x00\x00\x00@')
+              '?\xf0\x00\x00\x00\x00\x00\x00'
+              '@\x00\x00\x00\x00\x00\x00\x00')
 
         expected = EXP_WKB_FMT
         expected %= dict(
-            endian='\x01',
+            endian='\x00',
             type='\x00\x00\x10\x01',
             data=data,
         )
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='Z'))
+        self.assertEqual(expected, wkb.dumps(pt, big_endian=True, dims='Z'))
 
     def test_dumps_point_m(self):
         # Test for an XYM Point:
@@ -57,7 +57,7 @@ class PointTestCase(unittest.TestCase):
         expected = EXP_WKB_FMT
         expected %= dict(
             endian='\x01',
-            type='\x00\x00\x20\x01',
+            type='\x01\x20\x00\x00',
             data=data,
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='M'))
@@ -74,7 +74,7 @@ class PointTestCase(unittest.TestCase):
         expected = EXP_WKB_FMT
         expected %= dict(
             endian='\x01',
-            type=wkb.WKB_ZM['Point'],
+            type='\x01\x30\x00\x00',
             data=data,
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False, dims='ZM'))
