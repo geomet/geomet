@@ -109,9 +109,30 @@ def load(source_file):
     return loads(source_file.read())
 
 
-def dumps(obj, big_endian=True, dims='2D'):
+def dumps(obj, big_endian=True):
     """
     Dump a GeoJSON-like `dict` to a WKB string.
+
+    .. note::
+        The dimensions of the generated WKB will be inferred from the first
+        vertex in the GeoJSON `coordinates`. It will be assumed that all
+        vertices are uniform. There are 4 types:
+
+        - 2D (X, Y): 2-dimensional geometry
+        - Z (X, Y, Z): 3-dimensional geometry
+        - M (X, Y, M): 2-dimensional geometry with a "Measure"
+        - ZM (X, Y, Z, M): 3-dimensional geometry with a "Measure"
+
+        If the first vertex contains 2 values, we assume a 2D geometry.
+        If the first vertex contains 3 values, this is slightly ambiguous and
+        so the most common case is chosen: Z.
+        If the first vertex contains 4 values, we assume a ZM geometry.
+
+        The WKT/WKB standards provide a way of differentiating normal (2D), Z,
+        M, and ZM geometries (http://en.wikipedia.org/wiki/Well-known_text),
+        but the GeoJSON spec does not. Therefore, for the sake of interface
+        simplicity, we assume that geometry that looks 3D contains XYZ
+        components, instead of XYM.
 
     :param dict obj:
         GeoJson-like `dict` object.
@@ -136,24 +157,7 @@ def dumps(obj, big_endian=True, dims='2D'):
     if exporter is None:
         __unsupported_geom_type(geom_type)
 
-    mapping = __WKB.get(dims)
-    if mapping is None:
-        raise ValueError('Invalid `dims` type. Expected: one of %s. Got: %s'
-                         % (('2D', 'Z', 'M', 'ZM'), dims))
-
-    if dims == '2D':
-        num_dims = 2
-    elif dims in ('Z', 'M'):
-        num_dims = 3
-    elif dims == 'ZM':
-        num_dims = 4
-
-    type_byte_str = mapping.get(geom_type)
-    if not big_endian:
-        # reverse the byte ordering for little endian
-        type_byte_str = type_byte_str[::-1]
-
-    return exporter(obj, big_endian, type_byte_str, num_dims)
+    return exporter(obj, big_endian)
 
 
 def loads(string):
@@ -188,7 +192,7 @@ def __unsupported_geom_type(geom_type):
     raise ValueError("Unsupported geometry type '%s'" % geom_type)
 
 
-def __dump_point(obj, big_endian, type_byte_str, num_dims):
+def __dump_point(obj, big_endian):
     """
     Dump a GeoJSON-like `dict` to a WKB string.
 
@@ -197,12 +201,6 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
     :param bool big_endian:
         If `True`, data values in the generated WKB will be represented using
         big endian byte order. Else, little endian.
-    :param str type_byte_str:
-        The binary string representation of this type of geometry. Indicates
-        not only the type (point, linestring, etc.) but also the dimension type
-        (2D, Z, M, ZM).
-    :param int num_dims:
-        The number of dimensions in each vertex: 2, 3, or 4.
 
     :returns:
         A WKB binary string representing of the Point ``obj``.
@@ -214,15 +212,22 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
     else:
         wkb_string += LITTLE_ENDIAN
 
-    wkb_string += type_byte_str
-
     coords = obj['coordinates']
-    num_coord_dims = len(coords)
-    if not len(coords) == num_dims:
-        raise ValueError(
-            'Incorrect number of dimension. Expected: %s. Got: %s'
-            % (num_dims, num_coord_dims)
-        )
+    num_dims = len(coords)
+    if num_dims == 2:
+        type_byte_str = __WKB['2D']['Point']
+    elif num_dims == 3:
+        type_byte_str = __WKB['Z']['Point']
+    elif num_dims == 4:
+        type_byte_str = __WKB['ZM']['Point']
+    else:
+        pass
+        # TODO: raise
+
+    if not big_endian:
+        # reverse the byte ordering for little endian
+        type_byte_str = type_byte_str[::-1]
+    wkb_string += type_byte_str
 
     if big_endian:
         byte_fmt = '>'
@@ -234,7 +239,7 @@ def __dump_point(obj, big_endian, type_byte_str, num_dims):
     return wkb_string
 
 
-def __dump_linestring(obj, big_endian, type_byte_str, num_dims):
+def __dump_linestring(obj, big_endian):
     """
     Dump a GeoJSON-like `dict` to a WKB string.
 
@@ -247,18 +252,32 @@ def __dump_linestring(obj, big_endian, type_byte_str, num_dims):
     else:
         wkb_string += LITTLE_ENDIAN
 
+    coords = obj['coordinates']
+    vertex = coords[0]
+    # Infer the number of dimensions from the first vertex
+    num_dims = len(vertex)
+    if num_dims == 2:
+        type_byte_str = __WKB['2D']['LineString']
+    elif num_dims == 3:
+        type_byte_str = __WKB['Z']['LineString']
+    elif num_dims == 4:
+        type_byte_str = __WKB['ZM']['LineString']
+    else:
+        pass
+        # TODO: raise
+    if not big_endian:
+        # reverse the byte ordering for little endian
+        type_byte_str = type_byte_str[::-1]
     wkb_string += type_byte_str
 
-    coords = obj['coordinates']
     if big_endian:
         byte_fmt = '>'
     else:
         byte_fmt = '<'
     byte_fmt += 'd' * num_dims
 
-    for pt in coords:
-        # TODO: check the len vs. ``num_dims``
-        wkb_string += struct.pack(byte_fmt, *pt)
+    for vertex in coords:
+        wkb_string += struct.pack(byte_fmt, *vertex)
 
     return wkb_string
 
