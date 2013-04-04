@@ -124,7 +124,6 @@ def dumps(obj, big_endian=True, dims='2D'):
 
     if dims == '2D':
         num_dims = 2
-        mapping = WKB_2D
     elif dims in ('Z', 'M'):
         num_dims = 3
     elif dims == 'ZM':
