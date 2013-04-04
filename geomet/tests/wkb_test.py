@@ -15,7 +15,6 @@ class WKBTestCase(unittest.TestCase):
                          ar.exception.message)
 
 
-
 class PointTestCase(unittest.TestCase):
 
     def test_dumps_point_2d(self):
@@ -34,9 +33,9 @@ class PointTestCase(unittest.TestCase):
         # Test for an XYZ Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
 
-        data=('\x00\x00\x00\x00\x00\x00\x00\x00'
-              '?\xf0\x00\x00\x00\x00\x00\x00'
-              '@\x00\x00\x00\x00\x00\x00\x00')
+        data = ('\x00\x00\x00\x00\x00\x00\x00\x00'
+                '?\xf0\x00\x00\x00\x00\x00\x00'
+                '@\x00\x00\x00\x00\x00\x00\x00')
 
         expected = EXP_WKB_FMT
         expected %= dict(
@@ -50,9 +49,9 @@ class PointTestCase(unittest.TestCase):
         # Test for an XYM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
 
-        data=('\x00\x00\x00\x00\x00\x00\x00\x00'
-              '\x00\x00\x00\x00\x00\x00\xf0?'
-              '\x00\x00\x00\x00\x00\x00\x00@')
+        data = ('\x00\x00\x00\x00\x00\x00\x00\x00'
+                '\x00\x00\x00\x00\x00\x00\xf0?'
+                '\x00\x00\x00\x00\x00\x00\x00@')
 
         expected = EXP_WKB_FMT
         expected %= dict(
@@ -66,10 +65,10 @@ class PointTestCase(unittest.TestCase):
         # Test for an XYZM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
 
-        data=('\x00\x00\x00\x00\x00\x00\x00\x00'
-              '\x00\x00\x00\x00\x00\x00\xf0?'
-              '\x00\x00\x00\x00\x00\x00\x00@'
-              '\x00\x00\x00\x00\x00\x00\x10@')
+        data = ('\x00\x00\x00\x00\x00\x00\x00\x00'
+                '\x00\x00\x00\x00\x00\x00\xf0?'
+                '\x00\x00\x00\x00\x00\x00\x00@'
+                '\x00\x00\x00\x00\x00\x00\x10@')
 
         expected = EXP_WKB_FMT
         expected %= dict(
