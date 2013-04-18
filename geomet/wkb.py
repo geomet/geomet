@@ -310,8 +310,15 @@ def __load_point(big_endian, type_bytes, data_bytes):
 
     if type_bytes == WKB_2D['Point']:
         coords = struct.unpack('%sdd' % endian_token, data_bytes)
-    elif type_bytes in (WKB_Z['Point'], WKB_M['Point']):
+    elif type_bytes == WKB_Z['Point']:
         coords = struct.unpack('%sddd' % endian_token, data_bytes)
+    elif type_bytes == WKB_M['Point']:
+        # NOTE: The use of XYM types geometries is quite rare. In the interest
+        # of removing ambiguity, we will treat all XYM geometries as XYZM when
+        # generate the GeoJSON. A default Z value of `0.0` will be given in
+        # this case.
+        coords = list(struct.unpack('%sddd' % endian_token, data_bytes))
+        coords.insert(2, 0.0)
     elif type_bytes == WKB_ZM['Point']:
         coords = struct.unpack('%sdddd' % endian_token, data_bytes)
 
