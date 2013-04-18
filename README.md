@@ -17,7 +17,7 @@ geometry types are supported:
 - MultiPolygon *
 - GeometryCollection *
 
-* Implementation still in progress
+\* Implementation still in progress
 
 The name "GeoMet" was inspired by "met", the German word for
 [mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
