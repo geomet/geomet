@@ -112,7 +112,11 @@ class PointTestCase(unittest.TestCase):
             '@\x11\x99\x99\x99\x99\x99\x9a'
             '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
         )
-        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1])
+
+        # The generated GeoJSON is treated as XYZM, sidestep the ambiguity
+        # created by XYM and XYZ geometries. The default value for Z is set to
+        # 0.0.
+        expected = dict(type='Point', coordinates=[2.2, 4.4, 0.0, 3.1])
         self.assertEqual(expected, wkb.loads(pt))
 
     def test_loads_point_zm(self):
