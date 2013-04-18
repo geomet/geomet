@@ -137,10 +137,12 @@ class LineStringTestCase(unittest.TestCase):
     def test_dumps_linestring_2d(self):
         linestring = dict(type='LineString', coordinates=[[2.2, 4.4],
                                                           [3.1, 5.1]])
-        data = ('@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
-                '@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
-                '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
-                '@\x14ffffff')                   # 5.1
+        data = (
+            '@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            '@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+            '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            '@\x14ffffff'                    # 5.1
+        )
         expected = EXP_WKB_FMT
         expected %= dict(
             endian='\x00',
