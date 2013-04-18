@@ -11,11 +11,13 @@ geometry types are supported:
 
 - Point
 - LineString
-- Polygon
-- MultiPoint
-- MultiLineString
-- MultiPolygon
-- GeometryCollection
+- Polygon *
+- MultiPoint *
+- MultiLineString *
+- MultiPolygon *
+- GeometryCollection *
+
+* Implementation still in progress
 
 The name "GeoMet" was inspired by "met", the German word for
 [mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
