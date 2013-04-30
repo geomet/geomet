@@ -44,18 +44,18 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual(expected, wkt.dumps(pt, decimals=6))
 
     def test_loads_point_2d(self):
-        pt = 'POINT (0.0000000000000000 1.0000000000000000)'
+        pt = 'POINT (-0.0000000000000000 1.0000000000000000)'
         expected = dict(type='Point', coordinates=[0.0, 1.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_3d(self):
-        pt = 'POINT (0.0 1.0 2.0)'
-        expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
+        pt = 'POINT (-0.0 -1.0 -2.0)'
+        expected = dict(type='Point', coordinates=[0.0, -1.0, -2.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_4d(self):
-        pt = 'POINT (0.0 1.0 2.0 4.0)'
-        expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
+        pt = 'POINT (0.0 1.0 2.0 -4.0)'
+        expected = dict(type='Point', coordinates=[0.0, 1.0, 2.0, -4.0])
         self.assertEqual(expected, wkt.loads(pt))
 
     def test_loads_point_raises_unmatched_paren(self):
