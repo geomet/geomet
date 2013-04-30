@@ -23,18 +23,18 @@ class PointTestCase(unittest.TestCase):
 
     def test_dumps_point_3d(self):
         # Test for an XYZ/XYM Point:
-        pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
+        pt = dict(type='Point', coordinates=[0.0, -1.0, 2.0])
         expected = (
-            'POINT (0.0000000000000000 1.0000000000000000 2.0000000000000000)'
+            'POINT (0.0000000000000000 -1.0000000000000000 2.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(pt))
 
     def test_dumps_point_4d(self):
         # Test for an XYZM Point:
-        pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
+        pt = dict(type='Point', coordinates=[-0.0, -1.0, -2.0, -4.0])
         expected = (
-            'POINT (0.0000000000000000 1.0000000000000000 2.0000000000000000 '
-            '4.0000000000000000)'
+            'POINT (-0.0000000000000000 -1.0000000000000000 '
+            '-2.0000000000000000 -4.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(pt))
 
