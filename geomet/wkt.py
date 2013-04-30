@@ -151,10 +151,18 @@ def __load_point(tokens, string):
 
     coords = []
     try:
+        negative = False
         for t in tokens:
             if t == ')':
                 break
-            coords.append(float(t))
+            elif t == '-':
+                negative = True
+            else:
+                if negative:
+                    coords.append(-float(t))
+                    negative = False
+                else:
+                    coords.append(float(t))
     except tokenize.TokenError:
         raise ValueError(INVALID_WKT_FMT % string)
 
