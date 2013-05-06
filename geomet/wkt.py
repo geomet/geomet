@@ -1,7 +1,4 @@
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO as StringIO
+import StringIO
 import tokenize
 
 
