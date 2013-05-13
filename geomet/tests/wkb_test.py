@@ -29,9 +29,11 @@ class PointTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
-    def test_dumps_point_z(self):
+    def test_dumps_point_3d(self):
         # Test for an XYZ Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
+        # Note that a 3d point could either be a XYZ or XYM type.
+        # For simplicity, we always assume XYZ.
 
         data = ('\x00\x00\x00\x00\x00\x00\x00\x00'
                 '?\xf0\x00\x00\x00\x00\x00\x00'
