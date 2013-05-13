@@ -155,8 +155,6 @@ class LineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(linestring, big_endian=False))
 
-    def test_dumps_linestring_m(self):
-        pass
 
     def test_dumps_linestring_zm(self):
         pass
