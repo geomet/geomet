@@ -182,16 +182,23 @@ def __load_linestring(tokens, string):
     coords = []
     try:
         pt = []
+        negative = False
         for t in tokens:
             if t == ')':
                 coords.append(pt)
                 break
+            elif t == '-':
+                negative = True
             elif t == ',':
                 # it's the end of the point
                 coords.append(pt)
                 pt = []
             else:
-                pt.append(float(t))
+                if negative:
+                    pt.append(-float(t))
+                    negative = False
+                else:
+                    pt.append(float(t))
     except tokenize.TokenError:
         raise ValueError(INVALID_WKT_FMT % string)
 
