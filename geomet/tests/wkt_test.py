@@ -13,7 +13,7 @@ class WKTTestCase(unittest.TestCase):
                          ar.exception.message)
 
 
-class PointTestCase(unittest.TestCase):
+class PointDumpsTestCase(unittest.TestCase):
 
     def test_dumps_point_2d(self):
         # Tests a typical 2D Point case:
@@ -42,6 +42,9 @@ class PointTestCase(unittest.TestCase):
         pt = dict(type='Point', coordinates=[-10, -77])
         expected = 'POINT (-10.000000 -77.000000)'
         self.assertEqual(expected, wkt.dumps(pt, decimals=6))
+
+
+class PointLoadsTestCase(unittest.TestCase):
 
     def test_loads_point_2d(self):
         pt = 'POINT (-0.0000000000000000 1.0000000000000000)'
@@ -72,7 +75,7 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual('Invalid WKT: `POINT 0.0 1.0`', ar.exception.message)
 
 
-class LineStringTestCase(unittest.TestCase):
+class LineStringDumpsTestCase(unittest.TestCase):
 
     def test_dumps_linestring_2d(self):
         # Test a typical 2D LineString case:
@@ -110,6 +113,9 @@ class LineStringTestCase(unittest.TestCase):
         ls = dict(type='LineString', coordinates=[[100.0, 0.0], [101.0, 1.0]])
         expected = 'LINESTRING (100.000 0.000, 101.000 1.000)'
         self.assertEqual(expected, wkt.dumps(ls, decimals=3))
+
+
+class LineStringLoadsTestCase(unittest.TestCase):
 
     def test_loads_linestring_2d(self):
         ls = 'LINESTRING (0 -1, -2 -3, -4 5)'
