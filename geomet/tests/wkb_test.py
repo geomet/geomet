@@ -136,7 +136,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(linestring))
 
-    def test_dumps_linestring_z(self):
+    def test_dumps_linestring_3d(self):
         linestring = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
                                                           [3.1, 5.1, 20.0]])
         data = (
