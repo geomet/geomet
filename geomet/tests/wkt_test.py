@@ -76,10 +76,11 @@ class LineStringTestCase(unittest.TestCase):
 
     def test_dumps_linestring_2d(self):
         # Test a typical 2D LineString case:
-        ls = dict(type='LineString', coordinates=[[100.0, 0.0], [101.0, 1.0]])
+        ls = dict(type='LineString', coordinates=[[-100.0, 0.0],
+                                                  [-101.0, -1.0]])
         expected = (
-            'LINESTRING (100.0000000000000000 0.0000000000000000, '
-            '101.0000000000000000 1.0000000000000000)'
+            'LINESTRING (-100.0000000000000000 0.0000000000000000, '
+            '-101.0000000000000000 -1.0000000000000000)'
         )
         self.assertEqual(expected, wkt.dumps(ls))
 
