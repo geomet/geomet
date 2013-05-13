@@ -52,6 +52,7 @@ def loads(string):
     sio = StringIO.StringIO(string)
     # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
+    tokens = __tokenize_wkt(tokens)
     geom_type = tokens.next()
 
     importer = __loads_registry.get(geom_type)
@@ -168,18 +169,11 @@ def __load_point(tokens, string):
 
     coords = []
     try:
-        negative = False
         for t in tokens:
             if t == ')':
                 break
-            elif t == '-':
-                negative = True
             else:
-                if negative:
-                    coords.append(-float(t))
-                    negative = False
-                else:
-                    coords.append(float(t))
+                coords.append(float(t))
     except tokenize.TokenError:
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -202,23 +196,16 @@ def __load_linestring(tokens, string):
     coords = []
     try:
         pt = []
-        negative = False
         for t in tokens:
             if t == ')':
                 coords.append(pt)
                 break
-            elif t == '-':
-                negative = True
             elif t == ',':
                 # it's the end of the point
                 coords.append(pt)
                 pt = []
             else:
-                if negative:
-                    pt.append(-float(t))
-                    negative = False
-                else:
-                    pt.append(float(t))
+                pt.append(float(t))
     except tokenize.TokenError:
         raise ValueError(INVALID_WKT_FMT % string)
 
