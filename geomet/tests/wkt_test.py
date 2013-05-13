@@ -112,10 +112,10 @@ class LineStringTestCase(unittest.TestCase):
         self.assertEqual(expected, wkt.dumps(ls, decimals=3))
 
     def test_loads_linestring_2d(self):
-        ls = 'LINESTRING (0 1, 2 3, 4 5)'
-        expected = dict(type='LineString', coordinates=[[0.0, 1.0],
-                                                        [2.0, 3.0],
-                                                        [4.0, 5.0]])
+        ls = 'LINESTRING (0 -1, -2 -3, -4 5)'
+        expected = dict(type='LineString', coordinates=[[0.0, -1.0],
+                                                        [-2.0, -3.0],
+                                                        [-4.0, 5.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
     def test_loads_linestring_3d(self):
