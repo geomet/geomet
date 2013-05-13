@@ -15,7 +15,7 @@ class WKBTestCase(unittest.TestCase):
                          ar.exception.message)
 
 
-class PointTestCase(unittest.TestCase):
+class PointDumpsTestCase(unittest.TestCase):
 
     def test_dumps_point_2d(self):
         # Tests a typical 2D Point case:
@@ -63,6 +63,9 @@ class PointTestCase(unittest.TestCase):
             data=data,
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
+
+
+class PointLoadsTestCase(unittest.TestCase):
 
     def test_loads_point_2d(self):
         pt = (
@@ -114,7 +117,7 @@ class PointTestCase(unittest.TestCase):
         self.assertEqual(expected, wkb.loads(pt))
 
 
-class LineStringTestCase(unittest.TestCase):
+class LineStringDumpsTestCase(unittest.TestCase):
 
     def test_dumps_linestring_2d(self):
         linestring = dict(type='LineString', coordinates=[[2.2, 4.4],
@@ -157,3 +160,7 @@ class LineStringTestCase(unittest.TestCase):
 
     def test_dumps_linestring_zm(self):
         pass
+
+
+class LineStringLoadsTestCase(unittest.TestCase):
+    pass
