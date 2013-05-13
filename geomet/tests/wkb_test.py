@@ -155,9 +155,28 @@ class LineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(linestring, big_endian=False))
 
+    def test_dumps_linestring_4d(self):
+        linestring = dict(type='LineString',
+                          coordinates=[[2.2, -4.4, -10.0, 0.1],
+                                       [-3.1, 5.1, 20.0, -0.9]])
 
-    def test_dumps_linestring_zm(self):
-        pass
+        data = (
+            '@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
+            '\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
+            '\xc0$\x00\x00\x00\x00\x00\x00'     # -10.0
+            '?\xb9\x99\x99\x99\x99\x99\x9a'     # 0.1
+            '\xc0\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # -3.1
+            '@\x14ffffff'                       # 5.1
+            '@4\x00\x00\x00\x00\x00\x00'        # 20.0
+            '\xbf\xec\xcc\xcc\xcc\xcc\xcc\xcd'  # -0.9
+        )
+        expected = EXP_WKB_FMT
+        expected %= dict(
+            endian='\x00',
+            type='\x00\x00\x30\x02',
+            data=data,
+        )
+        self.assertEqual(expected, wkb.dumps(linestring))
 
 
 class LineStringLoadsTestCase(unittest.TestCase):
