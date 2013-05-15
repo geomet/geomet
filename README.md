@@ -1,6 +1,4 @@
-https://travis-ci.org/larsbutler/geomet.png
-
-GeoMet
+GeoMet [![Build Status](https://secure.travis-ci.org/larsbutler/geomet.png?branch=master)](http://travis-ci.org/larsbutler/geomet)
 ======
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
