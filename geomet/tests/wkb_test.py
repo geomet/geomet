@@ -180,4 +180,68 @@ class LineStringDumpsTestCase(unittest.TestCase):
 
 
 class LineStringLoadsTestCase(unittest.TestCase):
-    pass
+
+    def test_loads_linestring_2d(self):
+        linestring = (
+            '\x00'  # big endian
+            '\x00\x00\x00\x02'
+            '@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            '@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+            '@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            '@\x14ffffff'                    # 5.1
+        )
+        expected = dict(type='LineString', coordinates=[[2.2, 4.4],
+                                                        [3.1, 5.1]])
+
+        self.assertEqual(expected, wkb.loads(linestring))
+
+    def test_loads_linestring_z(self):
+        linestring = (
+            '\x01'  # little endian
+            '\x02\x10\x00\x00'
+            '\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            '\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            '\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            '\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            'ffffff\x14@'                    # 5.1
+            '\x00\x00\x00\x00\x00\x004@'     # 20.0
+        )
+        expected = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
+                                                        [3.1, 5.1, 20.0]])
+
+        self.assertEqual(expected, wkb.loads(linestring))
+
+    def test_loads_linestring_m(self):
+        linestring = (
+            '\x01'  # little endian
+            '\x02\x20\x00\x00'
+            '\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            '\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            '\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            '\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            'ffffff\x14@'                    # 5.1
+            '\x00\x00\x00\x00\x00\x004@'     # 20.0
+        )
+        expected = dict(type='LineString', coordinates=[[2.2, 4.4, 0.0, 10.0],
+                                                        [3.1, 5.1, 0.0, 20.0]])
+
+        self.assertEqual(expected, wkb.loads(linestring))
+
+    def test_loads_linestring_zm(self):
+        linestring = (
+            '\x00'  # big endian
+            '\x00\x00\x30\x02'
+            '@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
+            '\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
+            '\xc0$\x00\x00\x00\x00\x00\x00'     # -10.0
+            '?\xb9\x99\x99\x99\x99\x99\x9a'     # 0.1
+            '\xc0\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # -3.1
+            '@\x14ffffff'                       # 5.1
+            '@4\x00\x00\x00\x00\x00\x00'        # 20.0
+            '\xbf\xec\xcc\xcc\xcc\xcc\xcc\xcd'  # -0.9
+        )
+        expected = dict(type='LineString',
+                        coordinates=[[2.2, -4.4, -10.0, 0.1],
+                                     [-3.1, 5.1, 20.0, -0.9]])
+
+        self.assertEqual(expected, wkb.loads(linestring))
