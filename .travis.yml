@@ -2,5 +2,6 @@ language: python
 python:
   - "2.7"
 install:
-  - "pip install coverage"  # for running tests
+  - "pip install coverage"  # for running tests only
+  - "python setup.py -q install"
 script: nosetests --with-doctest --with-coverage --cover-package=geomet
