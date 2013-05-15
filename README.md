@@ -1,3 +1,5 @@
+https://travis-ci.org/larsbutler/geomet.png
+
 GeoMet
 ======
 
