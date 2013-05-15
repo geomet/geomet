@@ -1,6 +1,8 @@
 import struct
 from itertools import chain
 
+from geomet.util import block_splitter
+
 #: '\x00': The first byte of any WKB string. Indicates big endian byte
 #: ordering for the data.
 BIG_ENDIAN = '\x00'
@@ -326,7 +328,25 @@ def __load_point(big_endian, type_bytes, data_bytes):
 
 
 def __load_linestring(big_endian, type_bytes, data_bytes):
-    raise NotImplementedError
+    endian_token = '>' if big_endian else '<'
+
+    num_vals = len(data_bytes) / 8  # 8 bytes per float val
+    values = struct.unpack('%s%s' % (endian_token, 'd' * num_vals),
+                           data_bytes)
+
+    if type_bytes == WKB_2D['LineString']:
+        coords = block_splitter(values, 2)
+    elif type_bytes == WKB_Z['LineString']:
+        coords = block_splitter(values, 3)
+    elif type_bytes == WKB_M['LineString']:
+        coords = block_splitter(values, 3)
+        # For the M type geometry, insert values of 0.0 for Z
+        # This effectively converts a M type geometry into a ZM.
+        coords = ([x, y, 0.0, m] for x, y, m in coords)
+    elif type_bytes == WKB_ZM['LineString']:
+        coords = block_splitter(values, 4)
+
+    return dict(type='LineString', coordinates=list(coords))
 
 
 __loads_registry = {
