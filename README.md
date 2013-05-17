@@ -5,9 +5,9 @@ Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
 Text/Binary), and vice versa.
 
-GeoMet is BSD-licensed and is intended to cover all common uses for dealing
-with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM'). The following
-geometry types are supported:
+GeoMet is BSD-licensed and is intended to cover all common use cases for
+dealing with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM').
+The following geometry types are supported:
 
 - Point
 - LineString
@@ -28,7 +28,7 @@ the word "geometry".
 Clone the source code from git and run:
 
     $ python setup.py install
-    
+
 You can also install directly from the git repo using pip:
 
     $ pip install git+git://github.com/larsbutler/geomet.git
