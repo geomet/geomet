@@ -23,6 +23,16 @@ The name "GeoMet" was inspired by "met", the German word for
 [mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
 the word "geometry".
 
+### Installation ###
+
+Clone the source code from git and run:
+
+    $ python setup.py install
+    
+You can also install directly from the git repo using pip:
+
+    $ pip install git+git://github.com/larsbutler/geomet.git
+
 ### Example usage ###
 
 Coverting a 'Point' GeoJSON object to WKT:
