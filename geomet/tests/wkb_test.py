@@ -17,7 +17,7 @@ class WKBTestCase(unittest.TestCase):
 
 class PointDumpsTestCase(unittest.TestCase):
 
-    def test_dumps_point_2d(self):
+    def test_2d(self):
         # Tests a typical 2D Point case:
         pt = dict(type='Point', coordinates=[0.0, 1.0])
         expected = EXP_WKB_FMT
@@ -29,7 +29,7 @@ class PointDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
-    def test_dumps_point_3d(self):
+    def test_3d(self):
         # Test for an XYZ Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
         # Note that a 3d point could either be a XYZ or XYM type.
@@ -47,7 +47,7 @@ class PointDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(pt, big_endian=True))
 
-    def test_dumps_point_4d(self):
+    def test_4d(self):
         # Test for an XYZM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
 
@@ -67,7 +67,7 @@ class PointDumpsTestCase(unittest.TestCase):
 
 class PointLoadsTestCase(unittest.TestCase):
 
-    def test_loads_point_2d(self):
+    def test_2d(self):
         pt = (
             '\x01'  # little endian
             '\x01\x00\x00\x00'  # type
@@ -78,7 +78,7 @@ class PointLoadsTestCase(unittest.TestCase):
         expected = dict(type='Point', coordinates=[0.0, 1.0])
         self.assertEqual(expected, wkb.loads(pt))
 
-    def test_loads_point_z(self):
+    def test_z(self):
         pt = (
             '\x00'  # big endian
             '\x00\x00\x10\x01'  # type
@@ -89,7 +89,7 @@ class PointLoadsTestCase(unittest.TestCase):
         expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1])
         self.assertEqual(expected, wkb.loads(pt))
 
-    def test_loads_point_m(self):
+    def test_m(self):
         pt = (
             '\x00'  # big endian
             '\x00\x00\x20\x01'  # type
@@ -104,7 +104,7 @@ class PointLoadsTestCase(unittest.TestCase):
         expected = dict(type='Point', coordinates=[2.2, 4.4, 0.0, 3.1])
         self.assertEqual(expected, wkb.loads(pt))
 
-    def test_loads_point_zm(self):
+    def test_zm(self):
         pt = (
             '\x00'  # big endian
             '\x00\x00\x30\x01'  # type
@@ -119,7 +119,7 @@ class PointLoadsTestCase(unittest.TestCase):
 
 class LineStringDumpsTestCase(unittest.TestCase):
 
-    def test_dumps_linestring_2d(self):
+    def test_2d(self):
         linestring = dict(type='LineString', coordinates=[[2.2, 4.4],
                                                           [3.1, 5.1]])
         data = (
@@ -136,7 +136,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(linestring))
 
-    def test_dumps_linestring_3d(self):
+    def test_3d(self):
         linestring = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
                                                           [3.1, 5.1, 20.0]])
         data = (
@@ -155,7 +155,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkb.dumps(linestring, big_endian=False))
 
-    def test_dumps_linestring_4d(self):
+    def test_4d(self):
         linestring = dict(type='LineString',
                           coordinates=[[2.2, -4.4, -10.0, 0.1],
                                        [-3.1, 5.1, 20.0, -0.9]])
@@ -181,7 +181,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
 
 class LineStringLoadsTestCase(unittest.TestCase):
 
-    def test_loads_linestring_2d(self):
+    def test_2d(self):
         linestring = (
             '\x00'  # big endian
             '\x00\x00\x00\x02'
@@ -195,7 +195,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
 
         self.assertEqual(expected, wkb.loads(linestring))
 
-    def test_loads_linestring_z(self):
+    def test_z(self):
         linestring = (
             '\x01'  # little endian
             '\x02\x10\x00\x00'
@@ -211,7 +211,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
 
         self.assertEqual(expected, wkb.loads(linestring))
 
-    def test_loads_linestring_m(self):
+    def test_m(self):
         linestring = (
             '\x01'  # little endian
             '\x02\x20\x00\x00'
@@ -227,7 +227,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
 
         self.assertEqual(expected, wkb.loads(linestring))
 
-    def test_loads_linestring_zm(self):
+    def test_zm(self):
         linestring = (
             '\x00'  # big endian
             '\x00\x00\x30\x02'
