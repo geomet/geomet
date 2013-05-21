@@ -117,33 +117,33 @@ class LineStringDumpsTestCase(unittest.TestCase):
 
 class LineStringLoadsTestCase(unittest.TestCase):
 
-    def test_loads_linestring_2d(self):
+    def test_2d(self):
         ls = 'LINESTRING (0 -1, -2 -3, -4 5)'
         expected = dict(type='LineString', coordinates=[[0.0, -1.0],
                                                         [-2.0, -3.0],
                                                         [-4.0, 5.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
-    def test_loads_linestring_3d(self):
+    def test_3d(self):
         ls = 'LINESTRING (0 1 2, 3 4 5)'
         expected = dict(type='LineString', coordinates=[[0.0, 1.0, 2.0],
                                                         [3.0, 4.0, 5.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
-    def test_loads_linestring_4d(self):
+    def test_4d(self):
         ls = 'LINESTRING (0 1 2 3, 4 5 6 7)'
         expected = dict(type='LineString', coordinates=[[0.0, 1.0, 2.0, 3.0],
                                                         [4.0, 5.0, 6.0, 7.0]])
         self.assertEqual(expected, wkt.loads(ls))
 
-    def test_loads_linestring_raises_unmatched_paren(self):
+    def test_raises_unmatched_paren(self):
         ls = 'LINESTRING (0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(ls)
         self.assertEqual('Invalid WKT: `LINESTRING (0.0 1.0`',
                          ar.exception.message)
 
-    def test_loads_linestring_raises_invalid_wkt(self):
+    def test_raises_invalid_wkt(self):
         ls = 'LINESTRING 0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(ls)
