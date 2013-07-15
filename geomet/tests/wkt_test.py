@@ -149,3 +149,43 @@ class LineStringLoadsTestCase(unittest.TestCase):
             wkt.loads(ls)
         self.assertEqual('Invalid WKT: `LINESTRING 0.0 1.0`',
                          ar.exception.message)
+
+
+class PolygonDumpsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        poly = dict(type='Polygon', coordinates=[
+            [[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+             [100.001, 0.001]],
+             [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+              [100.201, 0.201]],
+        ])
+        expected = (
+            'POLYGON ((100.0010 0.0010, 101.0010 0.0010, 101.0010 1.0010, '
+                      '100.0010 0.0010), '
+            '(100.2010 0.2010, 100.8010 0.2010, 100.8010 0.8010, '
+             '100.2010 0.2010))'
+        )
+        self.assertEqual(expected, wkt.dumps(poly, decimals=4))
+
+
+    def test_3d(self):
+        poly = dict(type='Polygon', coordinates=[
+            [[100.0, 0.0, 3.1], [101.0, 0.0, 2.1], [101.0, 1.0, 1.1],
+             [100.0, 0.0, 3.1]],
+             [[100.2, 0.2, 3.1], [100.8, 0.2, 2.1], [100.8, 0.8, 1.1],
+              [100.2, 0.2, 3.1]],
+        ])
+        expected = (
+            'POLYGON ((100.0 0.0 3.1, 101.0 0.0 2.1, 101.0 1.0 1.1, '
+                      '100.0 0.0 3.1), '
+            '(100.2 0.2 3.1, 100.8 0.2 2.1, 100.8 0.8 1.1, 100.2 0.2 3.1))'
+        )
+        self.assertEqual(expected, wkt.dumps(poly, decimals=1))
+
+    def test_4d(self):
+        poly = dict(type='Polygon', coordinates=[
+            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [1, 2, 3, 4]]
+        ])
+        expected = 'POLYGON ((1 2 3 4, 5 6 7 8, 9 10 11 12, 1 2 3 4))'
+        self.assertEqual(expected, wkt.dumps(poly, decimals=0))
