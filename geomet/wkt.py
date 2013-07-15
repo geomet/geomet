@@ -108,7 +108,7 @@ def __dump_linestring(obj, fmt):
     """
     Dump a GeoJSON-like LineString object to WKT.
 
-    Input parameters and return value are the the LINESTRING equivalent to
+    Input parameters and return value are the LINESTRING equivalent to
     :func:`__dump_point`.
     """
     coords = obj['coordinates']
