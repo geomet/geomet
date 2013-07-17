@@ -129,8 +129,7 @@ def __dump_polygon(obj, fmt):
     rings = (', '.join(' '.join(fmt % c for c in pt) for pt in ring)
              for ring in coords)
     rings = ('(%s)' % r for r in rings)
-    rings = ', '.join(rings)
-    poly %= rings
+    poly %= ', '.join(rings)
     return poly
 
 
