@@ -189,3 +189,61 @@ class PolygonDumpsTestCase(unittest.TestCase):
         ])
         expected = 'POLYGON ((1 2 3 4, 5 6 7 8, 9 10 11 12, 1 2 3 4))'
         self.assertEqual(expected, wkt.dumps(poly, decimals=0))
+
+
+class PolygonLoadsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        poly = (
+            'POLYGON ((100.001 0.001, 101.001 0.001, 101.001 1.001, '
+                      '100.001 0.001), '
+            '(100.201 0.201, 100.801 0.201, 100.801 0.801, '
+             '100.201 0.201))'
+        )
+        expected = dict(type='Polygon', coordinates=[
+            [[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+             [100.001, 0.001]],
+             [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+              [100.201, 0.201]],
+        ])
+        self.assertEqual(expected, wkt.loads(poly))
+
+    def test_3d(self):
+        poly = (
+            'POLYGON ((100.0 0.0 3.1, 101.0 0.0 2.1, 101.0 1.0 1.1, '
+                      '100.0 0.0 3.1), '
+            '(100.2 0.2 3.1, 100.8 0.2 2.1, 100.8 0.8 1.1, 100.2 0.2 3.1))'
+        )
+        expected = dict(type='Polygon', coordinates=[
+            [[100.0, 0.0, 3.1], [101.0, 0.0, 2.1], [101.0, 1.0, 1.1],
+             [100.0, 0.0, 3.1]],
+             [[100.2, 0.2, 3.1], [100.8, 0.2, 2.1], [100.8, 0.8, 1.1],
+              [100.2, 0.2, 3.1]],
+        ])
+        self.assertEqual(expected, wkt.loads(poly))
+
+    def test_4d(self):
+        poly = 'POLYGON ((1 2 3 4, 5 6 7 8, 9 10 11 12, 1 2 3 4))'
+        expected = dict(type='Polygon', coordinates=[
+            [[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0],
+             [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]
+        ])
+        self.assertEqual(expected, wkt.loads(poly))
+
+    def test_raises_unmatched_paren(self):
+        poly = 'POLYGON ((0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0)'
+        with self.assertRaises(ValueError) as ar:
+            wkt.loads(poly)
+        self.assertEqual(
+            'Invalid WKT: `POLYGON ((0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0)`',
+            ar.exception.message
+        )
+
+    def test_raises_invalid_wkt(self):
+        poly = 'POLYGON 0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0))'
+        with self.assertRaises(ValueError) as ar:
+            wkt.loads(poly)
+        self.assertEqual(
+            'Invalid WKT: `POLYGON 0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0))`',
+            ar.exception.message
+        )
