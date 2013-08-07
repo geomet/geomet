@@ -246,3 +246,21 @@ class PolygonLoadsTestCase(unittest.TestCase):
             'Invalid WKT: `POLYGON 0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0))`',
             ar.exception.message
         )
+
+
+class MultiPointLoadsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        mp = 'MULTIPOINT ((100.000 3.101), (101.000 2.100), (3.140 2.180))'
+        expected = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.101], [101.0, 2.1], [3.14, 2.18],
+        ])
+        self.assertEqual(expected, wkt.loads(mp))
+
+    def test_2d_alternate(self):
+        # alternative style for representing a multipoint in WKT
+        mp = 'MULTIPOINT (100.000 3.101, 101.000 2.100, 3.140 2.180)'
+        expected = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.101], [101.0, 2.1], [3.14, 2.18],
+        ])
+        self.assertEqual(expected, wkt.loads(mp))
