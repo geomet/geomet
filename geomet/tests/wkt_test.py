@@ -264,3 +264,35 @@ class MultiPointLoadsTestCase(unittest.TestCase):
             [100.0, 3.101], [101.0, 2.1], [3.14, 2.18],
         ])
         self.assertEqual(expected, wkt.loads(mp))
+
+
+class MultiPointDumpsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        mp = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.101], [101.0, 2.1], [3.14, 2.18],
+        ])
+        expected = (
+            'MULTIPOINT ((100.000 3.101), (101.000 2.100), (3.140 2.180))'
+        )
+        self.assertEqual(expected, wkt.dumps(mp, decimals=3))
+
+    def test_3d(self):
+        mp = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.1, 1], [101.0, 2.1, 2], [3.14, 2.18, 3],
+        ])
+        expected = (
+            'MULTIPOINT ((100.00 3.10 1.00), (101.00 2.10 2.00), '
+            '(3.14 2.18 3.00))'
+        )
+        self.assertEqual(expected, wkt.dumps(mp, decimals=2))
+
+    def test_4d(self):
+        mp = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.1, 1, 0], [101.0, 2.1, 2, 0], [3.14, 2.18, 3, 0],
+        ])
+        expected = (
+            'MULTIPOINT ((100.00 3.10 1.00 0.00), (101.00 2.10 2.00 0.00), '
+            '(3.14 2.18 3.00 0.00))'
+        )
+        self.assertEqual(expected, wkt.dumps(mp, decimals=2))
