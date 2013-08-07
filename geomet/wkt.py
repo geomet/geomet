@@ -288,7 +288,39 @@ def __load_polygon(tokens, string):
 
 
 def __load_multipoint(tokens, string):
-    raise NotImplementedError
+    """
+    Has similar inputs and return value to to :func:`__load_point`, except is
+    for handling MULTIPOINT geometry.
+
+    :returns:
+        A GeoJSON `dict` MultiPoint representation of the WKT ``string``.
+    """
+    open_paren = tokens.next()
+    if not open_paren == '(':
+        raise ValueError(INVALID_WKT_FMT % string)
+
+    coords = []
+    pt = []
+    try:
+        for t in tokens:
+            if t in ('(', ')', ''):
+                # we can pretty much ignore parens and empty string tokens
+                pass
+            elif t == ',':
+                # the point is done
+                coords.append(pt)
+                pt = []
+            else:
+                pt.append(float(t))
+    except tokenize.TokenError:
+        raise ValueError(INVALID_WKT_FMT % string)
+
+    # Given the way we're parsing, we'll probably have to deal with the last
+    # point after the loop
+    if len(pt) > 0:
+        coords.append(pt)
+
+    return dict(type='MultiPoint', coordinates=coords)
 
 
 def __load_multipolygon(tokens, string):
