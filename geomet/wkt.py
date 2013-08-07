@@ -134,7 +134,19 @@ def __dump_polygon(obj, fmt):
 
 
 def __dump_multipoint(obj, fmt):
-    raise NotImplementedError
+    """
+    Dump a GeoJSON-like MultiPoint object to WKT.
+
+    Input parameters and return value are the POLYGON equivalent to
+    :func:`__dump_point`.
+    """
+    coords = obj['coordinates']
+    mp = 'MULTIPOINT (%s)'
+    points = (' '.join(fmt % c for c in pt) for pt in coords)
+    # Add parens around each point.
+    points = ('(%s)' % pt for pt in points)
+    mp %= ', '.join(points)
+    return mp
 
 
 def __dump_multilinestring(obj, fmt):
