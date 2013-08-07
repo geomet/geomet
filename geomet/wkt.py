@@ -133,19 +133,19 @@ def __dump_polygon(obj, fmt):
     return poly
 
 
-def __dump_multipoint(obj, decimals):
+def __dump_multipoint(obj, fmt):
     raise NotImplementedError
 
 
-def __dump_multilinestring(obj, decimals):
+def __dump_multilinestring(obj, fmt):
     raise NotImplementedError
 
 
-def __dump_multipolygon(obj, decimals):
+def __dump_multipolygon(obj, fmt):
     raise NotImplementedError
 
 
-def __dump_geometrycollection(obj, decimals):
+def __dump_geometrycollection(obj, fmt):
     raise NotImplementedError
 
 
