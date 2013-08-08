@@ -296,3 +296,23 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             '(3.14 2.18 3.00 0.00))'
         )
         self.assertEqual(expected, wkt.dumps(mp, decimals=2))
+
+
+class MultiPolygonLoadsTestCase(unittest.TestCase):
+
+    def test(self):
+        mpoly = (
+            'MULTIPOLYGON (((100.001 0.001, 101.001 0.001, 101.001 1.001, '
+            '100.001 0.001), '
+            '(100.201 0.201, 100.801 0.201, 100.801 0.801, '
+            '100.201 0.201)), ((1 2 3 4, 5 6 7 8, 9 10 11 12, 1 2 3 4)))'
+        )
+        expected = dict(type='MultiPolygon', coordinates=[
+            [[[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+              [100.001, 0.001]],
+             [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+              [100.201, 0.201]]],
+            [[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0],
+              [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]],
+        ])
+        self.assertEqual(expected, wkt.loads(mpoly))
