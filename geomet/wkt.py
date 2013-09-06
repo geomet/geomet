@@ -352,7 +352,31 @@ def __load_multipolygon(tokens, string):
 
 
 def __load_multilinestring(tokens, string):
-    raise NotImplementedError
+    """
+    Has similar inputs and return value to to :func:`__load_point`, except is
+    for handling MULTILINESTRING geometry.
+
+    :returns:
+        A GeoJSON `dict` MultiLineString representation of the WKT ``string``.
+    """
+    open_paren = tokens.next()
+    if not open_paren == '(':
+        raise ValueError(INVALID_WKT_FMT % string)
+
+    linestrs = []
+    while True:
+        try:
+            linestr = __load_linestring(tokens, string)
+            linestrs.append(linestr['coordinates'])
+            t = tokens.next()
+            if t == ')':
+                # we're done; no more linestrings.
+                break
+        except StopIteration:
+            # If we reach this, the WKT is not valid.
+            raise ValueError(INVALID_WKT_FMT % string)
+
+    return dict(type='MultiLineString', coordinates=linestrs)
 
 
 def __load_geometrycollection(tokens, string):
