@@ -316,3 +316,21 @@ class MultiPolygonLoadsTestCase(unittest.TestCase):
               [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]],
         ])
         self.assertEqual(expected, wkt.loads(mpoly))
+
+
+class MultiLineStringLoadsTestCase(unittest.TestCase):
+
+    def test(self):
+        mlls = (
+            'MULTILINESTRING ((0 -1, -2 -3, -4 -5), '
+            '(1.66 -31023.5 1.1, 10000.9999 3.0 2.2, 100.9 1.1 3.3, 0 0 4.4))'
+        )
+        expected = dict(
+            type='MultiLineString',
+            coordinates=[
+                [[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                [[1.66, -31023.5, 1.1], [10000.9999, 3.0, 2.2],
+                 [100.9, 1.1, 3.3], [0.0, 0.0, 4.4]],
+            ]
+        )
+        self.assertEqual(expected, wkt.loads(mlls))
