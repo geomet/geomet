@@ -331,8 +331,11 @@ def __load_multipolygon(tokens, string):
     :returns:
         A GeoJSON `dict` MultiPolygon representation of the WKT ``string``.
     """
+    open_paren = tokens.next()
+    if not open_paren == '(':
+        raise ValueError(INVALID_WKT_FMT % string)
+
     polygons = []
-    open_parent = tokens.next()
     while True:
         try:
             poly = __load_polygon(tokens, string)
