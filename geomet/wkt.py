@@ -387,7 +387,38 @@ def __load_multilinestring(tokens, string):
 
 
 def __load_geometrycollection(tokens, string):
-    raise NotImplementedError
+    """
+    Has similar inputs and return value to to :func:`__load_point`, except is
+    for handling GEOMETRYCOLLECTIONs.
+
+    Delegates parsing to the parsers for the individual geometry types.
+
+    :returns:
+        A GeoJSON `dict` GeometryCollection representation of the WKT
+        ``string``.
+    """
+    open_paren = tokens.next()
+    if not open_paren == '(':
+        raise ValueError(INVALID_WKT_FMT % string)
+
+    geoms = []
+    result = dict(type='GeometryCollection', geometries=geoms)
+    while True:
+        try:
+            t = tokens.next()
+            if t == ')':
+                break
+            elif t == ',':
+                # another geometry still
+                continue
+            else:
+                geom_type = t
+                load_func = __loads_registry.get(geom_type)
+                geom = load_func(tokens, string)
+                geoms.append(geom)
+        except StopIteration:
+            raise ValueError(INVALID_WKT_FMT % string)
+    return result
 
 
 __loads_registry = {
