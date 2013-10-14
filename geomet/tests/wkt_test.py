@@ -363,3 +363,60 @@ class MultiLineStringLoadsTestCase(unittest.TestCase):
             ]
         )
         self.assertEqual(expected, wkt.loads(mlls))
+
+
+class GeometryCollectionDumpsTestCase(unittest.TestCase):
+
+    def test(self): pass
+
+
+class GeometryCollectionLoadsTestCase(unittest.TestCase):
+
+    def test(self):
+        gc = 'GEOMETRYCOLLECTION (%s,%s,%s,%s,%s,%s)' % (
+            WKT['point']['2d'],
+            WKT['linestring']['2d'],
+            WKT['polygon']['2d'],
+            WKT['multipoint']['2d'],
+            WKT['multilinestring'],
+            WKT['multipolygon'],
+        )
+        expected = {
+            'geometries': [
+                {'coordinates': [0.0, 1.0], 'type': 'Point'},
+                {'coordinates': [[-100.0, 0.0], [-101.0, -1.0]],
+                 'type': 'LineString'},
+                {'coordinates': [[[100.001, 0.001],
+                                  [101.1235, 0.001],
+                                  [101.001, 1.001],
+                                  [100.001, 0.001]],
+                                 [[100.201, 0.201],
+                                  [100.801, 0.201],
+                                  [100.801, 0.801],
+                                  [100.201, 0.201]]],
+                 'type': 'Polygon'},
+                {'coordinates': [[100.0, 3.101], [101.0, 2.1], [3.14, 2.18]],
+                 'type': 'MultiPoint'},
+                {'coordinates': [[[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                                 [[1.66, -31023.5, 1.1],
+                                  [10000.9999, 3.0, 2.2],
+                                  [100.9, 1.1, 3.3],
+                                  [0.0, 0.0, 4.4]]],
+                 'type': 'MultiLineString'},
+                {'coordinates': [[[[100.001, 0.001],
+                                   [101.001, 0.001],
+                                   [101.001, 1.001],
+                                   [100.001, 0.001]],
+                                  [[100.201, 0.201],
+                                   [100.801, 0.201],
+                                   [100.801, 0.801],
+                                   [100.201, 0.201]]],
+                                 [[[1.0, 2.0, 3.0, 4.0],
+                                   [5.0, 6.0, 7.0, 8.0],
+                                   [9.0, 10.0, 11.0, 12.0],
+                                   [1.0, 2.0, 3.0, 4.0]]]],
+                 'type': 'MultiPolygon'},
+            ],
+            'type': 'GeometryCollection',
+        }
+        self.assertEqual(expected, wkt.loads(gc))
