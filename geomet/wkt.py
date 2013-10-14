@@ -301,10 +301,17 @@ def __load_multipoint(tokens, string):
 
     coords = []
     pt = []
+
+    paren_depth = 1
     try:
         for t in tokens:
-            if t in ('(', ')', ''):
-                # we can pretty much ignore parens and empty string tokens
+            if t == '(':
+                paren_depth += 1
+            elif t == ')':
+                paren_depth -= 1
+                if paren_depth == 0:
+                    break
+            elif t == '':
                 pass
             elif t == ',':
                 # the point is done
