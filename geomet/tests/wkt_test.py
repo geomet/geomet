@@ -289,6 +289,22 @@ class MultiPointLoadsTestCase(unittest.TestCase):
         ])
         self.assertEqual(expected, wkt.loads(mp))
 
+    def test_3d(self):
+        mp = WKT['multipoint']['3d']
+        expected = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.1, 1.0], [101.0, 2.1, 2.0], [3.14, 2.18, 3.0],
+        ])
+        self.assertEqual(expected, wkt.loads(mp))
+
+    def test_4d(self):
+        mp = WKT['multipoint']['4d']
+        expected = dict(type='MultiPoint', coordinates=[
+            [100.0, 3.1, 1.0, 0.0],
+            [101.0, 2.1, 2.0, 0.0],
+            [3.14, 2.18, 3.0, 0.0],
+        ])
+        self.assertEqual(expected, wkt.loads(mp))
+
 
 class MultiPointDumpsTestCase(unittest.TestCase):
 
