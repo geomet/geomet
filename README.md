@@ -20,7 +20,7 @@ GeoJSON -> WKT:
 - LineString
 - Polygon
 - MultiPoint
-- TODO: MultiLineString
+- MultiLineString
 - TODO: MultiPolygon
 - TODO: GeometryCollection
 
