@@ -137,7 +137,7 @@ def __dump_multipoint(obj, fmt):
     """
     Dump a GeoJSON-like MultiPoint object to WKT.
 
-    Input parameters and return value are the POLYGON equivalent to
+    Input parameters and return value are the MULTIPOINT equivalent to
     :func:`__dump_point`.
     """
     coords = obj['coordinates']
