@@ -3,7 +3,8 @@ GeoMet [![Build Status](https://secure.travis-ci.org/larsbutler/geomet.png?branc
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
-Text/Binary), and vice versa.
+Text/Binary), and vice versa. Conversion functions are exposed through
+idiomatic `load/loads/dump/dumps` interfaces.
 
 The name "GeoMet" was inspired by "met", the German word for
 [mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
