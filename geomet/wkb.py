@@ -1,4 +1,5 @@
 import struct
+import binascii
 from itertools import chain
 
 from geomet.util import block_splitter
@@ -166,14 +167,14 @@ def loads(string):
     """
     Construct a GeoJson `dict` from WKB (`string`).
     """
-    endianness = ord(string[0])
-    if endianness == 0:
+    endianness = string[0:1]
+    if endianness == BIG_ENDIAN:
         big_endian = True
-    elif endianness == 1:
+    elif endianness == LITTLE_ENDIAN:
         big_endian = False
     else:
         raise ValueError("Invalid endian byte: '0x%s'. Expected 0x00 or 0x01"
-                         % hex(endianness))
+                         % binascii.hexlify(endianness.encode()).decode())
 
     type_bytes = string[1:5]
     if not big_endian:
