@@ -5,23 +5,23 @@ from geomet.util import block_splitter
 
 #: '\x00': The first byte of any WKB string. Indicates big endian byte
 #: ordering for the data.
-BIG_ENDIAN = '\x00'
+BIG_ENDIAN = b'\x00'
 #: '\x01': The first byte of any WKB string. Indicates little endian byte
 #: ordering for the data.
-LITTLE_ENDIAN = '\x01'
+LITTLE_ENDIAN = b'\x01'
 
 #: Mapping of GeoJSON geometry types to the "2D" 4-byte binary string
 #: representation for WKB. "2D" indicates that the geometry is 2-dimensional,
 #: X and Y components.
 #: NOTE: Byte ordering is big endian.
 WKB_2D = {
-    'Point': '\x00\x00\x00\x01',
-    'LineString': '\x00\x00\x00\x02',
-    'Polygon': '\x00\x00\x00\x03',
-    'MultiPoint': '\x00\x00\x00\x04',
-    'MultiLineString': '\x00\x00\x00\x05',
-    'MultiPolygon': '\x00\x00\x00\x06',
-    'GeometryCollection': '\x00\x00\x00\x07',
+    'Point': b'\x00\x00\x00\x01',
+    'LineString': b'\x00\x00\x00\x02',
+    'Polygon': b'\x00\x00\x00\x03',
+    'MultiPoint': b'\x00\x00\x00\x04',
+    'MultiLineString': b'\x00\x00\x00\x05',
+    'MultiPolygon': b'\x00\x00\x00\x06',
+    'GeometryCollection': b'\x00\x00\x00\x07',
 }
 
 #: Mapping of GeoJSON geometry types to the "Z" 4-byte binary string
@@ -29,13 +29,13 @@ WKB_2D = {
 #: with X, Y, and Z components.
 #: NOTE: Byte ordering is big endian.
 WKB_Z = {
-    'Point': '\x00\x00\x10\x01',
-    'LineString': '\x00\x00\x10\x02',
-    'Polygon': '\x00\x00\x10\x03',
-    'MultiPoint': '\x00\x00\x10\x04',
-    'MultiLineString': '\x00\x00\x10\x05',
-    'MultiPolygon': '\x00\x00\x10\x06',
-    'GeometryCollection': '\x00\x00\x10\x07',
+    'Point': b'\x00\x00\x10\x01',
+    'LineString': b'\x00\x00\x10\x02',
+    'Polygon': b'\x00\x00\x10\x03',
+    'MultiPoint': b'\x00\x00\x10\x04',
+    'MultiLineString': b'\x00\x00\x10\x05',
+    'MultiPolygon': b'\x00\x00\x10\x06',
+    'GeometryCollection': b'\x00\x00\x10\x07',
 }
 
 #: Mapping of GeoJSON geometry types to the "M" 4-byte binary string
@@ -43,13 +43,13 @@ WKB_Z = {
 #: with X, Y, and M ("Measure") components.
 #: NOTE: Byte ordering is big endian.
 WKB_M = {
-    'Point': '\x00\x00\x20\x01',
-    'LineString': '\x00\x00\x20\x02',
-    'Polygon': '\x00\x00\x20\x03',
-    'MultiPoint': '\x00\x00\x20\x04',
-    'MultiLineString': '\x00\x00\x20\x05',
-    'MultiPolygon': '\x00\x00\x20\x06',
-    'GeometryCollection': '\x00\x00\x20\x07',
+    'Point': b'\x00\x00\x20\x01',
+    'LineString': b'\x00\x00\x20\x02',
+    'Polygon': b'\x00\x00\x20\x03',
+    'MultiPoint': b'\x00\x00\x20\x04',
+    'MultiLineString': b'\x00\x00\x20\x05',
+    'MultiPolygon': b'\x00\x00\x20\x06',
+    'GeometryCollection': b'\x00\x00\x20\x07',
 }
 
 #: Mapping of GeoJSON geometry types to the "ZM" 4-byte binary string
@@ -57,13 +57,13 @@ WKB_M = {
 #: with X, Y, Z, and M ("Measure") components.
 #: NOTE: Byte ordering is big endian.
 WKB_ZM = {
-    'Point': '\x00\x00\x30\x01',
-    'LineString': '\x00\x00\x30\x02',
-    'Polygon': '\x00\x00\x30\x03',
-    'MultiPoint': '\x00\x00\x30\x04',
-    'MultiLineString': '\x00\x00\x30\x05',
-    'MultiPolygon': '\x00\x00\x30\x06',
-    'GeometryCollection': '\x00\x00\x30\x07',
+    'Point': b'\x00\x00\x30\x01',
+    'LineString': b'\x00\x00\x30\x02',
+    'Polygon': b'\x00\x00\x30\x03',
+    'MultiPoint': b'\x00\x00\x30\x04',
+    'MultiLineString': b'\x00\x00\x30\x05',
+    'MultiPolygon': b'\x00\x00\x30\x06',
+    'GeometryCollection': b'\x00\x00\x30\x07',
 }
 
 #: Mapping of dimension types to maps of GeoJSON geometry type -> 4-byte binary
@@ -79,7 +79,7 @@ __WKB = {
 #: geometry type.
 #: NOTE: Byte ordering is big endian.
 __BINARY_TO_GEOM_TYPE = dict(
-    chain(*((reversed(x) for x in wkb_map.iteritems())
+    chain(*((reversed(x) for x in wkb_map.items())
             for wkb_map in __WKB.values()))
 )
 
@@ -166,14 +166,14 @@ def loads(string):
     """
     Construct a GeoJson `dict` from WKB (`string`).
     """
-    endianness = string[0]
-    if endianness == BIG_ENDIAN:
+    endianness = ord(string[0])
+    if endianness == 0:
         big_endian = True
-    elif endianness == LITTLE_ENDIAN:
+    elif endianness == 1:
         big_endian = False
     else:
         raise ValueError("Invalid endian byte: '0x%s'. Expected 0x00 or 0x01"
-                         % endianness.encode('hex'))
+                         % hex(endianness))
 
     type_bytes = string[1:5]
     if not big_endian:
@@ -207,7 +207,7 @@ def __dump_point(obj, big_endian):
     :returns:
         A WKB binary string representing of the Point ``obj``.
     """
-    wkb_string = ''
+    wkb_string = b''
 
     if big_endian:
         wkb_string += BIG_ENDIAN
@@ -247,7 +247,7 @@ def __dump_linestring(obj, big_endian):
 
     Input parameters and output are similar to :func:`__dump_point`.
     """
-    wkb_string = ''
+    wkb_string = b''
 
     if big_endian:
         wkb_string += BIG_ENDIAN
@@ -330,7 +330,7 @@ def __load_point(big_endian, type_bytes, data_bytes):
 def __load_linestring(big_endian, type_bytes, data_bytes):
     endian_token = '>' if big_endian else '<'
 
-    num_vals = len(data_bytes) / 8  # 8 bytes per float val
+    num_vals = int(len(data_bytes) / 8)  # 8 bytes per float val
     values = struct.unpack('%s%s' % (endian_token, 'd' * num_vals),
                            data_bytes)
 
