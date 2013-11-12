@@ -1,5 +1,10 @@
-import StringIO
 import tokenize
+
+try:
+    import StringIO
+except ImportError:
+    import io
+    StringIO = io
 
 
 INVALID_WKT_FMT = 'Invalid WKT: `%s`'
@@ -53,7 +58,7 @@ def loads(string):
     # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
     tokens = __tokenize_wkt(tokens)
-    geom_type = tokens.next()
+    geom_type = next(tokens)
 
     importer = __loads_registry.get(geom_type)
 
@@ -224,7 +229,7 @@ def __load_point(tokens, string):
     :returns:
         A GeoJSON `dict` Point representation of the WKT ``string``.
     """
-    if not tokens.next() == '(':
+    if not next(tokens) == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
     coords = []
@@ -248,7 +253,7 @@ def __load_linestring(tokens, string):
     :returns:
         A GeoJSON `dict` LineString representation of the WKT ``string``.
     """
-    if not tokens.next() == '(':
+    if not next(tokens) == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
     # a list of lists
@@ -280,7 +285,7 @@ def __load_polygon(tokens, string):
     :returns:
         A GeoJSON `dict` Polygon representation of the WKT ``string``.
     """
-    open_parens = tokens.next(), tokens.next()
+    open_parens = next(tokens), next(tokens)
     if not open_parens == ('(', '('):
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -331,7 +336,7 @@ def __load_multipoint(tokens, string):
     :returns:
         A GeoJSON `dict` MultiPoint representation of the WKT ``string``.
     """
-    open_paren = tokens.next()
+    open_paren = next(tokens)
     if not open_paren == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -374,7 +379,7 @@ def __load_multipolygon(tokens, string):
     :returns:
         A GeoJSON `dict` MultiPolygon representation of the WKT ``string``.
     """
-    open_paren = tokens.next()
+    open_paren = next(tokens)
     if not open_paren == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -383,7 +388,7 @@ def __load_multipolygon(tokens, string):
         try:
             poly = __load_polygon(tokens, string)
             polygons.append(poly['coordinates'])
-            t = tokens.next()
+            t = next(tokens)
             if t == ')':
                 # we're done; no more polygons.
                 break
@@ -402,7 +407,7 @@ def __load_multilinestring(tokens, string):
     :returns:
         A GeoJSON `dict` MultiLineString representation of the WKT ``string``.
     """
-    open_paren = tokens.next()
+    open_paren = next(tokens)
     if not open_paren == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -411,7 +416,7 @@ def __load_multilinestring(tokens, string):
         try:
             linestr = __load_linestring(tokens, string)
             linestrs.append(linestr['coordinates'])
-            t = tokens.next()
+            t = next(tokens)
             if t == ')':
                 # we're done; no more linestrings.
                 break
@@ -433,7 +438,7 @@ def __load_geometrycollection(tokens, string):
         A GeoJSON `dict` GeometryCollection representation of the WKT
         ``string``.
     """
-    open_paren = tokens.next()
+    open_paren = next(tokens)
     if not open_paren == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
@@ -441,7 +446,7 @@ def __load_geometrycollection(tokens, string):
     result = dict(type='GeometryCollection', geometries=geoms)
     while True:
         try:
-            t = tokens.next()
+            t = next(tokens)
             if t == ')':
                 break
             elif t == ',':

@@ -59,7 +59,7 @@ class WKTTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as ar:
             wkt.dumps(geom)
         self.assertEqual("Unsupported geometry type 'Tetrahedron'",
-                         ar.exception.message)
+                         str(ar.exception))
 
 
 class PointDumpsTestCase(unittest.TestCase):
@@ -110,13 +110,13 @@ class PointLoadsTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as ar:
             wkt.loads(pt)
         self.assertEqual('Invalid WKT: `POINT (0.0 1.0`',
-                         ar.exception.message)
+                         str(ar.exception))
 
     def test_raises_invalid_wkt(self):
         pt = 'POINT 0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(pt)
-        self.assertEqual('Invalid WKT: `POINT 0.0 1.0`', ar.exception.message)
+        self.assertEqual('Invalid WKT: `POINT 0.0 1.0`', str(ar.exception))
 
 
 class LineStringDumpsTestCase(unittest.TestCase):
@@ -172,14 +172,14 @@ class LineStringLoadsTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as ar:
             wkt.loads(ls)
         self.assertEqual('Invalid WKT: `LINESTRING (0.0 1.0`',
-                         ar.exception.message)
+                         str(ar.exception))
 
     def test_raises_invalid_wkt(self):
         ls = 'LINESTRING 0.0 1.0'
         with self.assertRaises(ValueError) as ar:
             wkt.loads(ls)
         self.assertEqual('Invalid WKT: `LINESTRING 0.0 1.0`',
-                         ar.exception.message)
+                         str(ar.exception))
 
 
 class PolygonDumpsTestCase(unittest.TestCase):
@@ -257,7 +257,7 @@ class PolygonLoadsTestCase(unittest.TestCase):
             wkt.loads(poly)
         self.assertEqual(
             'Invalid WKT: `POLYGON ((0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0)`',
-            ar.exception.message
+            str(ar.exception)
         )
 
     def test_raises_invalid_wkt(self):
@@ -266,7 +266,7 @@ class PolygonLoadsTestCase(unittest.TestCase):
             wkt.loads(poly)
         self.assertEqual(
             'Invalid WKT: `POLYGON 0.0 0.0, 1.0 4.0, 4.0 1.0, 0.0 0.0))`',
-            ar.exception.message
+            str(ar.exception)
         )
 
 
@@ -398,7 +398,8 @@ class MultiLineStringLoadsTestCase(unittest.TestCase):
 
 class GeometryCollectionDumpsTestCase(unittest.TestCase):
 
-    def test(self): pass
+    def test(self):
+        pass
 
 
 class GeometryCollectionLoadsTestCase(unittest.TestCase):
