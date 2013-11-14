@@ -197,7 +197,7 @@ def __unsupported_geom_type(geom_type):
 
 def __dump_point(obj, big_endian):
     """
-    Dump a GeoJSON-like `dict` to a WKB string.
+    Dump a GeoJSON-like `dict` to a point WKB string.
 
     :param dict obj:
         GeoJson-like `dict` object.
@@ -244,7 +244,7 @@ def __dump_point(obj, big_endian):
 
 def __dump_linestring(obj, big_endian):
     """
-    Dump a GeoJSON-like `dict` to a WKB string.
+    Dump a GeoJSON-like `dict` to a linestring WKB string.
 
     Input parameters and output are similar to :func:`__dump_point`.
     """
