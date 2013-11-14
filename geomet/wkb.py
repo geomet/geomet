@@ -281,9 +281,57 @@ def __dump_linestring(obj, big_endian):
     return wkb_string
 
 
+def __dump_polygon(obj, big_endian):
+    """
+    Dump a GeoJSON-like `dict` to a polygon WKB string.
+
+    Input parameters and output are similar to :funct:`__dump_point`.
+    """
+    wkb_string = ''
+
+    if big_endian:
+        wkb_string += BIG_ENDIAN
+        end_fmt = '>'
+    else:
+        wkb_string += LITTLE_ENDIAN
+        end_fmt = '<'
+
+    coords = obj['coordinates']
+    vertex = coords[0][0]
+    # Infer the number of dimensions from the first vertex
+    num_dims = len(vertex)
+    if num_dims == 2:
+        type_byte_str = __WKB['2D']['Polygon']
+    elif num_dims == 3:
+        type_byte_str = __WKB['Z']['Polygon']
+    elif num_dims == 4:
+        type_byte_str = __WKB['ZM']['Polygon']
+    else:
+        pass
+        # TODO: raise
+    if not big_endian:
+        # reverse the byte ordering for little endian
+        type_byte_str = type_byte_str[::-1]
+    wkb_string += type_byte_str
+
+    byte_fmt = end_fmt + 'd' * num_dims
+
+    # number of rings:
+    import nose; nose.tools.set_trace()
+    wkb_string += struct.pack('%sl' % end_fmt, len(coords))
+    for ring in coords:
+        # number of verts in this ring:
+        wkb_string += struct.pack('%sl' % end_fmt, len(ring))
+        for vertex in ring:
+            wkb_string += struct.pack(byte_fmt, *vertex)
+
+    return wkb_string
+
+
 __dumps_registry = {
     'Point': __dump_point,
     'LineString': __dump_linestring,
+    'Polygon': __dump_polygon,
 }
 
 
