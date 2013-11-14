@@ -212,8 +212,10 @@ def __dump_point(obj, big_endian):
 
     if big_endian:
         wkb_string += BIG_ENDIAN
+        byte_fmt = '>'
     else:
         wkb_string += LITTLE_ENDIAN
+        byte_fmt = '<'
 
     coords = obj['coordinates']
     num_dims = len(coords)
@@ -232,10 +234,6 @@ def __dump_point(obj, big_endian):
         type_byte_str = type_byte_str[::-1]
     wkb_string += type_byte_str
 
-    if big_endian:
-        byte_fmt = '>'
-    else:
-        byte_fmt = '<'
     byte_fmt += 'd' * num_dims
 
     wkb_string += struct.pack(byte_fmt, *coords)
@@ -252,8 +250,10 @@ def __dump_linestring(obj, big_endian):
 
     if big_endian:
         wkb_string += BIG_ENDIAN
+        byte_fmt = '>'
     else:
         wkb_string += LITTLE_ENDIAN
+        byte_fmt = '<'
 
     coords = obj['coordinates']
     vertex = coords[0]
@@ -273,10 +273,6 @@ def __dump_linestring(obj, big_endian):
         type_byte_str = type_byte_str[::-1]
     wkb_string += type_byte_str
 
-    if big_endian:
-        byte_fmt = '>'
-    else:
-        byte_fmt = '<'
     byte_fmt += 'd' * num_dims
 
     for vertex in coords:
