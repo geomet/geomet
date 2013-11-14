@@ -225,3 +225,44 @@ class LineStringLoadsTestCase(unittest.TestCase):
                                      [-3.1, 5.1, 20.0, -0.9]])
 
         self.assertEqual(expected, wkb.loads(linestring))
+
+
+class PolygonDumpsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        poly = dict(type='Polygon', coordinates=[
+            [[100.001, 0.001], [101.12345, 0.001], [101.001, 1.001],
+             [100.001, 0.001]],
+            [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+             [100.201, 0.201]],
+        ])
+        expected = (
+            b'\x00'
+            b'\x00\x00\x00\x03'  # type
+            # number of rings, 4 byte int
+            b'\x00\x00\x00\x02'
+            # number of verts in ring (4)
+            b'\x00\x00\x00\x04'
+            # coords
+            b'@Y\x00\x10bM\xd2\xf2'     # 100.001
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            b'@YG\xe6\x9a\xd4,='        # 101.12345
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            b'@Y@\x10bM\xd2\xf2'        # 101.001
+            b'?\xf0\x04\x18\x93t\xbcj'  # 1.001
+            b'@Y\x00\x10bM\xd2\xf2'     # 100.001
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            # number of verts in ring (4)
+            b'\x00\x00\x00\x04'
+            # coords
+            b'@Y\x0c\xdd/\x1a\x9f\xbe'     # 100.201
+            b'?\xc9\xba^5?|\xee'           # 0.201
+            b'@Y3C\x95\x81\x06%'           # 100.801
+            b'?\xc9\xba^5?|\xee'           # 0.201
+            b'@Y3C\x95\x81\x06%'           # 100.801
+            b'?\xe9\xa1\xca\xc0\x83\x12o'  # 0.801
+            b'@Y\x0c\xdd/\x1a\x9f\xbe'     # 100.201
+            b'?\xc9\xba^5?|\xee'           # 0.201
+
+        )
+        self.assertEqual(expected, wkb.dumps(poly))
