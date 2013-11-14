@@ -190,9 +190,9 @@ def __dump_multipolygon(obj, fmt):
                 '(%s)' % ', '.join(
                     # join coordinate values of a vertex
                     ' '.join(fmt % c for c in pt)
-                for pt in ring)
-            for ring in poly)
-        for poly in coords)
+                    for pt in ring)
+                for ring in poly)
+            for poly in coords)
     )
     mp %= polys
     return mp
