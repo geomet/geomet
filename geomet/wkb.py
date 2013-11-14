@@ -317,7 +317,6 @@ def __dump_polygon(obj, big_endian):
     byte_fmt = end_fmt + 'd' * num_dims
 
     # number of rings:
-    import nose; nose.tools.set_trace()
     wkb_string += struct.pack('%sl' % end_fmt, len(coords))
     for ring in coords:
         # number of verts in this ring:
