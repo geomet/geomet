@@ -287,7 +287,7 @@ def __dump_polygon(obj, big_endian):
 
     Input parameters and output are similar to :funct:`__dump_point`.
     """
-    wkb_string = ''
+    wkb_string = b''
 
     if big_endian:
         wkb_string += BIG_ENDIAN
