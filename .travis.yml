@@ -3,6 +3,6 @@ python:
   - "2.7"
   - "3.3"
 install:
-  - "pip install coverage"  # for running tests only
+  - "pip install tox"  # for running tests only
   - "python setup.py -q install"
-script: nosetests --with-doctest --with-coverage --cover-package=geomet
+script: tox
