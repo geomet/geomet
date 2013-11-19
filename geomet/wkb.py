@@ -327,11 +327,6 @@ def __dump_polygon(obj, big_endian):
     return wkb_string
 
 
-__dumps_registry = {
-    'Point': __dump_point,
-    'LineString': __dump_linestring,
-    'Polygon': __dump_polygon,
-}
 
 
 def __load_point(big_endian, type_bytes, data_bytes):
@@ -393,7 +388,23 @@ def __load_linestring(big_endian, type_bytes, data_bytes):
     return dict(type='LineString', coordinates=list(coords))
 
 
+__dumps_registry = {
+    'Point':  __dump_point,
+    'LineString': __dump_linestring,
+    'Polygon': __dump_polygon,
+    #'MultiPoint': __dump_multipoint,
+    #'MultiLineString': __dump_multilinestring,
+    #'MultiPolygon': __dump_multipolygon,
+    #'GeometryCollection': __dump_geometrycollection,
+}
+
+
 __loads_registry = {
     'Point': __load_point,
     'LineString': __load_linestring,
+    #'Polygon': __load_polygon,
+    #'MultiPoint': __load_multipoint,
+    #'MultiLineString': __load_multilinestring,
+    #'MultiPolygon': __load_multipolygon,
+    #'GeometryCollection': __load_geometrycollection,
 }
