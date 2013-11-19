@@ -19,10 +19,12 @@ class PointDumpsTestCase(unittest.TestCase):
         # Tests a typical 2D Point case:
         pt = dict(type='Point', coordinates=[0.0, 1.0])
 
-        expected = (b'\x01'  # little endian
-                    b'\x01\x00\x00\x00'  # type
-                    b'\x00\x00\x00\x00\x00\x00\x00\x00'
-                    b'\x00\x00\x00\x00\x00\x00\xf0?')
+        expected = (
+            b'\x01'  # little endian
+            b'\x01\x00\x00\x00'  # type
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+        )
 
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
@@ -32,11 +34,13 @@ class PointDumpsTestCase(unittest.TestCase):
         # Note that a 3d point could either be a XYZ or XYM type.
         # For simplicity, we always assume XYZ.
 
-        expected = (b'\x00'  # big endian
-                    b'\x00\x00\x10\x01'  # type
-                    b'\x00\x00\x00\x00\x00\x00\x00\x00'
-                    b'?\xf0\x00\x00\x00\x00\x00\x00'
-                    b'@\x00\x00\x00\x00\x00\x00\x00')
+        expected = (
+            b'\x00'  # big endian
+            b'\x00\x00\x10\x01'  # type
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'@\x00\x00\x00\x00\x00\x00\x00'
+        )
 
         self.assertEqual(expected, wkb.dumps(pt, big_endian=True))
 
@@ -44,12 +48,14 @@ class PointDumpsTestCase(unittest.TestCase):
         # Test for an XYZM Point:
         pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
 
-        expected = (b'\x01'  # little endian
-                    b'\x01\x30\x00\x00'  # type
-                    b'\x00\x00\x00\x00\x00\x00\x00\x00'
-                    b'\x00\x00\x00\x00\x00\x00\xf0?'
-                    b'\x00\x00\x00\x00\x00\x00\x00@'
-                    b'\x00\x00\x00\x00\x00\x00\x10@')
+        expected = (
+            b'\x01'  # little endian
+            b'\x01\x30\x00\x00'  # type
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\x10@'
+        )
 
         self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
 
