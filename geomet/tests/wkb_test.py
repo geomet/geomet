@@ -272,3 +272,30 @@ class PolygonDumpsTestCase(unittest.TestCase):
 
         )
         self.assertEqual(expected, wkb.dumps(poly))
+
+
+class MultiPointDumpsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        mp = dict(type='MultiPoint', coordinates=[
+            [2.2, 4.4], [10.0, 3.1], [5.1, 20.0],
+        ])
+        expected = (
+            b'\x01'  # little endian
+            b'\x04\x00\x00\x00'
+            # number of points: 3
+            b'\x03\x00\x00\x00'
+            # point 2d
+            b'\x01\x00\x00\x00'
+            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            # point 2d
+            b'\x01\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            # point 2d
+            b'\x01\x00\x00\x00'
+            b'ffffff\x14@'                    # 5.1
+            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
+        )
+        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
