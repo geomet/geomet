@@ -327,6 +327,50 @@ def __dump_polygon(obj, big_endian):
     return wkb_string
 
 
+def __dump_multipoint(obj, big_endian):
+    """
+    Dump a GeoJSON-like `dict` to a multipoint WKB string.
+
+    Input parameters and output are similar to :funct:`__dump_point`.
+    """
+    wkb_string = b''
+
+    if big_endian:
+        wkb_string += BIG_ENDIAN
+        end_fmt = '>'
+    else:
+        wkb_string += LITTLE_ENDIAN
+        end_fmt = '<'
+
+    coords = obj['coordinates']
+    vertex = coords[0]
+    num_dims = len(vertex)
+    if num_dims == 2:
+        type_byte_str = __WKB['2D']['MultiPoint']
+        point_type = __WKB['2D']['Point']
+    elif num_dims == 3:
+        type_byte_str = __WKB['Z']['MultiPoint']
+        point_type = __WKB['Z']['Point']
+    elif num_dims == 4:
+        type_byte_str = __WKB['ZM']['MultiPoint']
+        point_type = __WKB['ZM']['Point']
+    else:
+        pass
+        # TODO: raise
+    if not big_endian:
+        type_byte_str = type_byte_str[::-1]
+        point_type = point_type[::-1]
+    wkb_string += type_byte_str
+
+    byte_fmt = end_fmt + 'd' * num_dims
+
+    wkb_string += struct.pack('%sl' % end_fmt, len(coords))
+    for vertex in coords:
+        # POINT type strings
+        wkb_string += point_type
+        wkb_string += struct.pack(byte_fmt, *vertex)
+
+    return wkb_string
 
 
 def __load_point(big_endian, type_bytes, data_bytes):
@@ -392,7 +436,7 @@ __dumps_registry = {
     'Point':  __dump_point,
     'LineString': __dump_linestring,
     'Polygon': __dump_polygon,
-    #'MultiPoint': __dump_multipoint,
+    'MultiPoint': __dump_multipoint,
     #'MultiLineString': __dump_multilinestring,
     #'MultiPolygon': __dump_multipolygon,
     #'GeometryCollection': __dump_geometrycollection,
