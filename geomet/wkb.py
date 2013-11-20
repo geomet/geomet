@@ -84,6 +84,8 @@ __BINARY_TO_GEOM_TYPE = dict(
             for wkb_map in __WKB.values()))
 )
 
+__INT_TO_DIM_LABEL = {2: '2D', 3: 'Z', 4: 'ZM'}
+
 
 def dump(obj, dest_file):
     """
@@ -195,6 +197,34 @@ def __unsupported_geom_type(geom_type):
     raise ValueError("Unsupported geometry type '%s'" % geom_type)
 
 
+def __header_bytefmt_byteorder(geom_type, num_dims, big_endian):
+    """
+    Utility function to get the WKB header (endian byte + type header), byte
+    format string, and byte order string.
+    """
+    dim = __INT_TO_DIM_LABEL.get(num_dims)
+    if dim is None:
+        pass  # TODO: raise
+
+    type_byte_str = __WKB[dim][geom_type]
+
+    if big_endian:
+        header = BIG_ENDIAN
+        byte_fmt = b'>'
+        byte_order = '>'
+    else:
+        header = LITTLE_ENDIAN
+        byte_fmt = b'<'
+        byte_order = '<'
+        # reverse the byte ordering for little endian
+        type_byte_str = type_byte_str[::-1]
+
+    header += type_byte_str
+    byte_fmt += b'd' * num_dims
+
+    return header, byte_fmt, byte_order
+
+
 def __dump_point(obj, big_endian):
     """
     Dump a GeoJSON-like `dict` to a point WKB string.
@@ -208,33 +238,12 @@ def __dump_point(obj, big_endian):
     :returns:
         A WKB binary string representing of the Point ``obj``.
     """
-    wkb_string = b''
-
-    if big_endian:
-        wkb_string += BIG_ENDIAN
-        byte_fmt = '>'
-    else:
-        wkb_string += LITTLE_ENDIAN
-        byte_fmt = '<'
-
     coords = obj['coordinates']
     num_dims = len(coords)
-    if num_dims == 2:
-        type_byte_str = __WKB['2D']['Point']
-    elif num_dims == 3:
-        type_byte_str = __WKB['Z']['Point']
-    elif num_dims == 4:
-        type_byte_str = __WKB['ZM']['Point']
-    else:
-        pass
-        # TODO: raise
 
-    if not big_endian:
-        # reverse the byte ordering for little endian
-        type_byte_str = type_byte_str[::-1]
-    wkb_string += type_byte_str
-
-    byte_fmt += 'd' * num_dims
+    wkb_string, byte_fmt, _ = __header_bytefmt_byteorder(
+        'Point', num_dims, big_endian
+    )
 
     wkb_string += struct.pack(byte_fmt, *coords)
     return wkb_string
@@ -246,34 +255,14 @@ def __dump_linestring(obj, big_endian):
 
     Input parameters and output are similar to :func:`__dump_point`.
     """
-    wkb_string = b''
-
-    if big_endian:
-        wkb_string += BIG_ENDIAN
-        byte_fmt = '>'
-    else:
-        wkb_string += LITTLE_ENDIAN
-        byte_fmt = '<'
-
     coords = obj['coordinates']
     vertex = coords[0]
     # Infer the number of dimensions from the first vertex
     num_dims = len(vertex)
-    if num_dims == 2:
-        type_byte_str = __WKB['2D']['LineString']
-    elif num_dims == 3:
-        type_byte_str = __WKB['Z']['LineString']
-    elif num_dims == 4:
-        type_byte_str = __WKB['ZM']['LineString']
-    else:
-        pass
-        # TODO: raise
-    if not big_endian:
-        # reverse the byte ordering for little endian
-        type_byte_str = type_byte_str[::-1]
-    wkb_string += type_byte_str
 
-    byte_fmt += 'd' * num_dims
+    wkb_string, byte_fmt, _ = __header_bytefmt_byteorder(
+        'LineString', num_dims, big_endian
+    )
 
     for vertex in coords:
         wkb_string += struct.pack(byte_fmt, *vertex)
@@ -287,40 +276,20 @@ def __dump_polygon(obj, big_endian):
 
     Input parameters and output are similar to :funct:`__dump_point`.
     """
-    wkb_string = b''
-
-    if big_endian:
-        wkb_string += BIG_ENDIAN
-        end_fmt = '>'
-    else:
-        wkb_string += LITTLE_ENDIAN
-        end_fmt = '<'
-
     coords = obj['coordinates']
     vertex = coords[0][0]
     # Infer the number of dimensions from the first vertex
     num_dims = len(vertex)
-    if num_dims == 2:
-        type_byte_str = __WKB['2D']['Polygon']
-    elif num_dims == 3:
-        type_byte_str = __WKB['Z']['Polygon']
-    elif num_dims == 4:
-        type_byte_str = __WKB['ZM']['Polygon']
-    else:
-        pass
-        # TODO: raise
-    if not big_endian:
-        # reverse the byte ordering for little endian
-        type_byte_str = type_byte_str[::-1]
-    wkb_string += type_byte_str
 
-    byte_fmt = end_fmt + 'd' * num_dims
+    wkb_string, byte_fmt, byte_order = __header_bytefmt_byteorder(
+        'Polygon', num_dims, big_endian
+    )
 
     # number of rings:
-    wkb_string += struct.pack('%sl' % end_fmt, len(coords))
+    wkb_string += struct.pack('%sl' % byte_order, len(coords))
     for ring in coords:
         # number of verts in this ring:
-        wkb_string += struct.pack('%sl' % end_fmt, len(ring))
+        wkb_string += struct.pack('%sl' % byte_order, len(ring))
         for vertex in ring:
             wkb_string += struct.pack(byte_fmt, *vertex)
 
@@ -333,38 +302,19 @@ def __dump_multipoint(obj, big_endian):
 
     Input parameters and output are similar to :funct:`__dump_point`.
     """
-    wkb_string = b''
-
-    if big_endian:
-        wkb_string += BIG_ENDIAN
-        end_fmt = '>'
-    else:
-        wkb_string += LITTLE_ENDIAN
-        end_fmt = '<'
-
     coords = obj['coordinates']
     vertex = coords[0]
     num_dims = len(vertex)
-    if num_dims == 2:
-        type_byte_str = __WKB['2D']['MultiPoint']
-        point_type = __WKB['2D']['Point']
-    elif num_dims == 3:
-        type_byte_str = __WKB['Z']['MultiPoint']
-        point_type = __WKB['Z']['Point']
-    elif num_dims == 4:
-        type_byte_str = __WKB['ZM']['MultiPoint']
-        point_type = __WKB['ZM']['Point']
-    else:
-        pass
-        # TODO: raise
+
+    wkb_string, byte_fmt, byte_order = __header_bytefmt_byteorder(
+        'MultiPoint', num_dims, big_endian
+    )
+
+    point_type = __WKB[__INT_TO_DIM_LABEL.get(num_dims)]['Point']
     if not big_endian:
-        type_byte_str = type_byte_str[::-1]
         point_type = point_type[::-1]
-    wkb_string += type_byte_str
 
-    byte_fmt = end_fmt + 'd' * num_dims
-
-    wkb_string += struct.pack('%sl' % end_fmt, len(coords))
+    wkb_string += struct.pack('%sl' % byte_order, len(coords))
     for vertex in coords:
         # POINT type strings
         wkb_string += point_type
