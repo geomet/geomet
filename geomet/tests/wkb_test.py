@@ -412,6 +412,85 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'\x04\x10\x00\x00'
             # number of points: 3
             b'\x03\x00\x00\x00'
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x10\x00\x00'
+            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            b'\x00\x00\x00\x00\x00\x00\x08@'  # 3.0
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x10\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            b'\x00\x00\x00\x00\x00\x00\x00@'  # 2.0
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x10\x00\x00'
+            b'ffffff\x14@'                    # 5.1
+            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+        )
+        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
+
+    def test_4d(self):
+        mp = dict(type='MultiPoint', coordinates=[
+            [2.2, 4.4, 0.0, 3.0], [10.0, 3.1, 0.0, 2.0], [5.1, 20.0, 0.0, 4.4],
+        ])
+        expected = (
+            b'\x01'  # little endian
+            b'\x04\x30\x00\x00'
+            # number of points: 3
+            b'\x03\x00\x00\x00'
+            # point 4d
+            b'\x01'  # little endian
+            b'\x01\x30\x00\x00'
+            b'\x9a\x99\x99\x99\x99\x99\x01@'     # 2.2
+            b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'\x00\x00\x00\x00\x00\x00\x08@'     # 3.0
+            # point 4d
+            b'\x01'  # little endian
+            b'\x01\x30\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00$@'        # 10.0
+            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'     # 3.1
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'\x00\x00\x00\x00\x00\x00\x00@'     # 2.0
+            # point 4d
+            b'\x01'  # little endian
+            b'\x01\x30\x00\x00'
+            b'ffffff\x14@'                       # 5.1
+            b'\x00\x00\x00\x00\x00\x004@'        # 20.0
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
+        )
+        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
+
+
+@unittest.skip
+class MultiLineStringTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        mls = dict(type='MultiLineString', coordinates=[
+            [2.2, 4.4], [10.0, 3.1], [5.1, 20.0],
+        ])
+        expected = (
+            b'\x00'
+            b'\x00\x00\x00\x05'
+            # number of points: 3
+            b'\x00\x00\x00\x03'
+        )
+        self.assertEqual(expected, wkb.dumps(mls, big_endian=False))
+
+    def test_3d(self):
+        mls = dict(type='MultiLineString', coordinates=[
+            [2.2, 4.4, 3.0], [10.0, 3.1, 2.0], [5.1, 20.0, 4.4],
+        ])
+        expected = (
+            b'\x01'  # little endian
+            b'\x04\x10\x00\x00'
+            # number of points: 3
+            b'\x03\x00\x00\x00'
             # point 2d
             b'\x01\x10\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
@@ -428,10 +507,10 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
+        self.assertEqual(expected, wkb.dumps(mls, big_endian=False))
 
     def test_4d(self):
-        mp = dict(type='MultiPoint', coordinates=[
+        mls = dict(type='MultiLineString', coordinates=[
             [2.2, 4.4, 0.0, 3.0], [10.0, 3.1, 0.0, 2.0], [5.1, 20.0, 0.0, 4.4],
         ])
         expected = (
@@ -458,4 +537,4 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
+        self.assertEqual(expected, wkb.dumps(mls, big_endian=False))
