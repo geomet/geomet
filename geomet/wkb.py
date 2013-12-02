@@ -311,8 +311,11 @@ def __dump_multipoint(obj, big_endian):
     )
 
     point_type = __WKB[__INT_TO_DIM_LABEL.get(num_dims)]['Point']
-    if not big_endian:
+    if big_endian:
+        point_type = BIG_ENDIAN + point_type
+    else:
         point_type = point_type[::-1]
+        point_type = LITTLE_ENDIAN + point_type
 
     wkb_string += struct.pack('%sl' % byte_order, len(coords))
     for vertex in coords:
