@@ -358,6 +358,15 @@ def __dump_multilinestring(obj, big_endian):
     return wkb_string
 
 
+def __dump_multipolygon(obj, big_endian):
+    """
+    Dump a GeoJSON-like `dict` to a multipolygon WKB string.
+
+    Input parameters and output are similar to :funct:`__dump_point`.
+    """
+    return ''
+
+
 def __load_point(big_endian, type_bytes, data_bytes):
     """
     Convert byte data for a Point to a GeoJSON `dict`.
