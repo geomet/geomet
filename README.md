@@ -15,7 +15,7 @@ dealing with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM').
 
 The following conversion functions are supported.
 
-GeoJSON -> WKT:
+WKT <--> GeoJSON:
 
 - Point
 - LineString
@@ -25,27 +25,7 @@ GeoJSON -> WKT:
 - MultiPolygon
 - GeometryCollection
 
-WKT -> GeoJSON:
-
-- Point
-- LineString
-- Polygon
-- MultiPoint
-- MultiLineString
-- MultiPolygon
-- GeometryCollection
-
-GeoJSON -> WKB:
-
-- Point
-- LineString
-- TODO: Polygon
-- TODO: MultiPoint
-- TODO: MultiLineString
-- TODO: MultiPolygon
-- TODO: GeometryCollection
-
-WKB -> GeoJSON:
+WKB <--> GeoJSON:
 
 - Point
 - LineString
