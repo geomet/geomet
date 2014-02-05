@@ -112,6 +112,7 @@ Example:
 
 - 1 byte int: endianness
 - 4 byte int: geometry type
+- 4 byte int: number of geometries in collection
 - bytes of the contained geometries
 
 Example:
