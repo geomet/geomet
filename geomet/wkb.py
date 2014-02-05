@@ -397,6 +397,39 @@ def __dump_multipolygon(obj, big_endian):
     return wkb_string
 
 
+def __dump_geometrycollection(obj, big_endian):
+    # TODO: handle empty collections
+    geoms = obj['geometries']
+    # determine the dimensionality (2d, 3d, 4d) of the collection
+    # by sampling the first geometry
+    first_geom = geoms[0]
+    rest = geoms[1:]
+
+    first_wkb = dumps(first_geom, big_endian=big_endian)
+    first_type = first_wkb[1:5]
+    if not big_endian:
+        first_type = first_type[::-1]
+
+    if first_type in WKB_2D.values():
+        num_dims = 2
+    elif first_type in WKB_Z.values():
+        num_dims = 3
+    elif first_type in WKB_ZM.values():
+        num_dims = 4
+
+    wkb_string, byte_fmt, byte_order = __header_bytefmt_byteorder(
+        'GeometryCollection', num_dims, big_endian
+    )
+    # append the number of geometries
+    wkb_string += struct.pack('%sl' % byte_order, len(geoms))
+
+    wkb_string += first_wkb
+    for geom in rest:
+        wkb_string += dumps(geom, big_endian=big_endian)
+
+    return wkb_string
+
+
 def __load_point(big_endian, type_bytes, data_bytes):
     """
     Convert byte data for a Point to a GeoJSON `dict`.
@@ -463,7 +496,7 @@ __dumps_registry = {
     'MultiPoint': __dump_multipoint,
     'MultiLineString': __dump_multilinestring,
     'MultiPolygon': __dump_multipolygon,
-    #'GeometryCollection': __dump_geometrycollection,
+    'GeometryCollection': __dump_geometrycollection,
 }
 
 
