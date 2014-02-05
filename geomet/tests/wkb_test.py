@@ -120,6 +120,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         expected = (
             b'\x00'  # big endian
             b'\x00\x00\x00\x02'  # type
+            b'\x00\x00\x00\x02'  # 2 vertices
             b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
             b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
@@ -134,6 +135,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         expected = (
             b'\x01'  # little endian
             b'\x02\x10\x00\x00'  # type
+            b'\x02\x00\x00\x00'  # 2 vertices
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
             b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
@@ -152,6 +154,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
         expected = (
             b'\x00'  # big endian
             b'\x00\x00\x30\x02'  # type
+            b'\x00\x00\x00\x02'  # 2 vertices
             b'@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
             b'\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
             b'\xc0$\x00\x00\x00\x00\x00\x00'     # -10.0
