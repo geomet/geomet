@@ -52,4 +52,5 @@ setup(
         'Topic :: Scientific/Engineering :: GIS',
     ),
     zip_safe=False,
+    install_requires=['six'],
 )
