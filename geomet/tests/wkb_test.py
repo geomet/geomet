@@ -467,7 +467,7 @@ class MultiPointDumpsTestCase(unittest.TestCase):
         self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
 
 
-class MultiLineStringTestCase(unittest.TestCase):
+class MultiLineStringDumpsTestCase(unittest.TestCase):
 
     def test_2d(self):
         mls = dict(type='MultiLineString', coordinates=[
