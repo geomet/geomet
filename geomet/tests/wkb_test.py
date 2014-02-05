@@ -778,3 +778,100 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
         )
         self.assertEqual(expected, wkb.dumps(mpoly, big_endian=False))
+
+
+class GeometryCollectionDumpsTestCase(unittest.TestCase):
+
+    def test_2d(self):
+        gc = dict(type='GeometryCollection', geometries=[
+            dict(type='Point', coordinates=[0.0, 1.0]),
+            dict(type='LineString', coordinates=[
+                [102.0, 2.0], [103.0, 3.0], [104.0, 4.0]
+            ]),
+        ])
+        expected = (
+            b'\x00'  # big endian
+            b'\x00\x00\x00\x07'  # 2d geometry collection
+            b'\x00\x00\x00\x02'  # 2 geometries in the collection
+            b'\x00'
+            b'\x00\x00\x00\x01'  # 2d point
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'\x00'
+            b'\x00\x00\x00\x02'  # 2d linestring
+            b'\x00\x00\x00\x03'  # 3 vertices
+            b'@Y\x80\x00\x00\x00\x00\x00'
+            b'@\x00\x00\x00\x00\x00\x00\x00'
+            b'@Y\xc0\x00\x00\x00\x00\x00'
+            b'@\x08\x00\x00\x00\x00\x00\x00'
+            b'@Z\x00\x00\x00\x00\x00\x00'
+            b'@\x10\x00\x00\x00\x00\x00\x00'
+        )
+        self.assertEqual(expected, wkb.dumps(gc))
+
+    def test_3d(self):
+        gc = dict(type='GeometryCollection', geometries=[
+            dict(type='Point', coordinates=[0.0, 1.0, 2.0]),
+            dict(type='LineString', coordinates=[
+                [102.0, 2.0, 6.0], [103.0, 3.0, 7.0], [104.0, 4.0, 8.0]
+            ]),
+        ])
+        expected = (
+            b'\x01'  # little endian
+            b'\x07\x10\x00\x00'  # 3d geometry collection
+            b'\x02\x00\x00\x00'  # 2 geometries in the collection
+            b'\x01'
+            b'\x01\x10\x00\x00'  # 3d point
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x01'
+            b'\x02\x10\x00\x00'  # 3d linestring
+            b'\x03\x00\x00\x00'  # 3 vertices
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\x18@'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x00\x1c@'
+            b'\x00\x00\x00\x00\x00\x00Z@'
+            b'\x00\x00\x00\x00\x00\x00\x10@'
+            b'\x00\x00\x00\x00\x00\x00 @'
+        )
+        self.assertEqual(expected, wkb.dumps(gc, big_endian=False))
+
+    def test_4d(self):
+        gc = dict(type='GeometryCollection', geometries=[
+            dict(type='Point', coordinates=[0.0, 1.0, 2.0, 3.0]),
+            dict(type='LineString', coordinates=[
+                [102.0, 2.0, 6.0, 10.0], [103.0, 3.0, 7.0, 11.0],
+                [104.0, 4.0, 8.0, 12.0]
+            ]),
+        ])
+        expected = (
+            b'\x00'  # big endian
+            b'\x00\x00\x30\x07'  # 4d geometry collection
+            b'\x00\x00\x00\x02'  # 2 geometries in the collection
+            b'\x00'
+            b'\x00\x00\x30\x01'  # 4d point
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'@\x00\x00\x00\x00\x00\x00\x00'
+            b'@\x08\x00\x00\x00\x00\x00\x00'
+            b'\x00'
+            b'\x00\x00\x30\x02'  # 4d linestring
+            b'\x00\x00\x00\x03'  # 3 vertices
+            b'@Y\x80\x00\x00\x00\x00\x00'
+            b'@\x00\x00\x00\x00\x00\x00\x00'
+            b'@\x18\x00\x00\x00\x00\x00\x00'
+            b'@$\x00\x00\x00\x00\x00\x00'
+            b'@Y\xc0\x00\x00\x00\x00\x00'
+            b'@\x08\x00\x00\x00\x00\x00\x00'
+            b'@\x1c\x00\x00\x00\x00\x00\x00'
+            b'@&\x00\x00\x00\x00\x00\x00'
+            b'@Z\x00\x00\x00\x00\x00\x00'
+            b'@\x10\x00\x00\x00\x00\x00\x00'
+            b'@ \x00\x00\x00\x00\x00\x00'
+            b'@(\x00\x00\x00\x00\x00\x00'
+        )
+        self.assertEqual(expected, wkb.dumps(gc))
