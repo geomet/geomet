@@ -1,8 +1,9 @@
-import struct
 import binascii
-from itertools import chain
+import six
+import struct
 
 from geomet.util import block_splitter
+from itertools import chain
 
 #: '\x00': The first byte of any WKB string. Indicates big endian byte
 #: ordering for the data.
@@ -489,6 +490,51 @@ def __load_linestring(big_endian, type_bytes, data_bytes):
     return dict(type='LineString', coordinates=list(coords))
 
 
+def __load_polygon(big_endian, type_bytes, data_bytes):
+    endian_token = '>' if big_endian else '<'
+
+    if not big_endian:
+        type_bytes = type_bytes[::-1]
+
+    is_m = False
+
+    if type_bytes in WKB_2D.values():
+        num_dims = 2
+    elif type_bytes in WKB_Z.values():
+        num_dims = 3
+    elif type_bytes in WKB_M.values():
+        num_dims = 3
+        is_m = True
+    elif type_bytes in WKB_ZM.values():
+        num_dims = 4
+
+    coords = []
+    [num_rings] = struct.unpack('%sl' % endian_token, data_bytes[:4])
+
+    data_bytes = data_bytes[4:]
+    while len(data_bytes) > 0:
+        ring = []
+        [num_verts] = struct.unpack('%sl' % endian_token, data_bytes[:4])
+        data_bytes = data_bytes[4:]
+
+        verts_wkb = data_bytes[:8 * num_verts * num_dims]
+        verts = block_splitter(verts_wkb, 8)
+        if six.PY2:
+            verts = (b''.join(x) for x in verts)
+        elif six.PY3:
+            verts = (b''.join(bytes([y]) for y in x) for x in verts)
+        for vert_wkb in block_splitter(verts, num_dims):
+            values = [struct.unpack('%sd' % endian_token, x)[0]
+                      for x in vert_wkb]
+            if is_m:
+                values.insert(2, 0.0)
+            ring.append(values)
+        coords.append(ring)
+        data_bytes = data_bytes[8 * num_verts * num_dims:]
+
+    return dict(type='Polygon', coordinates=coords)
+
+
 __dumps_registry = {
     'Point':  __dump_point,
     'LineString': __dump_linestring,
@@ -503,7 +549,7 @@ __dumps_registry = {
 __loads_registry = {
     'Point': __load_point,
     'LineString': __load_linestring,
-    #'Polygon': __load_polygon,
+    'Polygon': __load_polygon,
     #'MultiPoint': __load_multipoint,
     #'MultiLineString': __load_multilinestring,
     #'MultiPolygon': __load_multipolygon,
