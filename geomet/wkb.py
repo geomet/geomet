@@ -260,9 +260,11 @@ def __dump_linestring(obj, big_endian):
     # Infer the number of dimensions from the first vertex
     num_dims = len(vertex)
 
-    wkb_string, byte_fmt, _ = __header_bytefmt_byteorder(
+    wkb_string, byte_fmt, byte_order = __header_bytefmt_byteorder(
         'LineString', num_dims, big_endian
     )
+    # append number of vertices in linestring
+    wkb_string += struct.pack('%sl' % byte_order, len(coords))
 
     for vertex in coords:
         wkb_string += struct.pack(byte_fmt, *vertex)
