@@ -236,16 +236,17 @@ class LineStringLoadsTestCase(unittest.TestCase):
         self.assertEqual(expected, wkb.loads(linestring))
 
 
-class PolygonDumpsTestCase(unittest.TestCase):
+class PolygonTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        poly = dict(type='Polygon', coordinates=[
+    def setUp(self):
+        self.maxDiff = None
+        self.poly2d = dict(type='Polygon', coordinates=[
             [[100.001, 0.001], [101.12345, 0.001], [101.001, 1.001],
              [100.001, 0.001]],
             [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
              [100.201, 0.201]],
         ])
-        expected = (
+        self.poly2d_wkb = (
             b'\x00'
             b'\x00\x00\x00\x03'  # type
             # number of rings, 4 byte int
@@ -274,17 +275,14 @@ class PolygonDumpsTestCase(unittest.TestCase):
             b'?\xc9\xba^5?|\xee'           # 0.201
 
         )
-        self.assertEqual(expected, wkb.dumps(poly))
-
-    def test_3d(self):
-        poly = dict(type='Polygon', coordinates=[
+        self.poly3d = dict(type='Polygon', coordinates=[
             [[100.001, 0.001, 0.0], [101.12345, 0.001, 1.0],
              [101.001, 1.001, 2.0],
              [100.001, 0.001, 0.0]],
             [[100.201, 0.201, 0.0], [100.801, 0.201, 1.0],
              [100.801, 0.801, 2.0], [100.201, 0.201, 0.0]],
         ])
-        expected = (
+        self.poly3d_wkb = (
             b'\x00'
             b'\x00\x00\x10\x03'  # type
             # number of rings, 4 byte int
@@ -320,17 +318,14 @@ class PolygonDumpsTestCase(unittest.TestCase):
             b'?\xc9\xba^5?|\xee'                 # 0.201
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
         )
-        self.assertEqual(expected, wkb.dumps(poly))
-
-    def test_4d(self):
-        poly = dict(type='Polygon', coordinates=[
+        self.poly4d = dict(type='Polygon', coordinates=[
             [[100.001, 0.001, 0.0, 0.0], [101.12345, 0.001, 1.0, 1.0],
              [101.001, 1.001, 2.0, 2.0],
              [100.001, 0.001, 0.0, 0.0]],
             [[100.201, 0.201, 0.0, 0.0], [100.801, 0.201, 1.0, 0.0],
              [100.801, 0.801, 2.0, 1.0], [100.201, 0.201, 0.0, 0.0]],
         ])
-        expected = (
+        self.poly4d_wkb = (
             b'\x00'
             b'\x00\x00\x30\x03'  # type
             # number of rings, 4 byte int
@@ -374,7 +369,35 @@ class PolygonDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
         )
-        self.assertEqual(expected, wkb.dumps(poly))
+
+    def test_dumps_2d(self):
+        self.assertEqual(self.poly2d_wkb, wkb.dumps(self.poly2d))
+
+    def test_dumps_3d(self):
+        self.assertEqual(self.poly3d_wkb, wkb.dumps(self.poly3d))
+
+    def test_dumps_4d(self):
+        self.assertEqual(self.poly4d_wkb, wkb.dumps(self.poly4d))
+
+    def test_loads_2d(self):
+        self.assertEqual(self.poly2d, wkb.loads(self.poly2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.poly3d, wkb.loads(self.poly3d_wkb))
+
+    def test_loads_m(self):
+        exp_poly = self.poly3d.copy()
+        for ring in exp_poly['coordinates']:
+            for vert in ring:
+                vert.insert(2, 0.0)
+
+        poly_wkb = b'\x00\x00\x00\x20\x03'
+        poly_wkb += self.poly3d_wkb[5:]
+        poly_wkb = bytes(poly_wkb)
+        self.assertEqual(exp_poly, wkb.loads(poly_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.poly4d, wkb.loads(self.poly4d_wkb))
 
 
 class MultiPointDumpsTestCase(unittest.TestCase):
