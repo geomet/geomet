@@ -400,13 +400,13 @@ class PolygonTestCase(unittest.TestCase):
         self.assertEqual(self.poly4d, wkb.loads(self.poly4d_wkb))
 
 
-class MultiPointDumpsTestCase(unittest.TestCase):
+class MultiPointTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        mp = dict(type='MultiPoint', coordinates=[
+    def setUp(self):
+        self.multipoint2d = dict(type='MultiPoint', coordinates=[
             [2.2, 4.4], [10.0, 3.1], [5.1, 20.0],
         ])
-        expected = (
+        self.multipoint2d_wkb = (
             b'\x01'  # little endian
             b'\x04\x00\x00\x00'
             # number of points: 3
@@ -427,13 +427,10 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'ffffff\x14@'                    # 5.1
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
         )
-        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
-
-    def test_3d(self):
-        mp = dict(type='MultiPoint', coordinates=[
+        self.multipoint3d = dict(type='MultiPoint', coordinates=[
             [2.2, 4.4, 3.0], [10.0, 3.1, 2.0], [5.1, 20.0, 4.4],
         ])
-        expected = (
+        self.multipoint3d_wkb = (
             b'\x01'  # little endian
             b'\x04\x10\x00\x00'
             # number of points: 3
@@ -457,13 +454,10 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
-
-    def test_4d(self):
-        mp = dict(type='MultiPoint', coordinates=[
+        self.multipoint4d = dict(type='MultiPoint', coordinates=[
             [2.2, 4.4, 0.0, 3.0], [10.0, 3.1, 0.0, 2.0], [5.1, 20.0, 0.0, 4.4],
         ])
-        expected = (
+        self.multipoint4d_wkb = (
             b'\x01'  # little endian
             b'\x04\x30\x00\x00'
             # number of points: 3
@@ -490,7 +484,65 @@ class MultiPointDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mp, big_endian=False))
+
+    def test_dumps_2d(self):
+        self.assertEqual(
+            self.multipoint2d_wkb,
+            wkb.dumps(self.multipoint2d, big_endian=False)
+        )
+
+    def test_dumps_3d(self):
+        self.assertEqual(
+            self.multipoint3d_wkb,
+            wkb.dumps(self.multipoint3d, big_endian=False)
+        )
+
+    def test_dumps_4d(self):
+        self.assertEqual(
+            self.multipoint4d_wkb,
+            wkb.dumps(self.multipoint4d, big_endian=False)
+        )
+
+    def test_loads_2d(self):
+        self.assertEqual(self.multipoint2d, wkb.loads(self.multipoint2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.multipoint3d, wkb.loads(self.multipoint3d_wkb))
+
+    def test_loads_m(self):
+        exp_mp = self.multipoint3d.copy()
+        for pt in exp_mp['coordinates']:
+            pt.insert(2, 0.0)
+
+        mp_wkb = (
+            b'\x01'  # little endian
+            b'\x04\x20\x00\x00'
+            # number of points: 3
+            b'\x03\x00\x00\x00'
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x20\x00\x00'
+            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            b'\x00\x00\x00\x00\x00\x00\x08@'  # 3.0
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x20\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            b'\x00\x00\x00\x00\x00\x00\x00@'  # 2.0
+            # point 3d
+            b'\x01'  # little endian
+            b'\x01\x20\x00\x00'
+            b'ffffff\x14@'                    # 5.1
+            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+        )
+
+        self.assertEqual(exp_mp, wkb.loads(mp_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.multipoint4d, wkb.loads(self.multipoint4d_wkb))
 
 
 class MultiLineStringDumpsTestCase(unittest.TestCase):
