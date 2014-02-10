@@ -493,9 +493,6 @@ def __load_linestring(big_endian, type_bytes, data_bytes):
 def __load_polygon(big_endian, type_bytes, data_bytes):
     endian_token = '>' if big_endian else '<'
 
-    if not big_endian:
-        type_bytes = type_bytes[::-1]
-
     is_m = False
 
     if type_bytes in WKB_2D.values():
