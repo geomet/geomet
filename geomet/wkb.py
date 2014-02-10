@@ -532,6 +532,55 @@ def __load_polygon(big_endian, type_bytes, data_bytes):
     return dict(type='Polygon', coordinates=coords)
 
 
+def __load_multipoint(big_endian, type_bytes, data_bytes):
+    endian_token = '>' if big_endian else '<'
+
+    is_m = False
+
+    if type_bytes in WKB_2D.values():
+        num_dims = 2
+    elif type_bytes in WKB_Z.values():
+        num_dims = 3
+    elif type_bytes in WKB_M.values():
+        num_dims = 3
+        is_m = True
+    elif type_bytes in WKB_ZM.values():
+        num_dims = 4
+
+    if is_m:
+        dim = 'M'
+    else:
+        dim = __INT_TO_DIM_LABEL[num_dims]
+
+    coords = []
+    [num_points] = struct.unpack('%sl' % endian_token, data_bytes[:4])
+
+    data_bytes = data_bytes[4:]
+    while len(data_bytes) > 0:
+        point_endian = data_bytes[0]
+        point_type = data_bytes[1:5]
+        if six.PY3:
+            point_endian = bytes([point_endian])
+        values = struct.unpack('%s%s' % (endian_token, 'd' * num_dims),
+                               data_bytes[5:5 + 8 * num_dims])
+        values = list(values)
+        if is_m:
+            values.insert(2, 0.0)
+
+        if big_endian:
+            assert point_endian == BIG_ENDIAN
+            assert point_type == __WKB[dim]['Point']
+        else:
+            assert point_endian == LITTLE_ENDIAN
+            assert point_type[::-1] == __WKB[dim]['Point']
+
+        coords.append(list(values))
+
+        data_bytes = data_bytes[5 + 8 * num_dims:]
+
+    return dict(type='MultiPoint', coordinates=coords)
+
+
 __dumps_registry = {
     'Point':  __dump_point,
     'LineString': __dump_linestring,
@@ -547,7 +596,7 @@ __loads_registry = {
     'Point': __load_point,
     'LineString': __load_linestring,
     'Polygon': __load_polygon,
-    #'MultiPoint': __load_multipoint,
+    'MultiPoint': __load_multipoint,
     #'MultiLineString': __load_multilinestring,
     #'MultiPolygon': __load_multipolygon,
     #'GeometryCollection': __load_geometrycollection,
