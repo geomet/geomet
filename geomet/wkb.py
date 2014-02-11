@@ -607,10 +607,16 @@ def __load_multilinestring(big_endian, type_bytes, data_bytes):
     data_bytes = data_bytes[4:]
     while len(data_bytes) > 0:
         ls_endian = data_bytes[0]
-        ls_type = data_bytes[1:5]
-        # TODO: assertion check the type
         if six.PY3:
             ls_endian = bytes([ls_endian])
+        ls_type = data_bytes[1:5]
+        if big_endian:
+            assert ls_endian == BIG_ENDIAN
+            assert ls_type == __WKB[dim]['LineString']
+        else:
+            assert ls_endian == LITTLE_ENDIAN
+            assert ls_type[::-1] == __WKB[dim]['LineString']
+
         [num_verts] = struct.unpack('%sl' % endian_token, data_bytes[5:9])
         num_values = num_dims * num_verts
         # end of linestring offset
