@@ -545,14 +545,14 @@ class MultiPointTestCase(unittest.TestCase):
         self.assertEqual(self.multipoint4d, wkb.loads(self.multipoint4d_wkb))
 
 
-class MultiLineStringDumpsTestCase(unittest.TestCase):
+class MultiLineStringTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        mls = dict(type='MultiLineString', coordinates=[
+    def setUp(self):
+        self.mls2d = dict(type='MultiLineString', coordinates=[
             [[2.2, 4.4], [3.1, 5.1], [5.1, 20.0]],
             [[20.0, 2.2], [3.1, 4.4]],
         ])
-        expected = (
+        self.mls2d_wkb = (
             b'\x00'
             b'\x00\x00\x00\x05'
             b'\x00\x00\x00\x02'  # number of linestrings
@@ -573,14 +573,11 @@ class MultiLineStringDumpsTestCase(unittest.TestCase):
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
             b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mls))
-
-    def test_3d(self):
-        mls = dict(type='MultiLineString', coordinates=[
+        self.mls3d = dict(type='MultiLineString', coordinates=[
             [[2.2, 0.0, 4.4], [3.1, 5.1, 5.1], [5.1, 20.0, 0.0]],
             [[20.0, 2.2, 2.2], [0.0, 3.1, 4.4]],
         ])
-        expected = (
+        self.mls3d_wkb = (
             b'\x00'
             b'\x00\x00\x10\x05'
             b'\x00\x00\x00\x02'  # number of linestrings
@@ -606,14 +603,11 @@ class MultiLineStringDumpsTestCase(unittest.TestCase):
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
             b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mls))
-
-    def test_4d(self):
-        mls = dict(type='MultiLineString', coordinates=[
+        self.mls4d = dict(type='MultiLineString', coordinates=[
             [[2.2, 4.4, 0.0, 3.0], [10.0, 0.0, 3.1, 2.0]],
             [[0.0, 5.1, 20.0, 4.4]],
         ])
-        expected = (
+        self.mls4d_wkb = (
             b'\x01'
             b'\x05\x30\x00\x00'
             b'\x02\x00\x00\x00'  # two linestrings
@@ -636,7 +630,59 @@ class MultiLineStringDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x004@'        # 20.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
         )
-        self.assertEqual(expected, wkb.dumps(mls, big_endian=False))
+
+    def test_dumps_2d(self):
+        self.assertEqual(self.mls2d_wkb, wkb.dumps(self.mls2d))
+
+    def test_dumps_3d(self):
+        self.assertEqual(self.mls3d_wkb, wkb.dumps(self.mls3d))
+
+    def test_dumps_4d(self):
+        self.assertEqual(self.mls4d_wkb,
+                         wkb.dumps(self.mls4d, big_endian=False))
+
+    def test_loads_2d(self):
+        self.assertEqual(self.mls2d, wkb.loads(self.mls2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.mls3d, wkb.loads(self.mls3d_wkb))
+
+    def test_loads_m(self):
+        exp_mls = self.mls3d.copy()
+        for ls in exp_mls['coordinates']:
+            for vert in ls:
+                vert.insert(2, 0.0)
+
+        mls_wkb = (
+            b'\x00'
+            b'\x00\x00\x20\x05'
+            b'\x00\x00\x00\x02'  # number of linestrings
+            b'\x00'
+            b'\x00\x00\x20\x02'
+            b'\x00\x00\x00\x03'
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            b'@\x14ffffff'                    # 5.1
+            b'@\x14ffffff'                    # 5.1
+            b'@\x14ffffff'                    # 5.1
+            b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'\x00'
+            b'\x00\x00\x20\x02'
+            b'\x00\x00\x00\x02'
+            b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
+            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+        )
+        self.assertEqual(exp_mls, wkb.loads(mls_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.mls4d, wkb.loads(self.mls4d_wkb))
 
 
 class MultiPolygonDumpsTestCase(unittest.TestCase):
