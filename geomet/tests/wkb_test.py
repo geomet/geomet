@@ -36,7 +36,7 @@ class PointDumpsTestCase(unittest.TestCase):
 
         expected = (
             b'\x00'  # big endian
-            b'\x00\x00\x10\x01'  # type
+            b'\x00\x00\x03\xe9'  # type
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'?\xf0\x00\x00\x00\x00\x00\x00'
             b'@\x00\x00\x00\x00\x00\x00\x00'
@@ -50,7 +50,7 @@ class PointDumpsTestCase(unittest.TestCase):
 
         expected = (
             b'\x01'  # little endian
-            b'\x01\x30\x00\x00'  # type
+            b'\xb9\x0b\x00\x00'  # type
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'\x00\x00\x00\x00\x00\x00\xf0?'
             b'\x00\x00\x00\x00\x00\x00\x00@'
@@ -76,7 +76,7 @@ class PointLoadsTestCase(unittest.TestCase):
     def test_z(self):
         pt = (
             b'\x00'  # big endian
-            b'\x00\x00\x10\x01'  # type
+            b'\x00\x00\x03\xe9'  # type
             b'@\x01\x99\x99\x99\x99\x99\x9a'
             b'@\x11\x99\x99\x99\x99\x99\x9a'
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
@@ -87,7 +87,7 @@ class PointLoadsTestCase(unittest.TestCase):
     def test_m(self):
         pt = (
             b'\x00'  # big endian
-            b'\x00\x00\x20\x01'  # type
+            b'\x00\x00\x07\xd1'  # type
             b'@\x01\x99\x99\x99\x99\x99\x9a'
             b'@\x11\x99\x99\x99\x99\x99\x9a'
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
@@ -102,7 +102,7 @@ class PointLoadsTestCase(unittest.TestCase):
     def test_zm(self):
         pt = (
             b'\x00'  # big endian
-            b'\x00\x00\x30\x01'  # type
+            b'\x00\x00\x0b\xb9'  # type
             b'@\x01\x99\x99\x99\x99\x99\x9a'
             b'@\x11\x99\x99\x99\x99\x99\x9a'
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
@@ -134,7 +134,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
                                                           [3.1, 5.1, 20.0]])
         expected = (
             b'\x01'  # little endian
-            b'\x02\x10\x00\x00'  # type
+            b'\xea\x03\x00\x00'  # type
             b'\x02\x00\x00\x00'  # 2 vertices
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
@@ -153,7 +153,7 @@ class LineStringDumpsTestCase(unittest.TestCase):
 
         expected = (
             b'\x00'  # big endian
-            b'\x00\x00\x30\x02'  # type
+            b'\x00\x00\x0b\xba'  # type
             b'\x00\x00\x00\x02'  # 2 vertices
             b'@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
             b'\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
@@ -187,7 +187,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
     def test_z(self):
         linestring = (
             b'\x01'  # little endian
-            b'\x02\x10\x00\x00'
+            b'\xea\x03\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
             b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
@@ -203,7 +203,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
     def test_m(self):
         linestring = (
             b'\x01'  # little endian
-            b'\x02\x20\x00\x00'
+            b'\xd2\x07\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
             b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
@@ -219,7 +219,7 @@ class LineStringLoadsTestCase(unittest.TestCase):
     def test_zm(self):
         linestring = (
             b'\x00'  # big endian
-            b'\x00\x00\x30\x02'
+            b'\x00\x00\x0b\xba'
             b'@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
             b'\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
             b'\xc0$\x00\x00\x00\x00\x00\x00'     # -10.0
@@ -284,7 +284,7 @@ class PolygonTestCase(unittest.TestCase):
         ])
         self.poly3d_wkb = (
             b'\x00'
-            b'\x00\x00\x10\x03'  # type
+            b'\x00\x00\x03\xeb'  # type
             # number of rings, 4 byte int
             b'\x00\x00\x00\x02'
             # number of verts in ring (4)
@@ -327,7 +327,7 @@ class PolygonTestCase(unittest.TestCase):
         ])
         self.poly4d_wkb = (
             b'\x00'
-            b'\x00\x00\x30\x03'  # type
+            b'\x00\x00\x0b\xbb'  # type
             # number of rings, 4 byte int
             b'\x00\x00\x00\x02'
             # number of verts in ring (4)
@@ -391,7 +391,7 @@ class PolygonTestCase(unittest.TestCase):
             for vert in ring:
                 vert.insert(2, 0.0)
 
-        poly_wkb = b'\x00\x00\x00\x20\x03'
+        poly_wkb = b'\x00\x00\x00\x07\xd3'
         poly_wkb += self.poly3d_wkb[5:]
         poly_wkb = bytes(poly_wkb)
         self.assertEqual(exp_poly, wkb.loads(poly_wkb))
@@ -432,24 +432,24 @@ class MultiPointTestCase(unittest.TestCase):
         ])
         self.multipoint3d_wkb = (
             b'\x01'  # little endian
-            b'\x04\x10\x00\x00'
+            b'\xec\x03\x00\x00'
             # number of points: 3
             b'\x03\x00\x00\x00'
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x10\x00\x00'
+            b'\xe9\x03\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
             b'\x00\x00\x00\x00\x00\x00\x08@'  # 3.0
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x10\x00\x00'
+            b'\xe9\x03\x00\x00'
             b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
             b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
             b'\x00\x00\x00\x00\x00\x00\x00@'  # 2.0
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x10\x00\x00'
+            b'\xe9\x03\x00\x00'
             b'ffffff\x14@'                    # 5.1
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
@@ -459,26 +459,26 @@ class MultiPointTestCase(unittest.TestCase):
         ])
         self.multipoint4d_wkb = (
             b'\x01'  # little endian
-            b'\x04\x30\x00\x00'
+            b'\xbc\x0b\x00\x00'
             # number of points: 3
             b'\x03\x00\x00\x00'
             # point 4d
             b'\x01'  # little endian
-            b'\x01\x30\x00\x00'
+            b'\xb9\x0b\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'     # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x00\x00\x00\x00\x00\x00\x08@'     # 3.0
             # point 4d
             b'\x01'  # little endian
-            b'\x01\x30\x00\x00'
+            b'\xb9\x0b\x00\x00'
             b'\x00\x00\x00\x00\x00\x00$@'        # 10.0
             b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'     # 3.1
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x00\x00\x00\x00\x00\x00\x00@'     # 2.0
             # point 4d
             b'\x01'  # little endian
-            b'\x01\x30\x00\x00'
+            b'\xb9\x0b\x00\x00'
             b'ffffff\x14@'                       # 5.1
             b'\x00\x00\x00\x00\x00\x004@'        # 20.0
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
@@ -516,24 +516,24 @@ class MultiPointTestCase(unittest.TestCase):
 
         mp_wkb = (
             b'\x01'  # little endian
-            b'\x04\x20\x00\x00'
+            b'\xd4\x07\x00\x00'
             # number of points: 3
             b'\x03\x00\x00\x00'
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x20\x00\x00'
+            b'\xd1\x07\x00\x00'
             b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
             b'\x00\x00\x00\x00\x00\x00\x08@'  # 3.0
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x20\x00\x00'
+            b'\xd1\x07\x00\x00'
             b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
             b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
             b'\x00\x00\x00\x00\x00\x00\x00@'  # 2.0
             # point 3d
             b'\x01'  # little endian
-            b'\x01\x20\x00\x00'
+            b'\xd1\x07\x00\x00'
             b'ffffff\x14@'                    # 5.1
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
@@ -579,10 +579,10 @@ class MultiLineStringTestCase(unittest.TestCase):
         ])
         self.mls3d_wkb = (
             b'\x00'
-            b'\x00\x00\x10\x05'
+            b'\x00\x00\x03\xed'
             b'\x00\x00\x00\x02'  # number of linestrings
             b'\x00'
-            b'\x00\x00\x10\x02'
+            b'\x00\x00\x03\xea'
             b'\x00\x00\x00\x03'
             b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
@@ -594,7 +594,7 @@ class MultiLineStringTestCase(unittest.TestCase):
             b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x00'
-            b'\x00\x00\x10\x02'
+            b'\x00\x00\x03\xea'
             b'\x00\x00\x00\x02'
             b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
             b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
@@ -609,10 +609,10 @@ class MultiLineStringTestCase(unittest.TestCase):
         ])
         self.mls4d_wkb = (
             b'\x01'
-            b'\x05\x30\x00\x00'
+            b'\xbd\x0b\x00\x00'
             b'\x02\x00\x00\x00'  # two linestrings
             b'\x01'
-            b'\x02\x30\x00\x00'
+            b'\xba\x0b\x00\x00'
             b'\x02\x00\x00\x00'  # two points
             b'\x9a\x99\x99\x99\x99\x99\x01@'     # 2.2
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
@@ -623,7 +623,7 @@ class MultiLineStringTestCase(unittest.TestCase):
             b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'     # 3.1
             b'\x00\x00\x00\x00\x00\x00\x00@'     # 2.0
             b'\x01'
-            b'\x02\x30\x00\x00'
+            b'\xba\x0b\x00\x00'
             b'\x01\x00\x00\x00'  # one point
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'ffffff\x14@'                       # 5.1
@@ -655,10 +655,10 @@ class MultiLineStringTestCase(unittest.TestCase):
 
         mls_wkb = (
             b'\x00'
-            b'\x00\x00\x20\x05'
+            b'\x00\x00\x07\xd5'
             b'\x00\x00\x00\x02'  # number of linestrings
             b'\x00'
-            b'\x00\x00\x20\x02'
+            b'\x00\x00\x07\xd2'
             b'\x00\x00\x00\x03'
             b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
@@ -670,7 +670,7 @@ class MultiLineStringTestCase(unittest.TestCase):
             b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x00'
-            b'\x00\x00\x20\x02'
+            b'\x00\x00\x07\xd2'
             b'\x00\x00\x00\x02'
             b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
             b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
@@ -753,10 +753,10 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
         ])
         expected = (
             b'\x01'  # little endian
-            b'\x06\x10\x00\x00'  # 3d multipolygon
+            b'\xee\x03\x00\x00'  # 3d multipolygon
             b'\x02\x00\x00\x00'  # two polygons
             b'\x01'  # little endian
-            b'\x03\x10\x00\x00'  # 3d polygon
+            b'\xeb\x03\x00\x00'  # 3d polygon
             b'\x01\x00\x00\x00'  # 1 ring
             b'\x05\x00\x00\x00'  # 5 vertices
             b'\x00\x00\x00\x00\x00\x80Y@'
@@ -775,7 +775,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00@'
             b'\x00\x00\x00\x00\x00\x00\x10@'
             b'\x01'  # little endian
-            b'\x03\x10\x00\x00'  # 3d polygon
+            b'\xeb\x03\x00\x00'  # 3d polygon
             b'\x02\x00\x00\x00'  # 2 rings
             b'\x05\x00\x00\x00'  # first ring, 5 vertices
             b'\x00\x00\x00\x00\x00\x00Y@'
@@ -826,10 +826,10 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
         ])
         expected = (
             b'\x01'  # little endian
-            b'\x06\x30\x00\x00'  # 3d multipolygon
+            b'\xbe\x0b\x00\x00'  # 4d multipolygon
             b'\x02\x00\x00\x00'  # two polygons
             b'\x01'  # little endian
-            b'\x03\x30\x00\x00'  # 3d polygon
+            b'\xbb\x0b\x00\x00'  # 4d polygon
             b'\x01\x00\x00\x00'  # 1 ring
             b'\x05\x00\x00\x00'  # 5 vertices
             b'\x00\x00\x00\x00\x00\x80Y@'
@@ -853,7 +853,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x10@'
             b'\x00\x00\x00\x00\x00\x00$@'
             b'\x01'  # little endian
-            b'\x03\x30\x00\x00'  # 3d polygon
+            b'\xbb\x0b\x00\x00'  # 4d polygon
             b'\x02\x00\x00\x00'  # 2 rings
             b'\x05\x00\x00\x00'  # first ring, 5 vertices
             b'\x00\x00\x00\x00\x00\x00Y@'
@@ -939,15 +939,15 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         ])
         expected = (
             b'\x01'  # little endian
-            b'\x07\x10\x00\x00'  # 3d geometry collection
+            b'\xef\x03\x00\x00'  # 3d geometry collection
             b'\x02\x00\x00\x00'  # 2 geometries in the collection
             b'\x01'
-            b'\x01\x10\x00\x00'  # 3d point
+            b'\xe9\x03\x00\x00'  # 3d point
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'\x00\x00\x00\x00\x00\x00\xf0?'
             b'\x00\x00\x00\x00\x00\x00\x00@'
             b'\x01'
-            b'\x02\x10\x00\x00'  # 3d linestring
+            b'\xea\x03\x00\x00'  # 3d linestring
             b'\x03\x00\x00\x00'  # 3 vertices
             b'\x00\x00\x00\x00\x00\x80Y@'
             b'\x00\x00\x00\x00\x00\x00\x00@'
@@ -971,16 +971,16 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         ])
         expected = (
             b'\x00'  # big endian
-            b'\x00\x00\x30\x07'  # 4d geometry collection
+            b'\x00\x00\x0b\xbf'  # 4d geometry collection
             b'\x00\x00\x00\x02'  # 2 geometries in the collection
             b'\x00'
-            b'\x00\x00\x30\x01'  # 4d point
+            b'\x00\x00\x0b\xb9'  # 4d point
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'?\xf0\x00\x00\x00\x00\x00\x00'
             b'@\x00\x00\x00\x00\x00\x00\x00'
             b'@\x08\x00\x00\x00\x00\x00\x00'
             b'\x00'
-            b'\x00\x00\x30\x02'  # 4d linestring
+            b'\x00\x00\x0b\xba'  # 4d linestring
             b'\x00\x00\x00\x03'  # 3 vertices
             b'@Y\x80\x00\x00\x00\x00\x00'
             b'@\x00\x00\x00\x00\x00\x00\x00'

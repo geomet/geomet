@@ -31,13 +31,13 @@ WKB_2D = {
 #: with X, Y, and Z components.
 #: NOTE: Byte ordering is big endian.
 WKB_Z = {
-    'Point': b'\x00\x00\x10\x01',
-    'LineString': b'\x00\x00\x10\x02',
-    'Polygon': b'\x00\x00\x10\x03',
-    'MultiPoint': b'\x00\x00\x10\x04',
-    'MultiLineString': b'\x00\x00\x10\x05',
-    'MultiPolygon': b'\x00\x00\x10\x06',
-    'GeometryCollection': b'\x00\x00\x10\x07',
+    'Point': b'\x00\x00\x03\xe9',
+    'LineString': b'\x00\x00\x03\xea',
+    'Polygon': b'\x00\x00\x03\xeb',
+    'MultiPoint': b'\x00\x00\x03\xec',
+    'MultiLineString': b'\x00\x00\x03\xed',
+    'MultiPolygon': b'\x00\x00\x03\xee',
+    'GeometryCollection': b'\x00\x00\x03\xef',
 }
 
 #: Mapping of GeoJSON geometry types to the "M" 4-byte binary string
@@ -45,13 +45,13 @@ WKB_Z = {
 #: with X, Y, and M ("Measure") components.
 #: NOTE: Byte ordering is big endian.
 WKB_M = {
-    'Point': b'\x00\x00\x20\x01',
-    'LineString': b'\x00\x00\x20\x02',
-    'Polygon': b'\x00\x00\x20\x03',
-    'MultiPoint': b'\x00\x00\x20\x04',
-    'MultiLineString': b'\x00\x00\x20\x05',
-    'MultiPolygon': b'\x00\x00\x20\x06',
-    'GeometryCollection': b'\x00\x00\x20\x07',
+    'Point': b'\x00\x00\x07\xd1',
+    'LineString': b'\x00\x00\x07\xd2',
+    'Polygon': b'\x00\x00\x07\xd3',
+    'MultiPoint': b'\x00\x00\x07\xd4',
+    'MultiLineString': b'\x00\x00\x07\xd5',
+    'MultiPolygon': b'\x00\x00\x07\xd6',
+    'GeometryCollection': b'\x00\x00\x07\xd7',
 }
 
 #: Mapping of GeoJSON geometry types to the "ZM" 4-byte binary string
@@ -59,13 +59,13 @@ WKB_M = {
 #: with X, Y, Z, and M ("Measure") components.
 #: NOTE: Byte ordering is big endian.
 WKB_ZM = {
-    'Point': b'\x00\x00\x30\x01',
-    'LineString': b'\x00\x00\x30\x02',
-    'Polygon': b'\x00\x00\x30\x03',
-    'MultiPoint': b'\x00\x00\x30\x04',
-    'MultiLineString': b'\x00\x00\x30\x05',
-    'MultiPolygon': b'\x00\x00\x30\x06',
-    'GeometryCollection': b'\x00\x00\x30\x07',
+    'Point': b'\x00\x00\x0b\xb9',
+    'LineString': b'\x00\x00\x0b\xba',
+    'Polygon': b'\x00\x00\x0b\xbb',
+    'MultiPoint': b'\x00\x00\x0b\xbc',
+    'MultiLineString': b'\x00\x00\x0b\xbd',
+    'MultiPolygon': b'\x00\x00\x0b\xbe',
+    'GeometryCollection': b'\x00\x00\x0b\xbf',
 }
 
 #: Mapping of dimension types to maps of GeoJSON geometry type -> 4-byte binary
