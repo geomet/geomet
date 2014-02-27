@@ -13,42 +13,27 @@ class WKBTestCase(unittest.TestCase):
                          str(ar.exception))
 
 
-class PointDumpsTestCase(unittest.TestCase):
+class PointTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        # Tests a typical 2D Point case:
-        pt = dict(type='Point', coordinates=[0.0, 1.0])
-
-        expected = (
+    def setUp(self):
+        self.maxDiff = None
+        self.pt2d = dict(type='Point', coordinates=[0.0, 1.0])
+        self.pt2d_wkb = (
             b'\x01'  # little endian
             b'\x01\x00\x00\x00'  # type
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'\x00\x00\x00\x00\x00\x00\xf0?'
         )
-
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
-
-    def test_3d(self):
-        # Test for an XYZ Point:
-        pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
-        # Note that a 3d point could either be a XYZ or XYM type.
-        # For simplicity, we always assume XYZ.
-
-        expected = (
+        self.pt3d = dict(type='Point', coordinates=[0.0, 1.0, 2.0])
+        self.pt3d_wkb = (
             b'\x00'  # big endian
             b'\x00\x00\x03\xe9'  # type
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
             b'?\xf0\x00\x00\x00\x00\x00\x00'
             b'@\x00\x00\x00\x00\x00\x00\x00'
         )
-
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=True))
-
-    def test_4d(self):
-        # Test for an XYZM Point:
-        pt = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
-
-        expected = (
+        self.pt4d = dict(type='Point', coordinates=[0.0, 1.0, 2.0, 4.0])
+        self.pt4d_wkb = (
             b'\x01'  # little endian
             b'\xb9\x0b\x00\x00'  # type
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -57,67 +42,39 @@ class PointDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x10@'
         )
 
-        self.assertEqual(expected, wkb.dumps(pt, big_endian=False))
+    def test_dumps_2d(self):
+        self.assertEqual(self.pt2d_wkb, wkb.dumps(self.pt2d, big_endian=False))
+
+    def test_dumps_3d(self):
+        self.assertEqual(self.pt3d_wkb, wkb.dumps(self.pt3d))
+
+    def test_dumps_4d(self):
+        self.assertEqual(self.pt4d_wkb, wkb.dumps(self.pt4d, big_endian=False))
+
+    def test_loads_2d(self):
+        self.assertEqual(self.pt2d, wkb.loads(self.pt2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.pt3d, wkb.loads(self.pt3d_wkb))
+
+    def test_loads_m(self):
+        exp_pt = self.pt3d.copy()
+        exp_pt['coordinates'].insert(2, 0.0)
+
+        pt_wkb = b'\x00\x00\x00\x07\xd1'
+        pt_wkb += self.pt3d_wkb[5:]
+        self.assertEqual(exp_pt, wkb.loads(pt_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.pt4d, wkb.loads(self.pt4d_wkb))
 
 
-class PointLoadsTestCase(unittest.TestCase):
+class LineStringTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        pt = (
-            b'\x01'  # little endian
-            b'\x01\x00\x00\x00'  # type
-            b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
-            b'\x00\x00\x00\x00\x00\x00\xf0?'  # 1.0
-        )
-
-        expected = dict(type='Point', coordinates=[0.0, 1.0])
-        self.assertEqual(expected, wkb.loads(pt))
-
-    def test_z(self):
-        pt = (
-            b'\x00'  # big endian
-            b'\x00\x00\x03\xe9'  # type
-            b'@\x01\x99\x99\x99\x99\x99\x9a'
-            b'@\x11\x99\x99\x99\x99\x99\x9a'
-            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
-        )
-        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1])
-        self.assertEqual(expected, wkb.loads(pt))
-
-    def test_m(self):
-        pt = (
-            b'\x00'  # big endian
-            b'\x00\x00\x07\xd1'  # type
-            b'@\x01\x99\x99\x99\x99\x99\x9a'
-            b'@\x11\x99\x99\x99\x99\x99\x9a'
-            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
-        )
-
-        # The generated GeoJSON is treated as XYZM, sidestep the ambiguity
-        # created by XYM and XYZ geometries. The default value for Z is set to
-        # 0.0.
-        expected = dict(type='Point', coordinates=[2.2, 4.4, 0.0, 3.1])
-        self.assertEqual(expected, wkb.loads(pt))
-
-    def test_zm(self):
-        pt = (
-            b'\x00'  # big endian
-            b'\x00\x00\x0b\xb9'  # type
-            b'@\x01\x99\x99\x99\x99\x99\x9a'
-            b'@\x11\x99\x99\x99\x99\x99\x9a'
-            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'
-            b'\x00\x00\x00\x00\x00\x00\x00\x00'
-        )
-        expected = dict(type='Point', coordinates=[2.2, 4.4, 3.1, 0.0])
-        self.assertEqual(expected, wkb.loads(pt))
-
-
-class LineStringDumpsTestCase(unittest.TestCase):
-
-    def test_2d(self):
-        linestring = dict(type='LineString', coordinates=[[2.2, 4.4],
-                                                          [3.1, 5.1]])
-        expected = (
+    def setUp(self):
+        self.ls2d = dict(type='LineString', coordinates=[[2.2, 4.4],
+                                                         [3.1, 5.1]])
+        self.ls2d_wkb = (
             b'\x00'  # big endian
             b'\x00\x00\x00\x02'  # type
             b'\x00\x00\x00\x02'  # 2 vertices
@@ -126,13 +83,9 @@ class LineStringDumpsTestCase(unittest.TestCase):
             b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
             b'@\x14ffffff'                    # 5.1
         )
-
-        self.assertEqual(expected, wkb.dumps(linestring))
-
-    def test_3d(self):
-        linestring = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
-                                                          [3.1, 5.1, 20.0]])
-        expected = (
+        self.ls3d = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
+                                                         [3.1, 5.1, 20.0]])
+        self.ls3d_wkb = (
             b'\x01'  # little endian
             b'\xea\x03\x00\x00'  # type
             b'\x02\x00\x00\x00'  # 2 vertices
@@ -143,15 +96,10 @@ class LineStringDumpsTestCase(unittest.TestCase):
             b'ffffff\x14@'                    # 5.1
             b'\x00\x00\x00\x00\x00\x004@'     # 20.0
         )
-
-        self.assertEqual(expected, wkb.dumps(linestring, big_endian=False))
-
-    def test_4d(self):
-        linestring = dict(type='LineString',
-                          coordinates=[[2.2, -4.4, -10.0, 0.1],
-                                       [-3.1, 5.1, 20.0, -0.9]])
-
-        expected = (
+        self.ls4d = dict(type='LineString',
+                         coordinates=[[2.2, -4.4, -10.0, 0.1],
+                                      [-3.1, 5.1, 20.0, -0.9]])
+        self.ls4d_wkb = (
             b'\x00'  # big endian
             b'\x00\x00\x0b\xba'  # type
             b'\x00\x00\x00\x02'  # 2 vertices
@@ -165,75 +113,32 @@ class LineStringDumpsTestCase(unittest.TestCase):
             b'\xbf\xec\xcc\xcc\xcc\xcc\xcc\xcd'  # -0.9
         )
 
-        self.assertEqual(expected, wkb.dumps(linestring))
+    def test_dumps_2d(self):
+        self.assertEqual(self.ls2d_wkb, wkb.dumps(self.ls2d))
 
+    def test_dumps_3d(self):
+        self.assertEqual(self.ls3d_wkb, wkb.dumps(self.ls3d, big_endian=False))
 
-class LineStringLoadsTestCase(unittest.TestCase):
+    def test_dumps_4d(self):
+        self.assertEqual(self.ls4d_wkb, wkb.dumps(self.ls4d))
 
-    def test_2d(self):
-        linestring = (
-            b'\x00'  # big endian
-            b'\x00\x00\x00\x02'
-            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
-            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
-            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
-            b'@\x14ffffff'                    # 5.1
-        )
-        expected = dict(type='LineString', coordinates=[[2.2, 4.4],
-                                                        [3.1, 5.1]])
+    def test_loads_2d(self):
+        self.assertEqual(self.ls2d, wkb.loads(self.ls2d_wkb))
 
-        self.assertEqual(expected, wkb.loads(linestring))
+    def test_loads_z(self):
+        self.assertEqual(self.ls3d, wkb.loads(self.ls3d_wkb))
 
-    def test_z(self):
-        linestring = (
-            b'\x01'  # little endian
-            b'\xea\x03\x00\x00'
-            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
-            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
-            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
-            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
-            b'ffffff\x14@'                    # 5.1
-            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
-        )
-        expected = dict(type='LineString', coordinates=[[2.2, 4.4, 10.0],
-                                                        [3.1, 5.1, 20.0]])
+    def test_loads_m(self):
+        exp_ls = self.ls3d.copy()
+        for vert in exp_ls['coordinates']:
+            vert.insert(2, 0.0)
 
-        self.assertEqual(expected, wkb.loads(linestring))
+        ls_wkb = b'\x01\xd2\x07\x00\x00'
+        ls_wkb += self.ls3d_wkb[5:]
+        self.assertEqual(exp_ls, wkb.loads(ls_wkb))
 
-    def test_m(self):
-        linestring = (
-            b'\x01'  # little endian
-            b'\xd2\x07\x00\x00'
-            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
-            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
-            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
-            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
-            b'ffffff\x14@'                    # 5.1
-            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
-        )
-        expected = dict(type='LineString', coordinates=[[2.2, 4.4, 0.0, 10.0],
-                                                        [3.1, 5.1, 0.0, 20.0]])
-
-        self.assertEqual(expected, wkb.loads(linestring))
-
-    def test_zm(self):
-        linestring = (
-            b'\x00'  # big endian
-            b'\x00\x00\x0b\xba'
-            b'@\x01\x99\x99\x99\x99\x99\x9a'     # 2.2
-            b'\xc0\x11\x99\x99\x99\x99\x99\x9a'  # -4.4
-            b'\xc0$\x00\x00\x00\x00\x00\x00'     # -10.0
-            b'?\xb9\x99\x99\x99\x99\x99\x9a'     # 0.1
-            b'\xc0\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # -3.1
-            b'@\x14ffffff'                       # 5.1
-            b'@4\x00\x00\x00\x00\x00\x00'        # 20.0
-            b'\xbf\xec\xcc\xcc\xcc\xcc\xcc\xcd'  # -0.9
-        )
-        expected = dict(type='LineString',
-                        coordinates=[[2.2, -4.4, -10.0, 0.1],
-                                     [-3.1, 5.1, 20.0, -0.9]])
-
-        self.assertEqual(expected, wkb.loads(linestring))
+    def test_loads_zm(self):
+        self.assertEqual(self.ls4d, wkb.loads(self.ls4d_wkb))
 
 
 class PolygonTestCase(unittest.TestCase):
@@ -685,10 +590,10 @@ class MultiLineStringTestCase(unittest.TestCase):
         self.assertEqual(self.mls4d, wkb.loads(self.mls4d_wkb))
 
 
-class MultiPolygonDumpsTestCase(unittest.TestCase):
+class MultiPolygonTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        mpoly = dict(type='MultiPolygon', coordinates=[
+    def setUp(self):
+        self.mpoly2d = dict(type='MultiPolygon', coordinates=[
             [[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0],
               [102.0, 2.0]]],
             [[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0],
@@ -696,7 +601,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
              [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8],
               [100.2, 0.2]]],
         ])
-        expected = (
+        self.mpoly2d_wkb = (
             b'\x01'  # little endian
             b'\x06\x00\x00\x00'  # 2d multipolygon
             b'\x02\x00\x00\x00'  # two polygons
@@ -740,10 +645,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
             b'\x9a\x99\x99\x99\x99\x99\xc9?'
         )
-        self.assertEqual(expected, wkb.dumps(mpoly, big_endian=False))
-
-    def test_3d(self):
-        mpoly = dict(type='MultiPolygon', coordinates=[
+        self.mpoly3d = dict(type='MultiPolygon', coordinates=[
             [[[102.0, 2.0, 0.0], [103.0, 2.0, 1.0], [103.0, 3.0, 2.0],
               [102.0, 3.0, 3.0], [102.0, 2.0, 4.0]]],
             [[[100.0, 0.0, 5.0], [101.0, 0.0, 6.0], [101.0, 1.0, 7.0],
@@ -751,7 +653,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
              [[100.2, 0.2, 10.0], [100.8, 0.2, 11.0], [100.8, 0.8, 12.0],
               [100.2, 0.8, 13.0], [100.2, 0.2, 14.0]]],
         ])
-        expected = (
+        self.mpoly3d_wkb = (
             b'\x01'  # little endian
             b'\xee\x03\x00\x00'  # 3d multipolygon
             b'\x02\x00\x00\x00'  # two polygons
@@ -810,10 +712,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\x9a\x99\x99\x99\x99\x99\xc9?'
             b'\x00\x00\x00\x00\x00\x00,@'
         )
-        self.assertEqual(expected, wkb.dumps(mpoly, big_endian=False))
-
-    def test_4d(self):
-        mpoly = dict(type='MultiPolygon', coordinates=[
+        self.mpoly4d = dict(type='MultiPolygon', coordinates=[
             [[[102.0, 2.0, 0.0, 14.0], [103.0, 2.0, 1.0, 13.0],
               [103.0, 3.0, 2.0, 12.0], [102.0, 3.0, 3.0, 11.0],
               [102.0, 2.0, 4.0, 10.0]]],
@@ -824,7 +723,7 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
               [100.8, 0.8, 12.0, 2.0], [100.2, 0.8, 13.0, 1.0],
               [100.2, 0.2, 14.0, 0.0]]],
         ])
-        expected = (
+        self.mpoly4d_wkb = (
             b'\x01'  # little endian
             b'\xbe\x0b\x00\x00'  # 4d multipolygon
             b'\x02\x00\x00\x00'  # two polygons
@@ -898,19 +797,107 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00,@'
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
         )
-        self.assertEqual(expected, wkb.dumps(mpoly, big_endian=False))
+
+    def test_dumps_2d(self):
+        self.assertEqual(self.mpoly2d_wkb,
+                         wkb.dumps(self.mpoly2d, big_endian=False))
+
+    def test_dumps_3d(self):
+        self.assertEqual(self.mpoly3d_wkb,
+                         wkb.dumps(self.mpoly3d, big_endian=False))
+
+    def test_dumps_4d(self):
+        self.assertEqual(self.mpoly4d_wkb,
+                         wkb.dumps(self.mpoly4d, big_endian=False))
+
+    def test_loads_2d(self):
+        self.assertEqual(self.mpoly2d, wkb.loads(self.mpoly2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.mpoly3d, wkb.loads(self.mpoly3d_wkb))
+
+    def test_loads_m(self):
+        exp_mpoly = self.mpoly3d.copy()
+        for polygon in exp_mpoly['coordinates']:
+            for ring in polygon:
+                for vert in ring:
+                    vert.insert(2, 0.0)
+
+        mpoly_wkb = (
+            b'\x01'  # little endian
+            b'\xd6\x07\x00\x00'  # m multipolygon
+            b'\x02\x00\x00\x00'  # two polygons
+            b'\x01'  # little endian
+            b'\xd3\x07\x00\x00'  # m polygon
+            b'\x01\x00\x00\x00'  # 1 ring
+            b'\x05\x00\x00\x00'  # 5 vertices
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\x10@'
+            b'\x01'  # little endian
+            b'\xd3\x07\x00\x00'  # m polygon
+            b'\x02\x00\x00\x00'  # 2 rings
+            b'\x05\x00\x00\x00'  # first ring, 5 vertices
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\x14@'
+            b'\x00\x00\x00\x00\x00@Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\x18@'
+            b'\x00\x00\x00\x00\x00@Y@'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00\x1c@'
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00 @'
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00"@'
+            b'\x05\x00\x00\x00'  # second ring, 5 vertices
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+            b'\x00\x00\x00\x00\x00\x00$@'
+            b'333333Y@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+            b'\x00\x00\x00\x00\x00\x00&@'
+            b'333333Y@'
+            b'\x9a\x99\x99\x99\x99\x99\xe9?'
+            b'\x00\x00\x00\x00\x00\x00(@'
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xe9?'
+            b'\x00\x00\x00\x00\x00\x00*@'
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+            b'\x00\x00\x00\x00\x00\x00,@'
+        )
+        self.assertEqual(exp_mpoly, wkb.loads(mpoly_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.mpoly4d, wkb.loads(self.mpoly4d_wkb))
 
 
-class GeometryCollectionDumpsTestCase(unittest.TestCase):
+class GeometryCollectionTestCase(unittest.TestCase):
 
-    def test_2d(self):
-        gc = dict(type='GeometryCollection', geometries=[
+    def setUp(self):
+        self.gc2d = dict(type='GeometryCollection', geometries=[
             dict(type='Point', coordinates=[0.0, 1.0]),
             dict(type='LineString', coordinates=[
                 [102.0, 2.0], [103.0, 3.0], [104.0, 4.0]
             ]),
         ])
-        expected = (
+        self.gc2d_wkb = (
             b'\x00'  # big endian
             b'\x00\x00\x00\x07'  # 2d geometry collection
             b'\x00\x00\x00\x02'  # 2 geometries in the collection
@@ -928,16 +915,13 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
             b'@Z\x00\x00\x00\x00\x00\x00'
             b'@\x10\x00\x00\x00\x00\x00\x00'
         )
-        self.assertEqual(expected, wkb.dumps(gc))
-
-    def test_3d(self):
-        gc = dict(type='GeometryCollection', geometries=[
+        self.gc3d = dict(type='GeometryCollection', geometries=[
             dict(type='Point', coordinates=[0.0, 1.0, 2.0]),
             dict(type='LineString', coordinates=[
                 [102.0, 2.0, 6.0], [103.0, 3.0, 7.0], [104.0, 4.0, 8.0]
             ]),
         ])
-        expected = (
+        self.gc3d_wkb = (
             b'\x01'  # little endian
             b'\xef\x03\x00\x00'  # 3d geometry collection
             b'\x02\x00\x00\x00'  # 2 geometries in the collection
@@ -959,17 +943,14 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x10@'
             b'\x00\x00\x00\x00\x00\x00 @'
         )
-        self.assertEqual(expected, wkb.dumps(gc, big_endian=False))
-
-    def test_4d(self):
-        gc = dict(type='GeometryCollection', geometries=[
+        self.gc4d = dict(type='GeometryCollection', geometries=[
             dict(type='Point', coordinates=[0.0, 1.0, 2.0, 3.0]),
             dict(type='LineString', coordinates=[
                 [102.0, 2.0, 6.0, 10.0], [103.0, 3.0, 7.0, 11.0],
                 [104.0, 4.0, 8.0, 12.0]
             ]),
         ])
-        expected = (
+        self.gc4d_wkb = (
             b'\x00'  # big endian
             b'\x00\x00\x0b\xbf'  # 4d geometry collection
             b'\x00\x00\x00\x02'  # 2 geometries in the collection
@@ -995,4 +976,53 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
             b'@ \x00\x00\x00\x00\x00\x00'
             b'@(\x00\x00\x00\x00\x00\x00'
         )
-        self.assertEqual(expected, wkb.dumps(gc))
+
+    def test_dumps_2d(self):
+        self.assertEqual(self.gc2d_wkb, wkb.dumps(self.gc2d))
+
+    def test_dumps_3d(self):
+        self.assertEqual(self.gc3d_wkb, wkb.dumps(self.gc3d, big_endian=False))
+
+    def test_dumps_4d(self):
+        self.assertEqual(self.gc4d_wkb, wkb.dumps(self.gc4d))
+
+    def test_loads_2d(self):
+        self.assertEqual(self.gc2d, wkb.loads(self.gc2d_wkb))
+
+    def test_loads_z(self):
+        self.assertEqual(self.gc3d, wkb.loads(self.gc3d_wkb))
+
+    def test_loads_m(self):
+        exp_gc = dict(type='GeometryCollection', geometries=[
+            dict(type='Point', coordinates=[0.0, 1.0, 0.0, 2.0]),
+            dict(type='LineString', coordinates=[
+                [102.0, 2.0, 0.0, 6.0], [103.0, 3.0, 0.0, 7.0],
+                [104.0, 4.0, 0.0, 8.0]
+            ]),
+        ])
+        gc_wkb = (
+            b'\x01'  # little endian
+            b'\xd7\x07\x00\x00'
+            b'\x02\x00\x00\x00'  # 2 geometries in the collection
+            b'\x01'
+            b'\xd1\x07\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x01'
+            b'\xd2\x07\x00\x00'
+            b'\x03\x00\x00\x00'  # 3 vertices
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\x00\x18@'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x00\x1c@'
+            b'\x00\x00\x00\x00\x00\x00Z@'
+            b'\x00\x00\x00\x00\x00\x00\x10@'
+            b'\x00\x00\x00\x00\x00\x00 @'
+        )
+        self.assertEqual(exp_gc, wkb.loads(gc_wkb))
+
+    def test_loads_zm(self):
+        self.assertEqual(self.gc4d, wkb.loads(self.gc4d_wkb))
