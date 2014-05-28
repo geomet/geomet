@@ -218,17 +218,6 @@ def __dump_geometrycollection(obj, fmt):
     return gc
 
 
-__dumps_registry = {
-    'Point':  __dump_point,
-    'LineString': __dump_linestring,
-    'Polygon': __dump_polygon,
-    'MultiPoint': __dump_multipoint,
-    'MultiLineString': __dump_multilinestring,
-    'MultiPolygon': __dump_multipolygon,
-    'GeometryCollection': __dump_geometrycollection,
-}
-
-
 def __load_point(tokens, string):
     """
     :param tokens:
@@ -476,6 +465,17 @@ def __load_geometrycollection(tokens, string):
         except StopIteration:
             raise ValueError(INVALID_WKT_FMT % string)
     return result
+
+
+__dumps_registry = {
+    'Point':  __dump_point,
+    'LineString': __dump_linestring,
+    'Polygon': __dump_polygon,
+    'MultiPoint': __dump_multipoint,
+    'MultiLineString': __dump_multilinestring,
+    'MultiPolygon': __dump_multipolygon,
+    'GeometryCollection': __dump_geometrycollection,
+}
 
 
 __loads_registry = {

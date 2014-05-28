@@ -1,3 +1,7 @@
+import itertools
+import six
+
+
 def block_splitter(data, block_size):
     """
     Creates a generator by slicing ``data`` into chunks of ``block_size``.
@@ -37,3 +41,20 @@ def block_splitter(data, block_size):
     # yield it as well.
     if buf:
         yield buf
+
+
+def take(n, iterable):
+    """
+    Return first n items of the iterable as a list
+
+    Copied shamelessly from
+    http://docs.python.org/2/library/itertools.html#recipes.
+    """
+    return list(itertools.islice(iterable, n))
+
+
+def as_bin_str(a_list):
+    if six.PY2:
+        return b''.join(a_list)
+    else:
+        return bytes(a_list)

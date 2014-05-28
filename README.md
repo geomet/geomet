@@ -29,9 +29,9 @@ WKB <--> GeoJSON:
 
 - Point
 - LineString
-- TODO: Polygon
-- TODO: MultiPoint
-- TODO: MultiLineString
+- Polygon
+- MultiPoint
+- MultiLineString
 - TODO: MultiPolygon
 - TODO: GeometryCollection
 

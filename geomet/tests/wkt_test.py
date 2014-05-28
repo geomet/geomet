@@ -367,18 +367,46 @@ class MultiPolygonLoadsTestCase(unittest.TestCase):
 
 class MultiLineStringDumpsTestCase(unittest.TestCase):
 
-    def test(self):
+    def test_2d(self):
         mlls = dict(type='MultiLineString', coordinates=[
             [[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+            [[1.66, -31023.5], [10000.9999, 3.0], [100.9, 1.1],
+             [0.0, 0.0]],
+        ])
+        expected = (
+            'MULTILINESTRING ((0.000 -1.000, -2.000 -3.000, -4.000 -5.000), '
+            '(1.660 -31023.500, 10001.000 3.000, 100.900 1.100, 0.000 0.000))'
+        )
+        self.assertEqual(expected, wkt.dumps(mlls, decimals=3))
+
+    def test_3d(self):
+        mlls = dict(type='MultiLineString', coordinates=[
+            [[0.0, -1.0, 1.0], [-2.0, -3.0, 1.0], [-4.0, -5.0, 1.0]],
             [[1.66, -31023.5, 1.1], [10000.9999, 3.0, 2.2], [100.9, 1.1, 3.3],
              [0.0, 0.0, 4.4]],
         ])
         expected = (
-            'MULTILINESTRING ((0.000 -1.000, -2.000 -3.000, -4.000 -5.000), '
+            'MULTILINESTRING ((0.000 -1.000 1.000, -2.000 -3.000 1.000, '
+            '-4.000 -5.000 1.000), '
             '(1.660 -31023.500 1.100, 10001.000 3.000 2.200, '
             '100.900 1.100 3.300, 0.000 0.000 4.400))'
         )
         self.assertEqual(expected, wkt.dumps(mlls, decimals=3))
+
+    def test_4d(self):
+        mlls = dict(type='MultiLineString', coordinates=[
+            [[0.0, -1.0, 1.0, 0.0], [-2.0, -3.0, 1.0, 0.0],
+             [-4.0, -5.0, 1.0, 0.0]],
+            [[1.66, -31023.5, 1.1, 0.0], [10000.9999, 3.0, 2.2, 0.0],
+             [100.9, 1.1, 3.3, 0.0], [0.0, 0.0, 4.4, 0.0]],
+        ])
+        expected = (
+            'MULTILINESTRING ((0.00 -1.00 1.00 0.00, '
+            '-2.00 -3.00 1.00 0.00, -4.00 -5.00 1.00 0.00), '
+            '(1.66 -31023.50 1.10 0.00, 10001.00 3.00 2.20 0.00, '
+            '100.90 1.10 3.30 0.00, 0.00 0.00 4.40 0.00))'
+        )
+        self.assertEqual(expected, wkt.dumps(mlls, decimals=2))
 
 
 class MultiLineStringLoadsTestCase(unittest.TestCase):

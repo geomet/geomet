@@ -2,3 +2,5 @@
 *.swp
 *.DS_Store
 .coverage
+.tox
+geomet.egg-info
