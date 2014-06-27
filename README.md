@@ -32,8 +32,8 @@ WKB <--> GeoJSON:
 - Polygon
 - MultiPoint
 - MultiLineString
-- TODO: MultiPolygon
-- TODO: GeometryCollection
+- MultiPolygon
+- GeometryCollection
 
 ### Installation ###
 
