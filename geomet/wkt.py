@@ -41,10 +41,10 @@ def dumps(obj, decimals=16):
     Dump a GeoJSON-like `dict` to a WKT string.
     """
     geom_type = obj['type']
-    exporter = __dumps_registry.get(geom_type)
+    exporter = _dumps_registry.get(geom_type)
 
     if exporter is None:
-        __unsupported_geom_type(geom_type)
+        _unsupported_geom_type(geom_type)
 
     fmt = '%%.%df' % decimals
     return exporter(obj, fmt)
@@ -57,17 +57,17 @@ def loads(string):
     sio = StringIO.StringIO(string)
     # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
-    tokens = __tokenize_wkt(tokens)
+    tokens = _tokenize_wkt(tokens)
     geom_type = next(tokens)
 
-    importer = __loads_registry.get(geom_type)
+    importer = _loads_registry.get(geom_type)
 
     if importer is None:
-        __unsupported_geom_type(geom_type)
+        _unsupported_geom_type(geom_type)
     return importer(tokens, string)
 
 
-def __tokenize_wkt(tokens):
+def _tokenize_wkt(tokens):
     """
     Since the tokenizer treats "-" and numeric strings as separate values,
     combine them and yield them as a single token. This utility encapsulates
@@ -87,11 +87,11 @@ def __tokenize_wkt(tokens):
             negative = False
 
 
-def __unsupported_geom_type(geom_type):
+def _unsupported_geom_type(geom_type):
     raise ValueError("Unsupported geometry type '%s'" % geom_type)
 
 
-def __dump_point(obj, fmt):
+def _dump_point(obj, fmt):
     """
     Dump a GeoJSON-like Point object to WKT.
 
@@ -109,12 +109,12 @@ def __dump_point(obj, fmt):
     return pt
 
 
-def __dump_linestring(obj, fmt):
+def _dump_linestring(obj, fmt):
     """
     Dump a GeoJSON-like LineString object to WKT.
 
     Input parameters and return value are the LINESTRING equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
     """
     coords = obj['coordinates']
     ls = 'LINESTRING (%s)'
@@ -122,12 +122,12 @@ def __dump_linestring(obj, fmt):
     return ls
 
 
-def __dump_polygon(obj, fmt):
+def _dump_polygon(obj, fmt):
     """
     Dump a GeoJSON-like Polygon object to WKT.
 
     Input parameters and return value are the POLYGON equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
     """
     coords = obj['coordinates']
     poly = 'POLYGON (%s)'
@@ -138,12 +138,12 @@ def __dump_polygon(obj, fmt):
     return poly
 
 
-def __dump_multipoint(obj, fmt):
+def _dump_multipoint(obj, fmt):
     """
     Dump a GeoJSON-like MultiPoint object to WKT.
 
     Input parameters and return value are the MULTIPOINT equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
     """
     coords = obj['coordinates']
     mp = 'MULTIPOINT (%s)'
@@ -154,12 +154,12 @@ def __dump_multipoint(obj, fmt):
     return mp
 
 
-def __dump_multilinestring(obj, fmt):
+def _dump_multilinestring(obj, fmt):
     """
     Dump a GeoJSON-like MultiLineString object to WKT.
 
     Input parameters and return value are the MULTILINESTRING equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
     """
     coords = obj['coordinates']
     mlls = 'MULTILINESTRING (%s)'
@@ -169,12 +169,12 @@ def __dump_multilinestring(obj, fmt):
     return mlls
 
 
-def __dump_multipolygon(obj, fmt):
+def _dump_multipolygon(obj, fmt):
     """
     Dump a GeoJSON-like MultiPolygon object to WKT.
 
     Input parameters and return value are the MULTIPOLYGON equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
     """
     coords = obj['coordinates']
     mp = 'MULTIPOLYGON (%s)'
@@ -198,12 +198,12 @@ def __dump_multipolygon(obj, fmt):
     return mp
 
 
-def __dump_geometrycollection(obj, fmt):
+def _dump_geometrycollection(obj, fmt):
     """
     Dump a GeoJSON-like GeometryCollection object to WKT.
 
     Input parameters and return value are the GEOMETRYCOLLECTION equivalent to
-    :func:`__dump_point`.
+    :func:`_dump_point`.
 
     The WKT conversions for each geometry in the collection are delegated to
     their respective functions.
@@ -213,12 +213,12 @@ def __dump_geometrycollection(obj, fmt):
     geoms_wkt = []
     for geom in geoms:
         geom_type = geom['type']
-        geoms_wkt.append(__dumps_registry.get(geom_type)(geom, fmt))
+        geoms_wkt.append(_dumps_registry.get(geom_type)(geom, fmt))
     gc %= ','.join(geoms_wkt)
     return gc
 
 
-def __load_point(tokens, string):
+def _load_point(tokens, string):
     """
     :param tokens:
         A generator of string tokens for the input WKT, begining just after the
@@ -250,9 +250,9 @@ def __load_point(tokens, string):
     return dict(type='Point', coordinates=coords)
 
 
-def __load_linestring(tokens, string):
+def _load_linestring(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling LINESTRING geometry.
 
     :returns:
@@ -282,9 +282,9 @@ def __load_linestring(tokens, string):
     return dict(type='LineString', coordinates=coords)
 
 
-def __load_polygon(tokens, string):
+def _load_polygon(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling POLYGON geometry.
 
     :returns:
@@ -333,9 +333,9 @@ def __load_polygon(tokens, string):
     return dict(type='Polygon', coordinates=coords)
 
 
-def __load_multipoint(tokens, string):
+def _load_multipoint(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling MULTIPOINT geometry.
 
     :returns:
@@ -376,9 +376,9 @@ def __load_multipoint(tokens, string):
     return dict(type='MultiPoint', coordinates=coords)
 
 
-def __load_multipolygon(tokens, string):
+def _load_multipolygon(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling MULTIPOLYGON geometry.
 
     :returns:
@@ -391,7 +391,7 @@ def __load_multipolygon(tokens, string):
     polygons = []
     while True:
         try:
-            poly = __load_polygon(tokens, string)
+            poly = _load_polygon(tokens, string)
             polygons.append(poly['coordinates'])
             t = next(tokens)
             if t == ')':
@@ -404,9 +404,9 @@ def __load_multipolygon(tokens, string):
     return dict(type='MultiPolygon', coordinates=polygons)
 
 
-def __load_multilinestring(tokens, string):
+def _load_multilinestring(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling MULTILINESTRING geometry.
 
     :returns:
@@ -419,7 +419,7 @@ def __load_multilinestring(tokens, string):
     linestrs = []
     while True:
         try:
-            linestr = __load_linestring(tokens, string)
+            linestr = _load_linestring(tokens, string)
             linestrs.append(linestr['coordinates'])
             t = next(tokens)
             if t == ')':
@@ -432,9 +432,9 @@ def __load_multilinestring(tokens, string):
     return dict(type='MultiLineString', coordinates=linestrs)
 
 
-def __load_geometrycollection(tokens, string):
+def _load_geometrycollection(tokens, string):
     """
-    Has similar inputs and return value to to :func:`__load_point`, except is
+    Has similar inputs and return value to to :func:`_load_point`, except is
     for handling GEOMETRYCOLLECTIONs.
 
     Delegates parsing to the parsers for the individual geometry types.
@@ -459,7 +459,7 @@ def __load_geometrycollection(tokens, string):
                 continue
             else:
                 geom_type = t
-                load_func = __loads_registry.get(geom_type)
+                load_func = _loads_registry.get(geom_type)
                 geom = load_func(tokens, string)
                 geoms.append(geom)
         except StopIteration:
@@ -467,23 +467,23 @@ def __load_geometrycollection(tokens, string):
     return result
 
 
-__dumps_registry = {
-    'Point':  __dump_point,
-    'LineString': __dump_linestring,
-    'Polygon': __dump_polygon,
-    'MultiPoint': __dump_multipoint,
-    'MultiLineString': __dump_multilinestring,
-    'MultiPolygon': __dump_multipolygon,
-    'GeometryCollection': __dump_geometrycollection,
+_dumps_registry = {
+    'Point':  _dump_point,
+    'LineString': _dump_linestring,
+    'Polygon': _dump_polygon,
+    'MultiPoint': _dump_multipoint,
+    'MultiLineString': _dump_multilinestring,
+    'MultiPolygon': _dump_multipolygon,
+    'GeometryCollection': _dump_geometrycollection,
 }
 
 
-__loads_registry = {
-    'POINT': __load_point,
-    'LINESTRING': __load_linestring,
-    'POLYGON': __load_polygon,
-    'MULTIPOINT': __load_multipoint,
-    'MULTILINESTRING': __load_multilinestring,
-    'MULTIPOLYGON': __load_multipolygon,
-    'GEOMETRYCOLLECTION': __load_geometrycollection,
+_loads_registry = {
+    'POINT': _load_point,
+    'LINESTRING': _load_linestring,
+    'POLYGON': _load_polygon,
+    'MULTIPOINT': _load_multipoint,
+    'MULTILINESTRING': _load_multilinestring,
+    'MULTIPOLYGON': _load_multipolygon,
+    'GEOMETRYCOLLECTION': _load_geometrycollection,
 }
