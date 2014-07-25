@@ -1,4 +1,4 @@
-# Contributors to GeoMet
+# Authors of GeoMet
 # Name (github-username) - Month Year
 Lars Butler (larsbutler) - March 2013
 ? (maralla) - November 2013
