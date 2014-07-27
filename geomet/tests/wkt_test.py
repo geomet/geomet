@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import geomet
 import unittest
 
 from geomet import wkt
@@ -92,6 +93,19 @@ class WKTTestCase(unittest.TestCase):
     def test_dumps_empty_geometrycollection(self):
         geom = dict(type='GeometryCollection', geometries=[])
         self.assertEqual('GEOMETRYCOLLECTION EMPTY', wkt.dumps(geom))
+
+    def test_malformed_geojson(self):
+        bad_geojson = [
+            # GEOMETRYCOLLECTIONs have 'geometries', not coordinates
+            dict(type='GeometryCollection', coordinates=[]),
+            # All other geometry types must have coordinates
+            dict(type='Point'),
+            # and a type
+            dict(coordinates=[]),
+        ]
+        for each in bad_geojson:
+            with self.assertRaises(geomet.InvalidGeoJSONException):
+                wkt.dumps(each)
 
 
 class PointDumpsTestCase(unittest.TestCase):

@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import geomet
 import tokenize
 
 try:
@@ -53,11 +54,12 @@ def dumps(obj, decimals=16):
     """
     Dump a GeoJSON-like `dict` to a WKT string.
     """
-    geom_type = obj['type']
-    exporter = _dumps_registry.get(geom_type)
+    try:
+        geom_type = obj['type']
+        exporter = _dumps_registry.get(geom_type)
 
-    if exporter is None:
-        _unsupported_geom_type(geom_type)
+        if exporter is None:
+            _unsupported_geom_type(geom_type)
 
         # Check for empty cases
         if geom_type == 'GeometryCollection':
@@ -67,6 +69,8 @@ def dumps(obj, decimals=16):
             coords = obj['coordinates']
             if len(coords) == 0:
                 return '%s EMPTY' % geom_type.upper()
+    except KeyError:
+        raise geomet.InvalidGeoJSONException('Invalid GeoJSON: %s' % obj)
 
     fmt = '%%.%df' % decimals
     return exporter(obj, fmt)
