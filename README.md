@@ -1,4 +1,4 @@
-GeoMet [![Build Status](https://secure.travis-ci.org/larsbutler/geomet.png?branch=master)](http://travis-ci.org/larsbutler/geomet)
+GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=master)](http://travis-ci.org/geomet/geomet)
 ======
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
@@ -43,7 +43,7 @@ Clone the source code from git and run:
 
 You can also install directly from the git repo using pip:
 
-    $ pip install git+git://github.com/larsbutler/geomet.git
+    $ pip install git+git://github.com/geomet/geomet.git
 
 ### Example usage ###
 
