@@ -74,6 +74,25 @@ class WKTTestCase(unittest.TestCase):
         self.assertEqual("Unsupported geometry type 'Tetrahedron'",
                          str(ar.exception))
 
+    def test_dumps_empty_geoms(self):
+        types = [
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon',
+        ]
+        expected = ['%s EMPTY' % x.upper() for x in types]
+
+        for i, t in enumerate(types):
+            geom = dict(type=t, coordinates=[])
+            self.assertEqual(expected[i], wkt.dumps(geom))
+
+    def test_dumps_empty_geometrycollection(self):
+        geom = dict(type='GeometryCollection', geometries=[])
+        self.assertEqual('GEOMETRYCOLLECTION EMPTY', wkt.dumps(geom))
+
 
 class PointDumpsTestCase(unittest.TestCase):
 

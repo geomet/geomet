@@ -59,6 +59,15 @@ def dumps(obj, decimals=16):
     if exporter is None:
         _unsupported_geom_type(geom_type)
 
+        # Check for empty cases
+        if geom_type == 'GeometryCollection':
+            if len(obj['geometries']) == 0:
+                return 'GEOMETRYCOLLECTION EMPTY'
+        else:
+            coords = obj['coordinates']
+            if len(coords) == 0:
+                return '%s EMPTY' % geom_type.upper()
+
     fmt = '%%.%df' % decimals
     return exporter(obj, fmt)
 
