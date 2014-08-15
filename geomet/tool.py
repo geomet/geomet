@@ -16,8 +16,11 @@
 
 Example usage:
 
-  $ echo "POINT (0.9999999 0.9999999)" | python -m geomet.tool --wkb | python -m geomet.tool --wkt --precision 7
+  $ echo "POINT (0.9999999 0.9999999)" \
+  > | python -m geomet.tool --wkb \
+  > | python -m geomet.tool --wkt --precision 7
   POINT (0.9999999 0.9999999)
+
 """
 
 import json
@@ -28,9 +31,11 @@ import click
 
 from geomet import wkb, wkt
 
+
 def configure_logging(verbosity):
     log_level = max(10, 30 - 10*verbosity)
     logging.basicConfig(stream=sys.stderr, level=log_level)
+
 
 def transform_geom(g, precision=-1):
     if g['type'] == 'Point':
@@ -69,10 +74,12 @@ def transform_geom(g, precision=-1):
     g['coordinates'] = new_coords
     return g
 
-@click.command(short_help="Convert between WKB/WKT and GeoJSON using stdin and stdout.")
+
+@click.command(
+    short_help="Convert between WKB/WKT and GeoJSON using stdin and stdout.")
 @click.option('--verbose', '-v', count=True, help="Increase verbosity.")
 @click.option('--quiet', '-q', count=True, help="Decrease verbosity.")
-@click.option('--json', 'output_format', flag_value='json', default=True, 
+@click.option('--json', 'output_format', flag_value='json', default=True,
               help="JSON output.")
 @click.option('--wkb', 'output_format', flag_value='wkb',
               help="WKB output.")
@@ -89,7 +96,7 @@ def cli(verbose, quiet, output_format, precision, indent):
 
     # Detect the input format
     stdin = click.get_binary_stream('stdin')
-    
+
     try:
         input = stdin.read()
         try:
@@ -128,4 +135,3 @@ def cli(verbose, quiet, output_format, precision, indent):
 
 if __name__ == '__main__':
     cli()
-
