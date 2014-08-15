@@ -81,7 +81,7 @@ def round_geom(geom, precision=None):
         if precision is not None:
             xp = [round(v, precision) for v in xp]
             yp = [round(v, precision) for v in yp]
-        new_coords = tuple(zip(xp, yp)[0])
+        new_coords = tuple(zip(xp, yp))[0]
     if geom['type'] in ['LineString', 'MultiPoint']:
         xp, yp = zip(*geom['coordinates'])
         if precision is not None:
