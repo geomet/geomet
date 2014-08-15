@@ -37,6 +37,7 @@ setup(
     long_description=__doc__,
     platforms=['any'],
     packages=find_packages(exclude=['geomet.tests', 'geomet.tests.*']),
+    scripts=['scripts/geomet'],
     provides=['geomet (%s)' % VERSION],
     license='BSD',
     keywords='wkb wkt geojson',
