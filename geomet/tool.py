@@ -26,8 +26,7 @@ import sys
 
 import click
 
-import geomet
-import geomet.wkb, geomet.wkt
+from geomet import wkb, wkt
 
 def configure_logging(verbosity):
     log_level = max(10, 30 - 10*verbosity)
@@ -98,17 +97,17 @@ def cli(verbose, quiet, output_format, precision, indent):
             if text.startswith('{'):
                 geom = json.loads(text)
             else:
-                geom = geomet.wkt.loads(text)
+                geom = wkt.loads(text)
         except UnicodeDecodeError:
-            geom = geomet.wkb.loads(input)
+            geom = wkb.loads(input)
 
         if output_format == 'wkb':
-            output = geomet.wkb.dumps(geom)
+            output = wkb.dumps(geom)
         elif output_format == 'wkt':
             kwds = {}
             if precision >= 0:
                 kwds['decimals'] = precision
-            output = geomet.wkt.dumps(geom, **kwds)
+            output = wkt.dumps(geom, **kwds)
         else:
             if precision >= 0:
                 geom = transform_geom(geom, precision)
