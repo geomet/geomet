@@ -10,8 +10,8 @@ The name "GeoMet" was inspired by "met", the German word for
 [mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
 the word "geometry".
 
-GeoMet is BSD-licensed and is intended to cover all common use cases for
-dealing with 2D, 3D, and 4D geometries (including 'Z', 'M', and 'ZM').
+GeoMet is intended to cover all common use cases for dealing with 2D, 3D, and
+4D geometries (including 'Z', 'M', and 'ZM').
 
 The following conversion functions are supported.
 
