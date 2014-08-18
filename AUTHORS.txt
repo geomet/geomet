@@ -1,5 +1,5 @@
 # Authors of GeoMet
-# Name (github-username) - Month Year
-Lars Butler (larsbutler) - March 2013
-? (maralla) - November 2013
-Sean Gillies (sgillies) - August 2014
+# Name <email address> - Month Year
+Lars Butler <lars.butler@gmail.com> - March 2013
+Maralla <maralla.ai@gmail.com> - November 2013
+Sean Gillies <sean.gillies@gmail.com> - August 2014
