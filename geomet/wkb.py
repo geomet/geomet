@@ -18,6 +18,7 @@ import struct
 from geomet.util import block_splitter
 from geomet.util import take
 from geomet.util import as_bin_str
+from geomet.util import flatten_multi_dim
 from itertools import chain
 
 #: '\x00': The first byte of any WKB string. Indicates big endian byte
@@ -155,6 +156,14 @@ def dumps(obj, big_endian=True):
         simplicity, we assume that geometry that looks 3D contains XYZ
         components, instead of XYM.
 
+        If the coordinates list has no coordinate values (this includes nested
+        lists, for example, `[[[[],[]], []]]`, the geometry is considered to be
+        empty. Geometries, with the exception of points, have a reasonable
+        "empty" representation in WKB; however, without knowing the number of
+        coordinate values per vertex, the type is ambigious, and thus we don't
+        know if the geometry type is 2D, Z, M, or ZM. Therefore in this case
+        we expect a `ValueError` to be raised.
+
     :param dict obj:
         GeoJson-like `dict` object.
     :param bool big_endian:
@@ -177,6 +186,15 @@ def dumps(obj, big_endian=True):
     exporter = _dumps_registry.get(geom_type)
     if exporter is None:
         _unsupported_geom_type(geom_type)
+
+    # Check for empty geometries. GeometryCollections have a slightly different
+    # JSON/dict structure, but that's handled.
+    coords_or_geoms = obj.get('coordinates', obj.get('geometries'))
+    if len(list(flatten_multi_dim(coords_or_geoms))) == 0:
+        raise ValueError(
+            'Empty geometries cannot be represented in WKB. Reason: The '
+            'dimensionality of the WKB would be ambiguous.'
+        )
 
     return exporter(obj, big_endian)
 

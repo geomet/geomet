@@ -90,6 +90,23 @@ class WKTTestCase(unittest.TestCase):
             geom = dict(type=t, coordinates=[])
             self.assertEqual(expected[i], wkt.dumps(geom))
 
+    def test_loads_empty_geoms(self):
+        types = [
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon',
+        ]
+        wkts = ['%s EMPTY' % x.upper() for x in types]
+        for i, each_wkt in enumerate(wkts):
+            expected = dict(type=types[i], coordinates=[])
+            self.assertEqual(expected, wkt.loads(each_wkt))
+
+        self.assertEqual(dict(type='GeometryCollection', geometries=[]),
+                         wkt.loads('GEOMETRYCOLLECTION EMPTY'))
+
     def test_dumps_empty_geometrycollection(self):
         geom = dict(type='GeometryCollection', geometries=[])
         self.assertEqual('GEOMETRYCOLLECTION EMPTY', wkt.dumps(geom))

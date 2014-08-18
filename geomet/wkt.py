@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import geomet
+import itertools
+import six
 import tokenize
 
 try:
@@ -19,6 +21,8 @@ try:
 except ImportError:
     import io
     StringIO = io
+
+from geomet import util
 
 
 INVALID_WKT_FMT = 'Invalid WKT: `%s`'
@@ -66,8 +70,8 @@ def dumps(obj, decimals=16):
             if len(obj['geometries']) == 0:
                 return 'GEOMETRYCOLLECTION EMPTY'
         else:
-            coords = obj['coordinates']
-            if len(coords) == 0:
+            # Geom has no coordinate values at all, and must be empty.
+            if len(list(util.flatten_multi_dim(obj['coordinates']))) == 0:
                 return '%s EMPTY' % geom_type.upper()
     except KeyError:
         raise geomet.InvalidGeoJSONException('Invalid GeoJSON: %s' % obj)
@@ -90,6 +94,17 @@ def loads(string):
 
     if importer is None:
         _unsupported_geom_type(geom_type)
+
+    peek = six.advance_iterator(tokens)
+    if peek == 'EMPTY':
+        if geom_type == 'GEOMETRYCOLLECTION':
+            return dict(type='GeometryCollection', geometries=[])
+        else:
+            return dict(type=_type_map_caps_to_mixed[geom_type],
+                        coordinates=[])
+
+    # Put the peeked element back on the head of the token generator
+    tokens = itertools.chain([peek], tokens)
     return importer(tokens, string)
 
 
@@ -513,3 +528,13 @@ _loads_registry = {
     'MULTIPOLYGON': _load_multipolygon,
     'GEOMETRYCOLLECTION': _load_geometrycollection,
 }
+
+_type_map_caps_to_mixed = dict(
+    POINT='Point',
+    LINESTRING='LineString',
+    POLYGON='Polygon',
+    MULTIPOINT='MultiPoint',
+    MULTILINESTRING='MultiLineString',
+    MULTIPOLYGON='MultiPolygon',
+    GEOMETRYCOLLECTION='GeometryCollection',
+)

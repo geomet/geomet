@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import collections
 import itertools
 import six
 
@@ -109,3 +110,16 @@ def round_geom(geom, precision=None):
                 inner_coords.append(tuple(zip(xp, yp)))
             new_coords.append(inner_coords)
     return {'type': geom['type'], 'coordinates': new_coords}
+
+
+def flatten_multi_dim(sequence):
+    """Flatten a multi-dimensional array-like to a single dimensional sequence
+    (as a generator).
+    """
+    for x in sequence:
+        if (isinstance(x, collections.Iterable)
+                and not isinstance(x, six.string_types)):
+            for y in flatten_multi_dim(x):
+                yield y
+        else:
+            yield x
