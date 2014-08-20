@@ -19,12 +19,13 @@
 Example usage:
 
   $ echo "POINT (0.9999999 0.9999999)" \
-  > | geomet --wkb \
-  > | geomet --wkt --precision 7
+  > | geomet --wkb - \
+  > | geomet --wkt --precision 7 -
   POINT (0.9999999 0.9999999)
 
 """
 
+from binascii import a2b_hex, b2a_hex
 import json
 import logging
 import sys
@@ -39,65 +40,70 @@ def configure_logging(verbosity):
     logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
+def translate(text, output_format='json', indent=None, precision=-1):
+    if text.startswith('{'):
+        geom = json.loads(text)
+    elif text.startswith(('G', 'L', 'M', 'P')):
+        geom = wkt.loads(text)
+    else:
+        geom = wkb.loads(a2b_hex(text))
+    if output_format == 'wkb':
+        output = b2a_hex(wkb.dumps(geom))
+    elif output_format == 'wkt':
+        kwds = {}
+        if precision >= 0:
+            kwds['decimals'] = precision
+        output = wkt.dumps(geom, **kwds)
+    else:
+        if precision >= 0:
+            geom = util.round_geom(geom, precision)
+        output = json.dumps(geom, indent=indent, sort_keys=True)
+    return output
+
+
 @click.command(
-    short_help="Convert between WKB/WKT and GeoJSON using stdin and stdout.")
+    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.")
+@click.argument('input', default='-', required=False)
 @click.option('--verbose', '-v', count=True, help="Increase verbosity.")
 @click.option('--quiet', '-q', count=True, help="Decrease verbosity.")
 @click.option('--json', 'output_format', flag_value='json', default=True,
               help="JSON output.")
 @click.option('--wkb', 'output_format', flag_value='wkb',
-              help="WKB output.")
+              help="Hex-encoded WKB output.")
 @click.option('--wkt', 'output_format', flag_value='wkt',
               help="WKT output.")
 @click.option('--precision', type=int, default=-1,
               help="Decimal precision of JSON and WKT coordinates.")
 @click.option('--indent', default=None, type=int,
               help="Indentation level for pretty printed output")
-def cli(verbose, quiet, output_format, precision, indent):
-    """Convert data read from stdin to GeoJSON and then dump and write
-    to stdout."""
+def cli(input, verbose, quiet, output_format, precision, indent):
+    """Convert text read from the first positional argument, stdin, or
+    a file to GeoJSON and write to stdout."""
+
     verbosity = verbose - quiet
     configure_logging(verbosity)
     logger = logging.getLogger('geomet')
 
-    # Detect the input format
-    stdin = click.get_binary_stream('stdin')
-
+    # Handle the case of file, stream, or string input.
     try:
-        input = stdin.read()
-        try:
-            text = input.decode('utf-8').strip()
-            if text.startswith('{'):
-                geom = json.loads(text)
-            else:
-                geom = wkt.loads(text)
-        except UnicodeDecodeError:
-            geom = wkb.loads(input)
+        src = click.open_file(input).readlines()
+    except IOError:
+        src = [input]
 
-        if output_format == 'wkb':
-            output = wkb.dumps(geom)
-        elif output_format == 'wkt':
-            kwds = {}
-            if precision >= 0:
-                kwds['decimals'] = precision
-            output = wkt.dumps(geom, **kwds)
-        else:
-            if precision >= 0:
-                geom = util.round_geom(geom, precision)
-            output = json.dumps(geom, indent=indent)
-        logger.debug("Output: %r", output)
-
-        if output_format in ('json', 'wkt'):
-            stdout = click.get_text_stream('stdout')
-        else:
-            stdout = click.get_binary_stream('stdout')
-        stdout.write(output)
-        stdout.write("\n")
+    # Read-write loop.
+    try:
+        for line in src:
+            text = line.strip()
+            logger.debug("Input: %r", text)
+            output = translate(text, output_format=output_format, indent=indent,
+                        precision=precision)
+            logger.debug("Output: %r", output)
+            click.echo(output)
         sys.exit(0)
-
     except Exception:
         logger.exception("Failed. Exception caught")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     cli()
