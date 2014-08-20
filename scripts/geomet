@@ -90,6 +90,8 @@ def cli(input, verbose, quiet, output_format, precision, indent):
     except IOError:
         src = [input]
 
+    stdout = click.get_text_stream('stdout')
+
     # Read-write loop.
     try:
         for line in src:
@@ -98,7 +100,8 @@ def cli(input, verbose, quiet, output_format, precision, indent):
             output = translate(text, output_format=output_format, indent=indent,
                         precision=precision)
             logger.debug("Output: %r", output)
-            click.echo(output)
+            stdout.write(output)
+            stdout.write('\n')
         sys.exit(0)
     except Exception:
         logger.exception("Failed. Exception caught")
