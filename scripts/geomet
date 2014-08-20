@@ -40,9 +40,30 @@ def configure_logging(verbosity):
     logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
+def translate(text, output_format='json', indent=None, precision=-1):
+    if text.startswith('{'):
+        geom = json.loads(text)
+    elif text.startswith(('G', 'L', 'M', 'P')):
+        geom = wkt.loads(text)
+    else:
+        geom = wkb.loads(a2b_hex(text))
+    if output_format == 'wkb':
+        output = b2a_hex(wkb.dumps(geom))
+    elif output_format == 'wkt':
+        kwds = {}
+        if precision >= 0:
+            kwds['decimals'] = precision
+        output = wkt.dumps(geom, **kwds)
+    else:
+        if precision >= 0:
+            geom = util.round_geom(geom, precision)
+        output = json.dumps(geom, indent=indent)
+    return output
+
+
 @click.command(
-    short_help="Convert between WKT or hex-encoded WKB and GeoJSON using stdin and stdout.")
-@click.argument('input', type=click.File('r'))
+    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.")
+@click.argument('input', default='-', required=False)
 @click.option('--verbose', '-v', count=True, help="Increase verbosity.")
 @click.option('--quiet', '-q', count=True, help="Decrease verbosity.")
 @click.option('--json', 'output_format', flag_value='json', default=True,
@@ -56,32 +77,26 @@ def configure_logging(verbosity):
 @click.option('--indent', default=None, type=int,
               help="Indentation level for pretty printed output")
 def cli(input, verbose, quiet, output_format, precision, indent):
-    """Convert data read from stdin to GeoJSON and then dump and write
-    to stdout."""
+    """Convert text read from the first positional argument, stdin, or
+    a file to GeoJSON and write to stdout."""
+
     verbosity = verbose - quiet
     configure_logging(verbosity)
     logger = logging.getLogger('geomet')
+
+    # Handle the case of file, stream, or string input.
     try:
-        for line in input:
-            logger.debug("Input: %r", line)
+        src = click.open_file(input).readlines()
+    except IOError:
+        src = [input]
+
+    # Read-write loop.
+    try:
+        for line in src:
             text = line.strip()
-            if text.startswith('{'):
-                geom = json.loads(text)
-            elif text.startswith(('G', 'L', 'M', 'P')):
-                geom = wkt.loads(text)
-            else:
-                geom = wkb.loads(a2b_hex(text))
-            if output_format == 'wkb':
-                output = b2a_hex(wkb.dumps(geom))
-            elif output_format == 'wkt':
-                kwds = {}
-                if precision >= 0:
-                    kwds['decimals'] = precision
-                output = wkt.dumps(geom, **kwds)
-            else:
-                if precision >= 0:
-                    geom = util.round_geom(geom, precision)
-                output = json.dumps(geom, indent=indent)
+            logger.debug("Input: %r", text)
+            output = translate(text, output_format=output_format, indent=indent,
+                        precision=precision)
             logger.debug("Output: %r", output)
             click.echo(output)
         sys.exit(0)
