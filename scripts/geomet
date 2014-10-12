@@ -25,7 +25,8 @@ Example usage:
 
 """
 
-from binascii import a2b_hex, b2a_hex
+from binascii import a2b_hex
+from binascii import b2a_hex
 import json
 import logging
 import sys
