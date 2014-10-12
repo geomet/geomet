@@ -35,6 +35,8 @@ import click
 
 from geomet import util, wkb, wkt
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 
 def configure_logging(verbosity):
     log_level = max(10, 30 - 10 * verbosity)
@@ -63,7 +65,8 @@ def translate(text, output_format='json', indent=None, precision=-1):
 
 
 @click.command(
-    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.")
+    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.",
+    context_settings=CONTEXT_SETTINGS)
 @click.argument('input', default='-', required=False)
 @click.option('--verbose', '-v', count=True, help="Increase verbosity.")
 @click.option('--quiet', '-q', count=True, help="Decrease verbosity.")
