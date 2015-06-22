@@ -77,6 +77,16 @@ Converting a 'LineString' GeoJSON object to WKB:
     >>> wkb.dumps(linestring, big_endian=False)
     '\x01\x02\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00$@\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\xf0?\x00\x00\x00\x00\x00\x004@\x00\x00\x00\x00\x00\x00\x10@\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00>@\x00\x00\x00\x00\x00\x00\x14@\x00\x00\x00\x00\x00\x00\x10@\x00\x00\x00\x00\x00\x00D@'
 
+Converting 'Point' WKT to GeoJSON:
+
+    >>> wkt.loads('POINT(10 20)')
+    {'type': 'Point', 'coordinates': [10.0, 20.0]}
+
+Coverting 'GeometryCollection' WKT to GeoJSON:
+
+    >>> wkt.loads('GEOMETRYCOLLECTION(POINT(10 20),POLYGON(((0 0), (10 30), (30 10), (0 0)))')
+    {'type': 'GeometryCollection', 'geometries': [{'type': 'Point', 'coordinates': [10.0, 20.0]}, {'type': 'Polygon', 'coordinates': [[[0.0, 0.0]], [[10.0, 30.0]], [[30.0, 10.0]], [[0.0, 0.0]]]}]}
+
 ### See Also ###
 
 - [wellknown](https://github.com/mapbox/wellknown) provides similar features for Node.
