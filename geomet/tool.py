@@ -25,7 +25,8 @@ Example usage:
 
 """
 
-from binascii import a2b_hex, b2a_hex
+from binascii import a2b_hex
+from binascii import b2a_hex
 import json
 import logging
 import sys
@@ -34,9 +35,11 @@ import click
 
 from geomet import util, wkb, wkt
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 
 def configure_logging(verbosity):
-    log_level = max(10, 30 - 10*verbosity)
+    log_level = max(10, 30 - 10 * verbosity)
     logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
@@ -62,7 +65,8 @@ def translate(text, output_format='json', indent=None, precision=-1):
 
 
 @click.command(
-    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.")
+    short_help="Convert between WKT or hex-encoded WKB and GeoJSON.",
+    context_settings=CONTEXT_SETTINGS)
 @click.argument('input', default='-', required=False)
 @click.option('--verbose', '-v', count=True, help="Increase verbosity.")
 @click.option('--quiet', '-q', count=True, help="Decrease verbosity.")
@@ -97,8 +101,12 @@ def cli(input, verbose, quiet, output_format, precision, indent):
         for line in src:
             text = line.strip()
             logger.debug("Input: %r", text)
-            output = translate(text, output_format=output_format, indent=indent,
-                        precision=precision)
+            output = translate(
+                text,
+                output_format=output_format,
+                indent=indent,
+                precision=precision
+            )
             logger.debug("Output: %r", output)
             stdout.write(output)
             stdout.write('\n')
