@@ -166,3 +166,20 @@ class MultiPolygonRoundingTestCase(unittest.TestCase):
             'type': 'MultiPolygon'}
         rounded = util.round_geom(self.multipolygon, 1)
         self.assertEqual(rounded, expectation)
+
+
+class FlattenMultiDimTestCase(unittest.TestCase):
+
+    def test_1d(self):
+        data = [1, 2, 3]
+        self.assertEqual(data, list(util.flatten_multi_dim(data)))
+
+    def test_2d(self):
+        data = [[1, 2], [3, 4, 5]]
+        expected = [1, 2, 3, 4, 5]
+        self.assertEqual(expected, list(util.flatten_multi_dim(data)))
+
+    def test_multid(self):
+        data = [[[1], [2, 3]], [4, 5, [6]]]
+        expected = [1, 2, 3, 4, 5, 6]
+        self.assertEqual(expected, list(util.flatten_multi_dim(data)))

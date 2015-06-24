@@ -25,6 +25,32 @@ class WKBTestCase(unittest.TestCase):
         self.assertEqual("Unsupported geometry type 'Tetrahedron'",
                          str(ar.exception))
 
+    def test_empty(self):
+        types = [
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon',
+        ]
+        coords = [
+            [],
+            [[]],
+            [[[]]],
+            [[]],
+            [[[]]],
+            [[[[]]]],
+        ]
+        for t, c in zip(types, coords):
+            geom = dict(type=t, coordinates=c)
+            with self.assertRaises(ValueError):
+                wkb.dumps(geom)
+
+        gc = dict(type='GeometryCollection', geometries=[])
+        with self.assertRaises(ValueError):
+            wkb.dumps(gc)
+
 
 class PointTestCase(unittest.TestCase):
 

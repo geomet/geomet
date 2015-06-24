@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import geomet
 import unittest
 
 from geomet import wkt
@@ -73,6 +74,55 @@ class WKTTestCase(unittest.TestCase):
             wkt.dumps(geom)
         self.assertEqual("Unsupported geometry type 'Tetrahedron'",
                          str(ar.exception))
+
+    def test_dumps_empty_geoms(self):
+        types = [
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon',
+        ]
+        expected = ['%s EMPTY' % x.upper() for x in types]
+
+        for i, t in enumerate(types):
+            geom = dict(type=t, coordinates=[])
+            self.assertEqual(expected[i], wkt.dumps(geom))
+
+    def test_loads_empty_geoms(self):
+        types = [
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon',
+        ]
+        wkts = ['%s EMPTY' % x.upper() for x in types]
+        for i, each_wkt in enumerate(wkts):
+            expected = dict(type=types[i], coordinates=[])
+            self.assertEqual(expected, wkt.loads(each_wkt))
+
+        self.assertEqual(dict(type='GeometryCollection', geometries=[]),
+                         wkt.loads('GEOMETRYCOLLECTION EMPTY'))
+
+    def test_dumps_empty_geometrycollection(self):
+        geom = dict(type='GeometryCollection', geometries=[])
+        self.assertEqual('GEOMETRYCOLLECTION EMPTY', wkt.dumps(geom))
+
+    def test_malformed_geojson(self):
+        bad_geojson = [
+            # GEOMETRYCOLLECTIONs have 'geometries', not coordinates
+            dict(type='GeometryCollection', coordinates=[]),
+            # All other geometry types must have coordinates
+            dict(type='Point'),
+            # and a type
+            dict(coordinates=[]),
+        ]
+        for each in bad_geojson:
+            with self.assertRaises(geomet.InvalidGeoJSONException):
+                wkt.dumps(each)
 
 
 class PointDumpsTestCase(unittest.TestCase):
