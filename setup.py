@@ -43,7 +43,7 @@ setup(
     keywords='wkb wkt geojson',
     classifiers=(
         'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
