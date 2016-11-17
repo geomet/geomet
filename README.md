@@ -37,6 +37,10 @@ WKB <--> GeoJSON:
 
 ### Installation ###
 
+Install from [PyPI](https://pypi.python.org/pypi) (easiest method):
+
+    $ pip install geomet
+
 Clone the source code from git and run:
 
     $ python setup.py install
