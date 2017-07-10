@@ -104,6 +104,27 @@ _BINARY_TO_GEOM_TYPE = dict(
 _INT_TO_DIM_LABEL = {2: '2D', 3: 'Z', 4: 'ZM'}
 
 
+def _get_geom_type(type_bytes):
+    """Get the GeoJSON geometry type label from a WKB type byte string.
+
+    :param type_bytes:
+        4 byte string in big endian byte order containing a WKB type number.
+    :returns:
+        GeoJSON geometry type label. For example:
+
+        >>> # Z Point
+        >>> _get_geom_type(b'\\x00\\x00\\x03\\xe9')
+        'Point'
+
+        >>> # 2D MultiLineString
+        >>> _get_geom_type(b'\\x00\\x00\\x00\\x05')
+        'MultiLineString'
+
+    """
+    geom_type = _BINARY_TO_GEOM_TYPE.get(type_bytes)
+    return geom_type
+
+
 def dump(obj, dest_file):
     """
     Dump GeoJSON-like `dict` to WKB and write it to the `dest_file`.
@@ -220,7 +241,7 @@ def loads(string):
         # To identify the type, order the type bytes in big endian:
         type_bytes = type_bytes[::-1]
 
-    geom_type = _BINARY_TO_GEOM_TYPE.get(type_bytes)
+    geom_type = _get_geom_type(type_bytes)
     # data_bytes = string[5:]  # FIXME: This won't work for GeometryCollections
     data_bytes = string
 
