@@ -27,6 +27,9 @@ BIG_ENDIAN = b'\x00'
 #: '\x01': The first byte of any WKB string. Indicates little endian byte
 #: ordering for the data.
 LITTLE_ENDIAN = b'\x01'
+#: High byte in a 4-byte geometry type field to indicate that a 4-byte SRID
+#: field follows.
+SRID_FLAG = b'\x20'
 
 #: Mapping of GeoJSON geometry types to the "2D" 4-byte binary string
 #: representation for WKB. "2D" indicates that the geometry is 2-dimensional,
@@ -109,20 +112,39 @@ def _get_geom_type(type_bytes):
 
     :param type_bytes:
         4 byte string in big endian byte order containing a WKB type number.
+        It may also contain a "has SRID" flag in the high byte (the first type,
+        since this is big endian byte order), indicated as 0x20. If the SRID
+        flag is not set, the high byte will always be null (0x00).
     :returns:
-        GeoJSON geometry type label. For example:
+        3-tuple ofGeoJSON geometry type label, the bytes resprenting the
+        geometry type, and a separate "has SRID" flag. If the input
+        `type_bytes` contains an SRID flag, it will be removed.
 
-        >>> # Z Point
-        >>> _get_geom_type(b'\\x00\\x00\\x03\\xe9')
-        'Point'
+        >>> # Z Point, with SRID flag
+        >>> _get_geom_type(b'\\x20\\x00\\x03\\xe9') == (
+        ... 'Point', b'\\x00\\x00\\x03\\xe9', True)
+        True
 
-        >>> # 2D MultiLineString
-        >>> _get_geom_type(b'\\x00\\x00\\x00\\x05')
-        'MultiLineString'
+        >>> # 2D MultiLineString, without SRID flag
+        >>> _get_geom_type(b'\\x00\\x00\\x00\\x05') == (
+        ... 'MultiLineString', b'\\x00\\x00\\x00\\x05', False)
+        True
 
     """
+    # slice off the high byte, which may contain the SRID flag
+    high_byte = type_bytes[0]
+    if six.PY3:
+        high_byte = bytes([high_byte])
+    has_srid = high_byte == b'\x20'
+    if has_srid:
+        # replace the high byte with a null byte
+        type_bytes = as_bin_str(b'\x00' + type_bytes[1:])
+    else:
+        type_bytes = as_bin_str(type_bytes)
+
+    # look up the geometry type
     geom_type = _BINARY_TO_GEOM_TYPE.get(type_bytes)
-    return geom_type
+    return geom_type, type_bytes, has_srid
 
 
 def dump(obj, dest_file):
@@ -190,6 +212,9 @@ def dumps(obj, big_endian=True):
     :param bool big_endian:
         Defaults to `True`. If `True`, data values in the generated WKB will
         be represented using big endian byte order. Else, little endian.
+
+    TODO: remove this
+
     :param str dims:
         Indicates to WKB representation desired from converting the given
         GeoJSON `dict` ``obj``. The accepted values are:
@@ -203,6 +228,7 @@ def dumps(obj, big_endian=True):
         A WKB binary string representing of the ``obj``.
     """
     geom_type = obj['type']
+    meta = obj.get('meta', {})
 
     exporter = _dumps_registry.get(geom_type)
     if exporter is None:
@@ -217,13 +243,49 @@ def dumps(obj, big_endian=True):
             'dimensionality of the WKB would be ambiguous.'
         )
 
-    return exporter(obj, big_endian)
+    return exporter(obj, big_endian, meta)
 
 
 def loads(string):
     """
-    Construct a GeoJson `dict` from WKB (`string`).
-    """
+    Construct a GeoJSON `dict` from WKB (`string`).
+
+    The resulting GeoJSON `dict` will include the SRID as an integer in the
+    `meta` object. This was an arbitrary decision made by `geomet, the
+    discussion of which took place here:
+    https://github.com/geomet/geomet/issues/28.
+
+    In order to be consistent with other libraries [1] and (deprecated)
+    specifications [2], also include the same information in a `crs`
+    object. This isn't ideal, but the `crs` member is no longer part of
+    the GeoJSON standard, according to RFC7946 [3]. However, it's still
+    useful to include this information in GeoJSON payloads because it
+    supports conversion to EWKT/EWKB (which are canonical formats used by
+    PostGIS and the like).
+
+    Example:
+
+        {'type': 'Point',
+         'coordinates': [0.0, 1.0],
+         'meta': {'srid': 4326},
+         'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
+
+    NOTE(larsbutler): I'm not sure if it's valid to just prefix EPSG
+    (European Petroluem Survey Group) to an SRID like this, but we'll
+    stick with it for now until it becomes a problem.
+
+    NOTE(larsbutler): Ideally, we should use URNs instead of this
+    notation, according to the new GeoJSON spec [4]. However, in
+    order to be consistent with [1], we'll stick with this approach
+    for now.
+
+    References:
+
+    [1] - https://github.com/bryanjos/geo/issues/76
+    [2] - http://geojson.org/geojson-spec.html#coordinate-reference-system-objects
+    [3] - https://tools.ietf.org/html/rfc7946#appendix-B.1
+    [4] - https://tools.ietf.org/html/rfc7946#section-4
+    """  # noqa
     string = iter(string)
     # endianness = string[0:1]
     endianness = as_bin_str(take(1, string))
@@ -235,13 +297,19 @@ def loads(string):
         raise ValueError("Invalid endian byte: '0x%s'. Expected 0x00 or 0x01"
                          % binascii.hexlify(endianness.encode()).decode())
 
+    endian_token = '>' if big_endian else '<'
     # type_bytes = string[1:5]
     type_bytes = as_bin_str(take(4, string))
     if not big_endian:
         # To identify the type, order the type bytes in big endian:
         type_bytes = type_bytes[::-1]
 
-    geom_type = _get_geom_type(type_bytes)
+    geom_type, type_bytes, has_srid = _get_geom_type(type_bytes)
+    srid = None
+    if has_srid:
+        srid_field = as_bin_str(take(4, string))
+        [srid] = struct.unpack('%si' % endian_token, srid_field)
+
     # data_bytes = string[5:]  # FIXME: This won't work for GeometryCollections
     data_bytes = string
 
@@ -251,14 +319,24 @@ def loads(string):
         _unsupported_geom_type(geom_type)
 
     data_bytes = iter(data_bytes)
-    return importer(big_endian, type_bytes, data_bytes)
+    result = importer(big_endian, type_bytes, data_bytes)
+    if has_srid:
+        # As mentioned in the docstring above, include both approaches to
+        # indicating the SRID.
+        result['meta'] = {'srid': int(srid)}
+        result['crs'] = {
+            'type': 'name',
+            'properties': {'name': 'EPSG%s' % srid},
+        }
+    return result
 
 
 def _unsupported_geom_type(geom_type):
     raise ValueError("Unsupported geometry type '%s'" % geom_type)
 
 
-def _header_bytefmt_byteorder(geom_type, num_dims, big_endian):
+# TODO: dont default meta to none
+def _header_bytefmt_byteorder(geom_type, num_dims, big_endian, meta=None):
     """
     Utility function to get the WKB header (endian byte + type header), byte
     format string, and byte order string.
@@ -268,6 +346,10 @@ def _header_bytefmt_byteorder(geom_type, num_dims, big_endian):
         pass  # TODO: raise
 
     type_byte_str = _WKB[dim][geom_type]
+    srid = meta.get('srid')
+    if srid is not None:
+        # Add the srid flag
+        type_byte_str = SRID_FLAG + type_byte_str[1:]
 
     if big_endian:
         header = BIG_ENDIAN
@@ -281,12 +363,20 @@ def _header_bytefmt_byteorder(geom_type, num_dims, big_endian):
         type_byte_str = type_byte_str[::-1]
 
     header += type_byte_str
+    if srid is not None:
+        srid = int(srid)
+
+        if big_endian:
+            srid_header = struct.pack('>i', srid)
+        else:
+            srid_header = struct.pack('<i', srid)
+        header += srid_header
     byte_fmt += b'd' * num_dims
 
     return header, byte_fmt, byte_order
 
 
-def _dump_point(obj, big_endian):
+def _dump_point(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a point WKB string.
 
@@ -295,6 +385,17 @@ def _dump_point(obj, big_endian):
     :param bool big_endian:
         If `True`, data values in the generated WKB will be represented using
         big endian byte order. Else, little endian.
+    :param dict meta:
+        Metadata associated with the GeoJSON object. Currently supported
+        metadata:
+
+        - srid: Used to support EWKT/EWKB. For example, ``meta`` equal to
+          ``{'srid': '4326'}`` indicates that the geometry is defined using
+          Extended WKT/WKB and that it bears a Spatial Reference System
+          Identifier of 4326. This ID will be encoded into the resulting
+          binary.
+
+        Any other meta data objects will simply be ignored by this function.
 
     :returns:
         A WKB binary string representing of the Point ``obj``.
@@ -303,14 +404,14 @@ def _dump_point(obj, big_endian):
     num_dims = len(coords)
 
     wkb_string, byte_fmt, _ = _header_bytefmt_byteorder(
-        'Point', num_dims, big_endian
+        'Point', num_dims, big_endian, meta
     )
 
     wkb_string += struct.pack(byte_fmt, *coords)
     return wkb_string
 
 
-def _dump_linestring(obj, big_endian):
+def _dump_linestring(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a linestring WKB string.
 
@@ -322,7 +423,7 @@ def _dump_linestring(obj, big_endian):
     num_dims = len(vertex)
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'LineString', num_dims, big_endian
+        'LineString', num_dims, big_endian, meta
     )
     # append number of vertices in linestring
     wkb_string += struct.pack('%sl' % byte_order, len(coords))
@@ -333,7 +434,7 @@ def _dump_linestring(obj, big_endian):
     return wkb_string
 
 
-def _dump_polygon(obj, big_endian):
+def _dump_polygon(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a polygon WKB string.
 
@@ -345,7 +446,7 @@ def _dump_polygon(obj, big_endian):
     num_dims = len(vertex)
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'Polygon', num_dims, big_endian
+        'Polygon', num_dims, big_endian, meta
     )
 
     # number of rings:
@@ -359,7 +460,7 @@ def _dump_polygon(obj, big_endian):
     return wkb_string
 
 
-def _dump_multipoint(obj, big_endian):
+def _dump_multipoint(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a multipoint WKB string.
 
@@ -370,7 +471,7 @@ def _dump_multipoint(obj, big_endian):
     num_dims = len(vertex)
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'MultiPoint', num_dims, big_endian
+        'MultiPoint', num_dims, big_endian, meta
     )
 
     point_type = _WKB[_INT_TO_DIM_LABEL.get(num_dims)]['Point']
@@ -388,7 +489,7 @@ def _dump_multipoint(obj, big_endian):
     return wkb_string
 
 
-def _dump_multilinestring(obj, big_endian):
+def _dump_multilinestring(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a multilinestring WKB string.
 
@@ -399,7 +500,7 @@ def _dump_multilinestring(obj, big_endian):
     num_dims = len(vertex)
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'MultiLineString', num_dims, big_endian
+        'MultiLineString', num_dims, big_endian, meta
     )
 
     ls_type = _WKB[_INT_TO_DIM_LABEL.get(num_dims)]['LineString']
@@ -421,7 +522,7 @@ def _dump_multilinestring(obj, big_endian):
     return wkb_string
 
 
-def _dump_multipolygon(obj, big_endian):
+def _dump_multipolygon(obj, big_endian, meta):
     """
     Dump a GeoJSON-like `dict` to a multipolygon WKB string.
 
@@ -432,7 +533,7 @@ def _dump_multipolygon(obj, big_endian):
     num_dims = len(vertex)
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'MultiPolygon', num_dims, big_endian
+        'MultiPolygon', num_dims, big_endian, meta
     )
 
     poly_type = _WKB[_INT_TO_DIM_LABEL.get(num_dims)]['Polygon']
@@ -458,7 +559,7 @@ def _dump_multipolygon(obj, big_endian):
     return wkb_string
 
 
-def _dump_geometrycollection(obj, big_endian):
+def _dump_geometrycollection(obj, big_endian, meta):
     # TODO: handle empty collections
     geoms = obj['geometries']
     # determine the dimensionality (2d, 3d, 4d) of the collection
@@ -479,7 +580,7 @@ def _dump_geometrycollection(obj, big_endian):
         num_dims = 4
 
     wkb_string, byte_fmt, byte_order = _header_bytefmt_byteorder(
-        'GeometryCollection', num_dims, big_endian
+        'GeometryCollection', num_dims, big_endian, meta
     )
     # append the number of geometries
     wkb_string += struct.pack('%sl' % byte_order, len(geoms))

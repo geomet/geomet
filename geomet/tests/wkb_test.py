@@ -90,6 +90,12 @@ class PointTestCase(unittest.TestCase):
     def test_dumps_4d(self):
         self.assertEqual(self.pt4d_wkb, wkb.dumps(self.pt4d, big_endian=False))
 
+    def test_dumps_2d_srid4326(self):
+        self.assertEqual(
+            self.pt2d_srid4326_wkb,
+            wkb.dumps(self.pt2d_srid4326, big_endian=False),
+        )
+
     def test_loads_2d(self):
         self.assertEqual(self.pt2d, wkb.loads(self.pt2d_wkb))
 
@@ -314,6 +320,47 @@ class PolygonTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
         )
 
+        self.poly2d_srid26918 = dict(
+            type='Polygon',
+            coordinates=[
+                [[100.001, 0.001], [101.12345, 0.001], [101.001, 1.001],
+                 [100.001, 0.001]],
+                [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+                 [100.201, 0.201]],
+            ],
+            meta=dict(srid='26918'),
+        )
+
+        self.poly2d_srid26918_wkb = (
+            b'\x00'  # big endian
+            b'\x20\x00\x00\x03'  # type, with SRID flag set (0x20)
+            b'\x00\x00\x69\x26'  # 4 bytes containing SRID (SRID=26918)
+            # number of rings, 4 byte int
+            b'\x00\x00\x00\x02'
+            # number of verts in ring (4)
+            b'\x00\x00\x00\x04'
+            # coords
+            b'@Y\x00\x10bM\xd2\xf2'     # 100.001
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            b'@YG\xe6\x9a\xd4,='        # 101.12345
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            b'@Y@\x10bM\xd2\xf2'        # 101.001
+            b'?\xf0\x04\x18\x93t\xbcj'  # 1.001
+            b'@Y\x00\x10bM\xd2\xf2'     # 100.001
+            b'?PbM\xd2\xf1\xa9\xfc'     # 0.001
+            # number of verts in ring (4)
+            b'\x00\x00\x00\x04'
+            # coords
+            b'@Y\x0c\xdd/\x1a\x9f\xbe'     # 100.201
+            b'?\xc9\xba^5?|\xee'           # 0.201
+            b'@Y3C\x95\x81\x06%'           # 100.801
+            b'?\xc9\xba^5?|\xee'           # 0.201
+            b'@Y3C\x95\x81\x06%'           # 100.801
+            b'?\xe9\xa1\xca\xc0\x83\x12o'  # 0.801
+            b'@Y\x0c\xdd/\x1a\x9f\xbe'     # 100.201
+            b'?\xc9\xba^5?|\xee'           # 0.201
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.poly2d_wkb, wkb.dumps(self.poly2d))
 
@@ -342,6 +389,11 @@ class PolygonTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.poly4d, wkb.loads(self.poly4d_wkb))
+
+    def test_loads_2d_srid26918(self):
+        self.assertEqual(
+            self.poly2d_srid26918, wkb.loads(self.poly2d_srid26918_wkb)
+        )
 
 
 class MultiPointTestCase(unittest.TestCase):
@@ -1016,6 +1068,37 @@ class GeometryCollectionTestCase(unittest.TestCase):
             b'@(\x00\x00\x00\x00\x00\x00'
         )
 
+        self.gc2d_srid1234 = dict(
+            type='GeometryCollection',
+            geometries=[
+                dict(type='Point', coordinates=[0.0, 1.0]),
+                dict(type='LineString', coordinates=[
+                    [102.0, 2.0], [103.0, 3.0], [104.0, 4.0]
+                ]),
+            ],
+            meta=dict(srid='1234'),
+        )
+
+        self.gc2d_srid1234_wkb = (
+            b'\x00'  # big endian
+            b'\x20\x00\x00\x07'  # 2d geometry collection
+            b'\x00\x00\x04\xd2'  # srid 1234
+            b'\x00\x00\x00\x02'  # 2 geometries in the collection
+            b'\x00'  # big endian
+            b'\x00\x00\x00\x01'  # 2d point
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'\x00'  # big endian
+            b'\x00\x00\x00\x02'  # 2d linestring
+            b'\x00\x00\x00\x03'  # 3 vertices
+            b'@Y\x80\x00\x00\x00\x00\x00'
+            b'@\x00\x00\x00\x00\x00\x00\x00'
+            b'@Y\xc0\x00\x00\x00\x00\x00'
+            b'@\x08\x00\x00\x00\x00\x00\x00'
+            b'@Z\x00\x00\x00\x00\x00\x00'
+            b'@\x10\x00\x00\x00\x00\x00\x00'
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.gc2d_wkb, wkb.dumps(self.gc2d))
 
@@ -1024,6 +1107,9 @@ class GeometryCollectionTestCase(unittest.TestCase):
 
     def test_dumps_4d(self):
         self.assertEqual(self.gc4d_wkb, wkb.dumps(self.gc4d))
+
+    def test_dumps_2d_srid1234(self):
+        self.assertEqual(self.gc2d_srid1234_wkb, wkb.dumps(self.gc2d_srid1234))
 
     def test_loads_2d(self):
         self.assertEqual(self.gc2d, wkb.loads(self.gc2d_wkb))
@@ -1065,3 +1151,6 @@ class GeometryCollectionTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.gc4d, wkb.loads(self.gc4d_wkb))
+
+    def test_loads_2d_srid1234(self):
+        self.assertEqual(self.gc2d_srid1234, wkb.loads(self.gc2d_srid1234_wkb))
