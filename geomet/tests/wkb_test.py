@@ -81,6 +81,20 @@ class PointTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x10@'
         )
 
+        self.pt2d_srid4326 = dict(
+            type='Point',
+            coordinates=[0.0, 1.0],
+            meta=dict(srid=4326),
+            crs={'properties': {'name': 'EPSG4326'}, 'type': 'name'},
+        )
+        self.pt2d_srid4326_wkb = (
+            b'\x01'  # little endian
+            b'\x01\x00\x00\x20'  # type, with SRID flag set (0x20)
+            b'\xe6\x10\x00\x00'  # 4 bytes containing SRID (SRID=4326)
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.pt2d_wkb, wkb.dumps(self.pt2d, big_endian=False))
 
@@ -112,6 +126,9 @@ class PointTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.pt4d, wkb.loads(self.pt4d_wkb))
+
+    def test_loads_2d_srid4326(self):
+        self.assertEqual(self.pt2d_srid4326, wkb.loads(self.pt2d_srid4326_wkb))
 
 
 class LineStringTestCase(unittest.TestCase):
@@ -158,6 +175,23 @@ class LineStringTestCase(unittest.TestCase):
             b'\xbf\xec\xcc\xcc\xcc\xcc\xcc\xcd'  # -0.9
         )
 
+        self.ls2d_srid1234 = dict(
+            type='LineString',
+            coordinates=[[2.2, 4.4], [3.1, 5.1]],
+            meta=dict(srid=1234),
+            crs={'properties': {'name': 'EPSG1234'}, 'type': 'name'},
+        )
+        self.ls2d_srid1234_wkb = (
+            b'\x00'  # big endian
+            b'\x20\x00\x00\x02'  # type with SRID flag set
+            b'\x00\x00\x04\xd2'  # srid
+            b'\x00\x00\x00\x02'  # 2 vertices
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            b'@\x14ffffff'                    # 5.1
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.ls2d_wkb, wkb.dumps(self.ls2d))
 
@@ -166,6 +200,9 @@ class LineStringTestCase(unittest.TestCase):
 
     def test_dumps_4d(self):
         self.assertEqual(self.ls4d_wkb, wkb.dumps(self.ls4d))
+
+    def test_dumps_2d_srid1234(self):
+        self.assertEqual(self.ls2d_srid1234_wkb, wkb.dumps(self.ls2d_srid1234))
 
     def test_loads_2d(self):
         self.assertEqual(self.ls2d, wkb.loads(self.ls2d_wkb))
@@ -184,6 +221,9 @@ class LineStringTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.ls4d, wkb.loads(self.ls4d_wkb))
+
+    def test_loads_2d_srid1234(self):
+        self.assertEqual(self.ls2d_srid1234, wkb.loads(self.ls2d_srid1234_wkb))
 
 
 class PolygonTestCase(unittest.TestCase):
@@ -328,7 +368,8 @@ class PolygonTestCase(unittest.TestCase):
                 [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
                  [100.201, 0.201]],
             ],
-            meta=dict(srid='26918'),
+            meta=dict(srid=26918),
+            crs={'properties': {'name': 'EPSG26918'}, 'type': 'name'},
         )
 
         self.poly2d_srid26918_wkb = (
@@ -369,6 +410,11 @@ class PolygonTestCase(unittest.TestCase):
 
     def test_dumps_4d(self):
         self.assertEqual(self.poly4d_wkb, wkb.dumps(self.poly4d))
+
+    def test_dumps_2d_srid26918(self):
+        self.assertEqual(
+            self.poly2d_srid26918_wkb, wkb.dumps(self.poly2d_srid26918)
+        )
 
     def test_loads_2d(self):
         self.assertEqual(self.poly2d, wkb.loads(self.poly2d_wkb))
@@ -480,6 +526,34 @@ class MultiPointTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'  # 0.0
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
         )
+        self.multipoint2d_srid664 = dict(
+            type='MultiPoint',
+            coordinates=[[2.2, 4.4], [10.0, 3.1], [5.1, 20.0]],
+            meta=dict(srid=664),
+            crs={'properties': {'name': 'EPSG664'}, 'type': 'name'},
+        )
+        self.multipoint2d_srid664_wkb = (
+            b'\x01'  # little endian
+            b'\x04\x00\x00\x20'  # type with SRID flag set
+            b'\x98\x02\x00\x00'  # SRID 664
+            # number of points: 3
+            b'\x03\x00\x00\x00'
+            # point 2d
+            b'\x01'  # little endian
+            b'\x01\x00\x00\x00'
+            b'\x9a\x99\x99\x99\x99\x99\x01@'  # 2.2
+            b'\x9a\x99\x99\x99\x99\x99\x11@'  # 4.4
+            # point 2d
+            b'\x01'  # little endian
+            b'\x01\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x00$@'     # 10.0
+            b'\xcd\xcc\xcc\xcc\xcc\xcc\x08@'  # 3.1
+            # point 2d
+            b'\x01'  # little endian
+            b'\x01\x00\x00\x00'
+            b'ffffff\x14@'                    # 5.1
+            b'\x00\x00\x00\x00\x00\x004@'     # 20.0
+        )
 
     def test_dumps_2d(self):
         self.assertEqual(
@@ -497,6 +571,12 @@ class MultiPointTestCase(unittest.TestCase):
         self.assertEqual(
             self.multipoint4d_wkb,
             wkb.dumps(self.multipoint4d, big_endian=False)
+        )
+
+    def test_dumps_2d_srid664(self):
+        self.assertEqual(
+            self.multipoint2d_srid664_wkb,
+            wkb.dumps(self.multipoint2d_srid664, big_endian=False),
         )
 
     def test_loads_2d(self):
@@ -539,6 +619,12 @@ class MultiPointTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.multipoint4d, wkb.loads(self.multipoint4d_wkb))
+
+    def test_loads_2d_srid664(self):
+        self.assertEqual(
+            wkb.loads(self.multipoint2d_srid664_wkb),
+            self.multipoint2d_srid664,
+        )
 
 
 class MultiLineStringTestCase(unittest.TestCase):
@@ -627,6 +713,36 @@ class MultiLineStringTestCase(unittest.TestCase):
             b'\x9a\x99\x99\x99\x99\x99\x11@'     # 4.4
         )
 
+        self.mls2d_srid4326 = dict(
+            type='MultiLineString',
+            coordinates=[[[2.2, 4.4], [3.1, 5.1], [5.1, 20.0]],
+                         [[20.0, 2.2], [3.1, 4.4]]],
+            meta=dict(srid=4326),
+            crs={'properties': {'name': 'EPSG4326'}, 'type': 'name'},
+        )
+        self.mls2d_srid4326_wkb = (
+            b'\x00'
+            b'\x20\x00\x00\x05'  # type with SRID flag set
+            b'\x00\x00\x10\xe6'  # SRID 4326
+            b'\x00\x00\x00\x02'  # number of linestrings
+            b'\x00'
+            b'\x00\x00\x00\x02'
+            b'\x00\x00\x00\x03'
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            b'@\x14ffffff'                    # 5.1
+            b'@\x14ffffff'                    # 5.1
+            b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
+            b'\x00'
+            b'\x00\x00\x00\x02'
+            b'\x00\x00\x00\x02'
+            b'@4\x00\x00\x00\x00\x00\x00'     # 20.0
+            b'@\x01\x99\x99\x99\x99\x99\x9a'  # 2.2
+            b'@\x08\xcc\xcc\xcc\xcc\xcc\xcd'  # 3.1
+            b'@\x11\x99\x99\x99\x99\x99\x9a'  # 4.4
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.mls2d_wkb, wkb.dumps(self.mls2d))
 
@@ -636,6 +752,11 @@ class MultiLineStringTestCase(unittest.TestCase):
     def test_dumps_4d(self):
         self.assertEqual(self.mls4d_wkb,
                          wkb.dumps(self.mls4d, big_endian=False))
+
+    def test_dumps_2d_srid4326(self):
+        self.assertEqual(
+            self.mls2d_srid4326_wkb, wkb.dumps(self.mls2d_srid4326)
+        )
 
     def test_loads_2d(self):
         self.assertEqual(self.mls2d, wkb.loads(self.mls2d_wkb))
@@ -679,6 +800,11 @@ class MultiLineStringTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.mls4d, wkb.loads(self.mls4d_wkb))
+
+    def test_loads_2d_srid4326(self):
+        self.assertEqual(
+            self.mls2d_srid4326, wkb.loads(self.mls2d_srid4326_wkb)
+        )
 
 
 class MultiPolygonTestCase(unittest.TestCase):
@@ -889,6 +1015,65 @@ class MultiPolygonTestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00'
         )
 
+        self.mpoly2d_srid4326 = dict(
+            type='MultiPolygon',
+            coordinates=[
+                [[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0],
+                  [102.0, 2.0]]],
+                [[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0],
+                  [100.0, 0.0]],
+                 [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8],
+                  [100.2, 0.2]]],
+            ],
+            meta=dict(srid=4326),
+            crs={'properties': {'name': 'EPSG4326'}, 'type': 'name'},
+        )
+        self.mpoly2d_srid4326_wkb = (
+            b'\x01'  # little endian
+            b'\x06\x00\x00\x20'  # 2d multipolygon wth SRID flag
+            b'\xe6\x10\x00\x00'  # 4 bytes containing SRID (SRID=4326)
+            b'\x02\x00\x00\x00'  # two polygons
+            b'\x01'  # little endian
+            b'\x03\x00\x00\x00'  # 2d polygon
+            b'\x01\x00\x00\x00'  # 1 ring
+            b'\x05\x00\x00\x00'  # 5 vertices
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x00\x00\x00\x00\x00\xc0Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x08@'
+            b'\x00\x00\x00\x00\x00\x80Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00@'
+            b'\x01'  # little endian
+            b'\x03\x00\x00\x00'  # 2d polygon
+            b'\x02\x00\x00\x00'  # 2 rings
+            b'\x05\x00\x00\x00'  # first ring, 5 vertices
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00@Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00@Y@'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\xf0?'
+            b'\x00\x00\x00\x00\x00\x00Y@'
+            b'\x00\x00\x00\x00\x00\x00\x00\x00'
+            b'\x05\x00\x00\x00'  # second ring, 5 vertices
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+            b'333333Y@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+            b'333333Y@'
+            b'\x9a\x99\x99\x99\x99\x99\xe9?'
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xe9?'
+            b'\xcd\xcc\xcc\xcc\xcc\x0cY@'
+            b'\x9a\x99\x99\x99\x99\x99\xc9?'
+        )
+
     def test_dumps_2d(self):
         self.assertEqual(self.mpoly2d_wkb,
                          wkb.dumps(self.mpoly2d, big_endian=False))
@@ -900,6 +1085,12 @@ class MultiPolygonTestCase(unittest.TestCase):
     def test_dumps_4d(self):
         self.assertEqual(self.mpoly4d_wkb,
                          wkb.dumps(self.mpoly4d, big_endian=False))
+
+    def test_dumps_2d_srid4326(self):
+        self.assertEqual(
+            self.mpoly2d_srid4326_wkb,
+            wkb.dumps(self.mpoly2d_srid4326, big_endian=False),
+        )
 
     def test_loads_2d(self):
         self.assertEqual(self.mpoly2d, wkb.loads(self.mpoly2d_wkb))
@@ -977,6 +1168,12 @@ class MultiPolygonTestCase(unittest.TestCase):
 
     def test_loads_zm(self):
         self.assertEqual(self.mpoly4d, wkb.loads(self.mpoly4d_wkb))
+
+    def test_loads_2d_srid4326(self):
+        self.assertEqual(
+            self.mpoly2d_srid4326,
+            wkb.loads(self.mpoly2d_srid4326_wkb),
+        )
 
 
 class GeometryCollectionTestCase(unittest.TestCase):
@@ -1076,7 +1273,8 @@ class GeometryCollectionTestCase(unittest.TestCase):
                     [102.0, 2.0], [103.0, 3.0], [104.0, 4.0]
                 ]),
             ],
-            meta=dict(srid='1234'),
+            meta=dict(srid=1234),
+            crs={'properties': {'name': 'EPSG1234'}, 'type': 'name'},
         )
 
         self.gc2d_srid1234_wkb = (
