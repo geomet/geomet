@@ -3,7 +3,8 @@ GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=ma
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
-Text/Binary), and vice versa. Conversion functions are exposed through
+Text/Binary), and vice versa. [Extended WKB/WKT](https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT)
+are also supported. Conversion functions are exposed through
 idiomatic `load/loads/dump/dumps` interfaces.
 
 The name "GeoMet" was inspired by "met", the German word for
@@ -15,7 +16,7 @@ GeoMet is intended to cover all common use cases for dealing with 2D, 3D, and
 
 The following conversion functions are supported.
 
-WKT <--> GeoJSON:
+WKT/EWKT <--> GeoJSON:
 
 - Point
 - LineString
@@ -25,7 +26,7 @@ WKT <--> GeoJSON:
 - MultiPolygon
 - GeometryCollection
 
-WKB <--> GeoJSON:
+WKB/EWKB <--> GeoJSON:
 
 - Point
 - LineString
@@ -90,6 +91,20 @@ Coverting 'GeometryCollection' WKT to GeoJSON:
 
     >>> wkt.loads('GEOMETRYCOLLECTION(POINT(10 20),POLYGON(((0 0), (10 30), (30 10), (0 0)))')
     {'type': 'GeometryCollection', 'geometries': [{'type': 'Point', 'coordinates': [10.0, 20.0]}, {'type': 'Polygon', 'coordinates': [[[0.0, 0.0]], [[10.0, 30.0]], [[30.0, 10.0]], [[0.0, 0.0]]]}]}
+
+EWKT/EWKB are also supported for all geometry types. This uses a custom extension
+to the GeoJSON standard in order to preserve SRID information through conversions.
+For example:
+
+    >>> wkt.loads('SRID=4326;POINT(10 20)')
+    {'type': 'Point', 'coordinates': [10.0, 20.0], 'meta': {'srid': '4326'}}
+    >>> wkt.dumps({'type': 'Point', 'coordinates': [10.0, 20.0], 'meta': {'srid': '4326'}, 'crs': {'properties': {'name': 'EPSG4326'}, 'type': 'name'}})
+    'SRID=4326;POINT (10.0000000000000000 20.0000000000000000)'
+    >>> wkb.loads('\x00 \x00\x00\x01\x00\x00\x10\xe6@$\x00\x00\x00\x00\x00\x00@4\x00\x00\x00\x00\x00\x00')
+    {'meta': {'srid': '4326'}, 'type': 'Point', 'coordinates': [10.0, 20.0]}
+    >>> wkb.dumps({'type': 'Point', 'coordinates': [10.0, 20.0], 'meta': {'srid': '4326'}, 'crs': {'properties': {'name': 'EPSG4326'}, 'type': 'name'}})
+    '\x00 \x00\x00\x01\x00\x00\x10\xe6@$\x00\x00\x00\x00\x00\x00@4\x00\x00\x00\x00\x00\x00'
+
 
 ### See Also ###
 
