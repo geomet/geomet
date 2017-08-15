@@ -4,7 +4,8 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 install:
   - "pip install tox"  # for running tests only
   - "python setup.py -q install"
-script: tox
+script: export PY_TEST_VERSION=py$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//') && tox -e style,$PY_TEST_VERSION
