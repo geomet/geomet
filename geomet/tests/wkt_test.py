@@ -150,6 +150,39 @@ class PointDumpsTestCase(unittest.TestCase):
         expected = 'POINT (-10.000000 -77.000000)'
         self.assertEqual(expected, wkt.dumps(pt, decimals=6))
 
+    def test_2d_srid4326(self):
+        # SRID just from meta:
+        pt = dict(type='Point', coordinates=[0.0, 1.0], meta=dict(srid=4326))
+        expected = 'SRID=4326;' + WKT['point']['2d']
+        self.assertEqual(expected, wkt.dumps(pt))
+
+        # SRID from both meta and crs:
+        pt = dict(
+            type='Point', coordinates=[0.0, 1.0], meta=dict(srid=4326),
+            crs={'type': 'name', 'properties': {'name': 'EPSG4326'}},
+        )
+        expected = 'SRID=4326;' + WKT['point']['2d']
+        self.assertEqual(expected, wkt.dumps(pt))
+
+        # SRID just from crs:
+        pt = dict(
+            type='Point', coordinates=[0.0, 1.0],
+            crs={'type': 'name', 'properties': {'name': 'EPSG4326'}},
+        )
+        expected = 'SRID=4326;' + WKT['point']['2d']
+        self.assertEqual(expected, wkt.dumps(pt))
+
+        # Conflicting SRID from meta and crs:
+        pt = dict(
+            type='Point', coordinates=[0.0, 1.0], meta=dict(srid=4326),
+            crs={'type': 'name', 'properties': {'name': 'EPSG4327'}},
+        )
+        expected = 'SRID=4326;' + WKT['point']['2d']
+        with self.assertRaises(ValueError) as ar:
+            wkt.dumps(pt)
+        self.assertEqual('Ambiguous CRS/SRID values: 4326 and 4327',
+                         str(ar.exception))
+
 
 class PointLoadsTestCase(unittest.TestCase):
 
@@ -181,6 +214,13 @@ class PointLoadsTestCase(unittest.TestCase):
             wkt.loads(pt)
         self.assertEqual('Invalid WKT: `POINT 0.0 1.0`', str(ar.exception))
 
+    def test_2d_srid664(self):
+        pt = 'SRID=664;POINT (-0.0000000000000000 1.0000000000000000)'
+        expected = dict(
+            type='Point', coordinates=[0.0, 1.0], meta=dict(srid=664)
+        )
+        self.assertEqual(expected, wkt.loads(pt))
+
 
 class LineStringDumpsTestCase(unittest.TestCase):
 
@@ -207,6 +247,16 @@ class LineStringDumpsTestCase(unittest.TestCase):
         ls = dict(type='LineString', coordinates=[[100.0, 0.0], [101.0, 1.0]])
         expected = 'LINESTRING (100.000 0.000, 101.000 1.000)'
         self.assertEqual(expected, wkt.dumps(ls, decimals=3))
+
+    def test_2d_srid4326(self):
+        # Test a typical 2D LineString case:
+        ls = dict(
+            type='LineString',
+            coordinates=[[-100.0, 0.0], [-101.0, -1.0]],
+            meta=dict(srid=4326),
+        )
+        expected = 'SRID=4326;' + WKT['linestring']['2d']
+        self.assertEqual(expected, wkt.dumps(ls))
 
 
 class LineStringLoadsTestCase(unittest.TestCase):
@@ -244,6 +294,15 @@ class LineStringLoadsTestCase(unittest.TestCase):
         self.assertEqual('Invalid WKT: `LINESTRING 0.0 1.0`',
                          str(ar.exception))
 
+    def test_2d_srid1234(self):
+        ls = 'SRID=1234;LINESTRING (0 -1, -2 -3, -4 5)'
+        expected = dict(
+            type='LineString',
+            coordinates=[[0.0, -1.0], [-2.0, -3.0], [-4.0, 5.0]],
+            meta=dict(srid=1234),
+        )
+        self.assertEqual(expected, wkt.loads(ls))
+
 
 class PolygonDumpsTestCase(unittest.TestCase):
 
@@ -273,6 +332,20 @@ class PolygonDumpsTestCase(unittest.TestCase):
         ])
         expected = WKT['polygon']['4d']
         self.assertEqual(expected, wkt.dumps(poly, decimals=0))
+
+    def test_2d_srid2666(self):
+        poly = dict(
+            type='Polygon',
+            coordinates=[
+                [[100.001, 0.001], [101.12345, 0.001], [101.001, 1.001],
+                 [100.001, 0.001]],
+                [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+                 [100.201, 0.201]],
+            ],
+            meta=dict(srid=2666),
+        )
+        expected = 'SRID=2666;' + WKT['polygon']['2d']
+        self.assertEqual(expected, wkt.dumps(poly, decimals=4))
 
 
 class PolygonLoadsTestCase(unittest.TestCase):
@@ -332,6 +405,25 @@ class PolygonLoadsTestCase(unittest.TestCase):
             str(ar.exception)
         )
 
+    def test_2d_srid2666(self):
+        poly = (
+            'SRID=2666;POLYGON ((100.001 0.001, 101.001 0.001, 101.001 1.001, '
+            '100.001 0.001), '
+            '(100.201 0.201, 100.801 0.201, 100.801 0.801, '
+            '100.201 0.201))'
+        )
+        expected = dict(
+            type='Polygon',
+            coordinates=[
+                [[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+                 [100.001, 0.001]],
+                [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+                 [100.201, 0.201]],
+            ],
+            meta=dict(srid=2666),
+        )
+        self.assertEqual(expected, wkt.loads(poly))
+
 
 class MultiPointLoadsTestCase(unittest.TestCase):
 
@@ -366,6 +458,15 @@ class MultiPointLoadsTestCase(unittest.TestCase):
         ])
         self.assertEqual(expected, wkt.loads(mp))
 
+    def test_2d_srid4326(self):
+        mp = 'SRID=4326;' + WKT['multipoint']['2d']
+        expected = dict(
+            type='MultiPoint',
+            coordinates=[[100.0, 3.101], [101.0, 2.1], [3.14, 2.18]],
+            meta=dict(srid=4326),
+        )
+        self.assertEqual(expected, wkt.loads(mp))
+
 
 class MultiPointDumpsTestCase(unittest.TestCase):
 
@@ -390,6 +491,15 @@ class MultiPointDumpsTestCase(unittest.TestCase):
         expected = WKT['multipoint']['4d']
         self.assertEqual(expected, wkt.dumps(mp, decimals=2))
 
+    def test_2d_srid4326(self):
+        mp = dict(
+            type='MultiPoint',
+            coordinates=[[100.0, 3.101], [101.0, 2.1], [3.14, 2.18]],
+            meta=dict(srid=4326),
+        )
+        expected = 'SRID=4326;' + WKT['multipoint']['2d']
+        self.assertEqual(expected, wkt.dumps(mp, decimals=3))
+
 
 class MultiPolygonDumpsTestCase(unittest.TestCase):
 
@@ -412,6 +522,28 @@ class MultiPolygonDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkt.dumps(mpoly, decimals=3))
 
+    def test_srid4326(self):
+        mpoly = dict(
+            type='MultiPolygon',
+            coordinates=[
+                [[[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+                  [100.001, 0.001]],
+                 [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+                  [100.201, 0.201]]],
+                [[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0],
+                  [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]],
+            ],
+            meta=dict(srid=4326),
+        )
+        expected = (
+            'SRID=4326;MULTIPOLYGON (('
+            '(100.001 0.001, 101.001 0.001, 101.001 1.001, 100.001 0.001), '
+            '(100.201 0.201, 100.801 0.201, 100.801 0.801, 100.201 0.201)), '
+            '((1.000 2.000 3.000 4.000, 5.000 6.000 7.000 8.000, '
+            '9.000 10.000 11.000 12.000, 1.000 2.000 3.000 4.000)))'
+        )
+        self.assertEqual(expected, wkt.dumps(mpoly, decimals=3))
+
 
 class MultiPolygonLoadsTestCase(unittest.TestCase):
 
@@ -425,6 +557,22 @@ class MultiPolygonLoadsTestCase(unittest.TestCase):
             [[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0],
               [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]],
         ])
+        self.assertEqual(expected, wkt.loads(mpoly))
+
+    def test_srid667(self):
+        mpoly = 'SRID=667;' + WKT['multipolygon']
+        expected = dict(
+            type='MultiPolygon',
+            coordinates=[
+                [[[100.001, 0.001], [101.001, 0.001], [101.001, 1.001],
+                  [100.001, 0.001]],
+                 [[100.201, 0.201], [100.801, 0.201], [100.801, 0.801],
+                  [100.201, 0.201]]],
+                [[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0],
+                  [9.0, 10.0, 11.0, 12.0], [1.0, 2.0, 3.0, 4.0]]],
+            ],
+            meta=dict(srid=667),
+        )
         self.assertEqual(expected, wkt.loads(mpoly))
 
 
@@ -471,6 +619,23 @@ class MultiLineStringDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkt.dumps(mlls, decimals=2))
 
+    def test_2d_srid4326(self):
+        mlls = dict(
+            type='MultiLineString',
+            coordinates=[
+                [[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                [[1.66, -31023.5], [10000.9999, 3.0], [100.9, 1.1],
+                 [0.0, 0.0]],
+            ],
+            meta=dict(srid=4326),
+        )
+        expected = (
+            'SRID=4326;MULTILINESTRING ('
+            '(0.000 -1.000, -2.000 -3.000, -4.000 -5.000), '
+            '(1.660 -31023.500, 10001.000 3.000, 100.900 1.100, 0.000 0.000))'
+        )
+        self.assertEqual(expected, wkt.dumps(mlls, decimals=3))
+
 
 class MultiLineStringLoadsTestCase(unittest.TestCase):
 
@@ -483,6 +648,19 @@ class MultiLineStringLoadsTestCase(unittest.TestCase):
                 [[1.66, -31023.5, 1.1], [10000.9999, 3.0, 2.2],
                  [100.9, 1.1, 3.3], [0.0, 0.0, 4.4]],
             ]
+        )
+        self.assertEqual(expected, wkt.loads(mlls))
+
+    def test_srid1234(self):
+        mlls = 'SRID=1234;' + WKT['multilinestring']
+        expected = dict(
+            type='MultiLineString',
+            coordinates=[
+                [[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                [[1.66, -31023.5, 1.1], [10000.9999, 3.0, 2.2],
+                 [100.9, 1.1, 3.3], [0.0, 0.0, 4.4]],
+            ],
+            meta=dict(srid=1234),
         )
         self.assertEqual(expected, wkt.loads(mlls))
 
@@ -530,6 +708,65 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         }
         expected = (
             'GEOMETRYCOLLECTION '
+            '(POINT (0.000 1.000),'
+            'LINESTRING (-100.000 0.000, -101.000 -1.000),'
+            'POLYGON ((100.001 0.001, 101.124 0.001, 101.001 1.001, '
+            '100.001 0.001), (100.201 0.201, 100.801 0.201, 100.801 0.801, '
+            '100.201 0.201)),'
+            'MULTIPOINT ((100.000 3.101), (101.000 2.100), (3.140 2.180)),'
+            'MULTILINESTRING ((0.000 -1.000, -2.000 -3.000, -4.000 -5.000), '
+            '(1.660 -31023.500 1.100, 10001.000 3.000 2.200, '
+            '100.900 1.100 3.300, 0.000 0.000 4.400)),'
+            'MULTIPOLYGON (((100.001 0.001, 101.001 0.001, 101.001 1.001, '
+            '100.001 0.001), '
+            '(100.201 0.201, 100.801 0.201, 100.801 0.801, 100.201 0.201)), '
+            '((1.000 2.000 3.000 4.000, 5.000 6.000 7.000 8.000, '
+            '9.000 10.000 11.000 12.000, 1.000 2.000 3.000 4.000))))'
+        )
+        self.assertEqual(expected, wkt.dumps(gc, decimals=3))
+
+    def test_srid26618(self):
+        gc = {
+            'geometries': [
+                {'coordinates': [0.0, 1.0], 'type': 'Point'},
+                {'coordinates': [[-100.0, 0.0], [-101.0, -1.0]],
+                 'type': 'LineString'},
+                {'coordinates': [[[100.001, 0.001],
+                                  [101.1235, 0.001],
+                                  [101.001, 1.001],
+                                  [100.001, 0.001]],
+                                 [[100.201, 0.201],
+                                  [100.801, 0.201],
+                                  [100.801, 0.801],
+                                  [100.201, 0.201]]],
+                 'type': 'Polygon'},
+                {'coordinates': [[100.0, 3.101], [101.0, 2.1], [3.14, 2.18]],
+                 'type': 'MultiPoint'},
+                {'coordinates': [[[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                                 [[1.66, -31023.5, 1.1],
+                                  [10000.9999, 3.0, 2.2],
+                                  [100.9, 1.1, 3.3],
+                                  [0.0, 0.0, 4.4]]],
+                 'type': 'MultiLineString'},
+                {'coordinates': [[[[100.001, 0.001],
+                                   [101.001, 0.001],
+                                   [101.001, 1.001],
+                                   [100.001, 0.001]],
+                                  [[100.201, 0.201],
+                                   [100.801, 0.201],
+                                   [100.801, 0.801],
+                                   [100.201, 0.201]]],
+                                 [[[1.0, 2.0, 3.0, 4.0],
+                                   [5.0, 6.0, 7.0, 8.0],
+                                   [9.0, 10.0, 11.0, 12.0],
+                                   [1.0, 2.0, 3.0, 4.0]]]],
+                 'type': 'MultiPolygon'},
+            ],
+            'type': 'GeometryCollection',
+            'meta': dict(srid=26618),
+        }
+        expected = (
+            'SRID=26618;GEOMETRYCOLLECTION '
             '(POINT (0.000 1.000),'
             'LINESTRING (-100.000 0.000, -101.000 -1.000),'
             'POLYGON ((100.001 0.001, 101.124 0.001, 101.001 1.001, '
@@ -596,5 +833,55 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
                  'type': 'MultiPolygon'},
             ],
             'type': 'GeometryCollection',
+        }
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_srid662(self):
+        gc = 'SRID=662;GEOMETRYCOLLECTION (%s,%s,%s,%s,%s,%s)' % (
+            WKT['point']['2d'],
+            WKT['linestring']['2d'],
+            WKT['polygon']['2d'],
+            WKT['multipoint']['2d'],
+            WKT['multilinestring'],
+            WKT['multipolygon'],
+        )
+        expected = {
+            'geometries': [
+                {'coordinates': [0.0, 1.0], 'type': 'Point'},
+                {'coordinates': [[-100.0, 0.0], [-101.0, -1.0]],
+                 'type': 'LineString'},
+                {'coordinates': [[[100.001, 0.001],
+                                  [101.1235, 0.001],
+                                  [101.001, 1.001],
+                                  [100.001, 0.001]],
+                                 [[100.201, 0.201],
+                                  [100.801, 0.201],
+                                  [100.801, 0.801],
+                                  [100.201, 0.201]]],
+                 'type': 'Polygon'},
+                {'coordinates': [[100.0, 3.101], [101.0, 2.1], [3.14, 2.18]],
+                 'type': 'MultiPoint'},
+                {'coordinates': [[[0.0, -1.0], [-2.0, -3.0], [-4.0, -5.0]],
+                                 [[1.66, -31023.5, 1.1],
+                                  [10000.9999, 3.0, 2.2],
+                                  [100.9, 1.1, 3.3],
+                                  [0.0, 0.0, 4.4]]],
+                 'type': 'MultiLineString'},
+                {'coordinates': [[[[100.001, 0.001],
+                                   [101.001, 0.001],
+                                   [101.001, 1.001],
+                                   [100.001, 0.001]],
+                                  [[100.201, 0.201],
+                                   [100.801, 0.201],
+                                   [100.801, 0.801],
+                                   [100.201, 0.201]]],
+                                 [[[1.0, 2.0, 3.0, 4.0],
+                                   [5.0, 6.0, 7.0, 8.0],
+                                   [9.0, 10.0, 11.0, 12.0],
+                                   [1.0, 2.0, 3.0, 4.0]]]],
+                 'type': 'MultiPolygon'},
+            ],
+            'type': 'GeometryCollection',
+            'meta': dict(srid=662),
         }
         self.assertEqual(expected, wkt.loads(gc))
