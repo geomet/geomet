@@ -108,4 +108,5 @@ For example:
 
 ### See Also ###
 
-- [wellknown](https://github.com/mapbox/wellknown) provides similar features for Node.
+- [wellknown](https://github.com/mapbox/wellknown): A similar package for Node.js.
+- [geo](https://github.com/bryanjos/geo): A nearly-identical package for Elixir.
