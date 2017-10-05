@@ -77,7 +77,36 @@ def dumps(obj, decimals=16):
         raise geomet.InvalidGeoJSONException('Invalid GeoJSON: %s' % obj)
 
     fmt = '%%.%df' % decimals
-    return exporter(obj, fmt)
+    result = exporter(obj, fmt)
+    # Try to get the SRID from `meta.srid`
+    meta_srid = obj.get('meta', {}).get('srid')
+    # Also try to get it from `crs.properties.name`:
+    crs_srid = obj.get('crs', {}).get('properties', {}).get('name')
+    if crs_srid is not None:
+        # Shave off the EPSG prefix to give us the SRID:
+        crs_srid = crs_srid.replace('EPSG', '')
+
+    if (meta_srid is not None and
+            crs_srid is not None and
+            str(meta_srid) != str(crs_srid)):
+        raise ValueError(
+            'Ambiguous CRS/SRID values: %s and %s' % (meta_srid, crs_srid)
+        )
+    srid = meta_srid or crs_srid
+
+    # TODO: add tests for CRS input
+    if srid is not None:
+        # Prepend the SRID
+        result = 'SRID=%s;%s' % (srid, result)
+    return result
+
+
+def _assert_next_token(sequence, expected):
+    next_token = next(sequence)
+    if not next_token == expected:
+        raise ValueError(
+            'Expected "%s" but found "%s"' % (expected, next_token)
+        )
 
 
 def loads(string):
@@ -88,7 +117,18 @@ def loads(string):
     # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
     tokens = _tokenize_wkt(tokens)
-    geom_type = next(tokens)
+    geom_type_or_srid = next(tokens)
+    srid = None
+    geom_type = geom_type_or_srid
+    if geom_type_or_srid == 'SRID':
+        # The geometry WKT contains an SRID header.
+        _assert_next_token(tokens, '=')
+        srid = int(next(tokens))
+        _assert_next_token(tokens, ';')
+        # We expected the geometry type to be next:
+        geom_type = next(tokens)
+    else:
+        geom_type = geom_type_or_srid
 
     importer = _loads_registry.get(geom_type)
 
@@ -105,7 +145,10 @@ def loads(string):
 
     # Put the peeked element back on the head of the token generator
     tokens = itertools.chain([peek], tokens)
-    return importer(tokens, string)
+    result = importer(tokens, string)
+    if srid is not None:
+        result['meta'] = dict(srid=srid)
+    return result
 
 
 def _tokenize_wkt(tokens):
