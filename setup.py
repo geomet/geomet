@@ -38,10 +38,9 @@ setup(
     platforms=['any'],
     packages=find_packages(exclude=['geomet.tests', 'geomet.tests.*']),
     entry_points={'console_scripts': ['geomet=geomet.tool:cli']},
-    provides=['geomet (%s)' % VERSION],
     license='Apache 2.0',
     keywords='wkb wkt geojson',
-    classifiers=(
+    classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
@@ -53,7 +52,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: GIS',
-    ),
+    ],
     zip_safe=False,
     install_requires=['click', 'six'],
 )
