@@ -667,7 +667,7 @@ class MultiLineStringLoadsTestCase(unittest.TestCase):
 
 class GeometryCollectionDumpsTestCase(unittest.TestCase):
 
-    def test(self):
+    def test_basic(self):
         gc = {
             'geometries': [
                 {'coordinates': [0.0, 1.0], 'type': 'Point'},
@@ -724,6 +724,44 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
             '9.000 10.000 11.000 12.000, 1.000 2.000 3.000 4.000))))'
         )
         self.assertEqual(expected, wkt.dumps(gc, decimals=3))
+
+    def test_nested_gc(self):
+        gc = {
+            "type": "GeometryCollection",
+            "geometries": [
+                {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                        {
+                            "type": "Point",
+                            "coordinates": [
+                                1.0,
+                                2.0
+                            ]
+                        },
+                        {
+                            "type": "Point",
+                            "coordinates": [
+                                3.0,
+                                4.0
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "type": "Point",
+                    "coordinates": [
+                        5.0,
+                        6.0
+                    ],
+                },
+            ],
+        }
+        expected = (
+            "GEOMETRYCOLLECTION (GEOMETRYCOLLECTION (POINT (1 2),POINT (3 4)),"
+            "POINT (5 6))"
+        )
+        self.assertEqual(expected, wkt.dumps(gc, decimals=0))
 
     def test_srid26618(self):
         gc = {
@@ -787,7 +825,7 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
 
 class GeometryCollectionLoadsTestCase(unittest.TestCase):
 
-    def test(self):
+    def test_basic_gc(self):
         gc = 'GEOMETRYCOLLECTION (%s,%s,%s,%s,%s,%s)' % (
             WKT['point']['2d'],
             WKT['linestring']['2d'],
@@ -833,6 +871,45 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
                  'type': 'MultiPolygon'},
             ],
             'type': 'GeometryCollection',
+        }
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_nested_gc(self):
+        # Test the parsing of a nested geometry collection.
+        gc = (
+            "GEOMETRYCOLLECTION(GEOMETRYCOLLECTION(POINT(1 2), POINT(3 4)), "
+            "POINT(5 6))"
+        )
+        expected = {
+            "type": "GeometryCollection",
+            "geometries": [
+                {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                        {
+                            "type": "Point",
+                            "coordinates": [
+                                1.0,
+                                2.0
+                            ]
+                        },
+                        {
+                            "type": "Point",
+                            "coordinates": [
+                                3.0,
+                                4.0
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "type": "Point",
+                    "coordinates": [
+                        5.0,
+                        6.0
+                    ],
+                },
+            ],
         }
         self.assertEqual(expected, wkt.loads(gc))
 
