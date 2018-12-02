@@ -181,7 +181,7 @@ def _round_and_pad(value, decimals):
     :param value:
         The value to round
     :param decimals:
-        Number of places to round to
+        Number of decimals places which should be displayed after the rounding.
     :return:
         str of the rounded value
     """
@@ -204,8 +204,8 @@ def _dump_point(obj, decimals):
 
     :param dict obj:
         A GeoJSON-like `dict` representing a Point.
-    :param str fmt:
-        Format string which indicates the number of digits to display after the
+    :param int decimals:
+        int which indicates the number of digits to display after the
         decimal point when formatting coordinates.
 
     :returns:
