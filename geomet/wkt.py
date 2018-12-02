@@ -176,7 +176,8 @@ def _unsupported_geom_type(geom_type):
 
 def _round_and_pad(value, decimals):
     """
-    Round the input value to `decimals` places, and pad with 0's if the resulting value is less than `decimals`.
+    Round the input value to `decimals` places, and pad with 0's
+    if the resulting value is less than `decimals`.
 
     :param value:
         The value to round
@@ -186,7 +187,8 @@ def _round_and_pad(value, decimals):
         str of the rounded value
     """
     if isinstance(value, int) and decimals != 0:
-        # if we get an int coordinate and we have a non-zero value for `decimals`, we want to create a float to pad out.
+        # if we get an int coordinate and we have a non-zero value for
+        # `decimals`, we want to create a float to pad out.
         value = float(value)
 
     elif decimals == 0:
@@ -212,7 +214,8 @@ def _dump_point(obj, decimals):
         WKT representation of the input GeoJSON Point ``obj``.
     """
     coords = obj['coordinates']
-    pt = 'POINT (%s)' % ' '.join(_round_and_pad(c, decimals) for c in coords)
+    pt = 'POINT (%s)' % ' '.join(_round_and_pad(c, decimals)
+                                 for c in coords)
     return pt
 
 
@@ -225,7 +228,8 @@ def _dump_linestring(obj, decimals):
     """
     coords = obj['coordinates']
     ls = 'LINESTRING (%s)'
-    ls %= ', '.join(' '.join(_round_and_pad(c, decimals) for c in pt) for pt in coords)
+    ls %= ', '.join(' '.join(_round_and_pad(c, decimals)
+                             for c in pt) for pt in coords)
     return ls
 
 
@@ -238,7 +242,8 @@ def _dump_polygon(obj, decimals):
     """
     coords = obj['coordinates']
     poly = 'POLYGON (%s)'
-    rings = (', '.join(' '.join(_round_and_pad(c, decimals) for c in pt) for pt in ring)
+    rings = (', '.join(' '.join(_round_and_pad(c, decimals)
+                                for c in pt) for pt in ring)
              for ring in coords)
     rings = ('(%s)' % r for r in rings)
     poly %= ', '.join(rings)
@@ -254,7 +259,8 @@ def _dump_multipoint(obj, decimals):
     """
     coords = obj['coordinates']
     mp = 'MULTIPOINT (%s)'
-    points = (' '.join(_round_and_pad(c, decimals) for c in pt) for pt in coords)
+    points = (' '.join(_round_and_pad(c, decimals)
+                       for c in pt) for pt in coords)
     # Add parens around each point.
     points = ('(%s)' % pt for pt in points)
     mp %= ', '.join(points)
@@ -270,8 +276,8 @@ def _dump_multilinestring(obj, decimals):
     """
     coords = obj['coordinates']
     mlls = 'MULTILINESTRING (%s)'
-    linestrs = ('(%s)' % ', '.join(' '.join(_round_and_pad(c, decimals) for c in pt)
-                for pt in linestr) for linestr in coords)
+    linestrs = ('(%s)' % ', '.join(' '.join(_round_and_pad(c, decimals)
+                for c in pt) for pt in linestr) for linestr in coords)
     mlls %= ', '.join(ls for ls in linestrs)
     return mlls
 
