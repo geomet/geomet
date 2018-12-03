@@ -193,9 +193,9 @@ def _round_and_pad(value, decimals):
 
     elif decimals == 0:
         # if get a `decimals` value of 0, we want to return an int.
-        return str(int(round(value, decimals)))
+        return repr(int(round(value, decimals)))
 
-    rounded = str(round(value, decimals))
+    rounded = repr(round(value, decimals))
     rounded += '0' * (decimals - len(rounded.split('.')[1]))
     return rounded
 
