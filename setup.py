@@ -10,6 +10,9 @@ import sys
 from setuptools import find_packages
 from setuptools import setup
 
+if (3,2) < sys.version_info < (3,4):
+    raise RuntimeError("Python3.3 is no longer supported")
+
 
 def get_version():
     version_re = r"^__version__\s+=\s+['\"]([^'\"]*)['\"]"
