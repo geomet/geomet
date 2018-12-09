@@ -10,6 +10,9 @@ import sys
 from setuptools import find_packages
 from setuptools import setup
 
+if (3,2) < sys.version_info < (3,4):
+    raise RuntimeError("Python3.3 is no longer supported")
+
 
 def get_version():
     version_re = r"^__version__\s+=\s+['\"]([^'\"]*)['\"]"
@@ -48,11 +51,12 @@ setup(
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: GIS',
     ],
     zip_safe=False,
     install_requires=['click', 'six'],
+    python_requires=">2.6, !=3.3.*, <3.7",
 )
