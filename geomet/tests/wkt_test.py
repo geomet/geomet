@@ -962,3 +962,15 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
             'meta': dict(srid=662),
         }
         self.assertEqual(expected, wkt.loads(gc))
+
+
+class TestRoundAndPad(unittest.TestCase):
+    def test(self):
+        test_cases = [
+            [(-1.000000000000000, 16), '-1.' + '0' * 16],
+            [(-83.2496395, 16), '-83.2496395000000000'],
+            [(35.917330500000006, 16), '35.9173305000000060']
+        ]
+
+        for args, expected in test_cases:
+            self.assertEqual(expected, wkt._round_and_pad(*args))
