@@ -41,6 +41,9 @@ setup(
     platforms=['any'],
     packages=find_packages(exclude=['geomet.tests', 'geomet.tests.*']),
     entry_points={'console_scripts': ['geomet=geomet.tool:cli']},
+    data_files=[
+        ('', ['LICENSE']),
+    ],
     license='Apache 2.0',
     keywords='wkb wkt geojson',
     classifiers=[
