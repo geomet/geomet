@@ -4,3 +4,5 @@
 .coverage
 .tox
 geomet.egg-info
+build/
+dist/
