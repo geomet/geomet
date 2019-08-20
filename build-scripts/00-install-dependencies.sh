@@ -3,3 +3,5 @@
 set -euxo pipefail
 
 pip install -r test-requirements.txt
+# Required for packaging:
+pip install setuptools wheel twine
