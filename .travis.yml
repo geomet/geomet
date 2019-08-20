@@ -4,7 +4,7 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 install:
-  - "pip install tox"  # for running tests only
-  - "python setup.py -q install"
-script: export PY_TEST_VERSION=py$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//') && tox -e style,$PY_TEST_VERSION
+  - "./build-scripts/00-install-dependencies.sh"
+script: ./build-scripts/01-build.sh && ./build-scripts/02-test.sh

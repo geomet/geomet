@@ -61,5 +61,5 @@ setup(
     ],
     zip_safe=False,
     install_requires=['click', 'six'],
-    python_requires=">2.6, !=3.3.*, <3.7",
+    python_requires=">2.6, !=3.3.*, <3.8",
 )
