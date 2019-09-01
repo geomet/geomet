@@ -57,9 +57,10 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: GIS',
     ],
     zip_safe=False,
     install_requires=['click', 'six'],
-    python_requires=">2.6, !=3.3.*, <3.8",
+    python_requires=">2.6, !=3.3.*, <4",
 )
