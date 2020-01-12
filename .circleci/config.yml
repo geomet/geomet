@@ -1,0 +1,68 @@
+version: 2.1
+
+# Common definition of the build container.
+# Helps keep job configs (below) a bit more concise.
+build_container: &build_container
+    docker:
+        # This image is Debian-based.
+        - image: circleci/python:3.8
+
+filter_release: &filter_release
+    filters:
+        tags:
+            ignore: /.*/
+        branches:
+            only: release-*
+
+jobs:
+    install_dependencies:
+        <<: *build_container
+        steps:
+            - checkout
+            - run:
+                name: Install build/test dependencies
+                command: |                
+                    python -m venv geomet_build_deps
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/00-install-dependencies.sh
+            - persist_to_workspace:
+                root: .
+                paths:
+                    # Save the venv to be used in later steps
+                    - geomet_build_deps
+
+    build:
+        <<: *build_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - checkout
+            - run:
+                name: Build and install geomet
+                command: |
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/01-build.sh
+    test:
+        <<: *build_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - checkout
+            - run:
+                name: Run test suite
+                command: |
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/02-test.sh
+
+workflows:
+    version: 2.1
+    build_and_test:
+        jobs:
+            - install_dependencies
+            - build:
+                requires: [install_dependencies]
+            - test:
+                requires: [build]
+            # - package:
+            #     requires: build
+    # release:
