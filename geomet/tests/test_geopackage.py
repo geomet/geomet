@@ -19,18 +19,29 @@ from io import BytesIO
 from geomet import geopackage
 
 
-def build_header(magic1=0x47, magic2=0x50, version=0x00, flags=0x01, srid=4326):
+def build_header(
+        magic1=0x47,
+        magic2=0x50,
+        version=0x00,
+        flags=0x01,
+        srid=4326):
     return struct.pack("<BBBBI", magic1, magic2, version, flags, srid)
 
 
 class TestGeoPackageLoads(unittest.TestCase):
     def test_loads_noenvelope_with_srid(self):
-        gpkg = (  # GPKG header
-            b'GP'  # "magic"
-            b'\x00'  # version
-            b'\x01'  # flags
-            b'\xe6\x10\x00\x00'  # SRID
-            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB geom
+        gpkg = (
+            # GPKG header
+            # "magic"
+            b'GP'
+            # version
+            b'\x00'
+            # flags
+            b'\x01'
+            # SRID
+            b'\xe6\x10\x00\x00'
+            # WKB geom
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
         )
         expected = {
             'type': 'Point',
@@ -47,20 +58,29 @@ class TestGeoPackageLoads(unittest.TestCase):
             b'\x00'
             b'\x03'
             b'\xe6\x10\x00\x00'
-            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
-            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
-            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB
+            # Envelope
+            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+            # Envelope
+            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+            # WKB
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
         )
-        expected = {'type': 'Point',
-                    'bbox': (
-                        9.615277517659223,
-                        38.55870291467437,
-                        9.615277517659223,
-                        38.55870291467437
-                    ),
-                    'coordinates': [9.615277517659223, 38.55870291467437],
-                    'meta': {'srid': 4326},
-                    'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
+        expected = {
+            'type': 'Point',
+            'bbox': (
+                9.615277517659223,
+                38.55870291467437,
+                9.615277517659223,
+                38.55870291467437),
+            'coordinates': [
+                9.615277517659223,
+                38.55870291467437],
+            'meta': {
+                'srid': 4326},
+            'crs': {
+                'type': 'name',
+                'properties': {
+                        'name': 'EPSG4326'}}}
 
         self.assertEqual(expected, geopackage.loads(gpkg))
 
@@ -117,12 +137,18 @@ class TestGeoPackageLoads(unittest.TestCase):
 
 class TestRoundTrip(unittest.TestCase):
     def test_without_envelope_with_srid_little_endian(self):
-        gpkg = (  # GPKG header
-            b'GP'  # "magic"
-            b'\x00'  # version
-            b'\x01'  # flags
-            b'\xe6\x10\x00\x00'  # SRID
-            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB geom
+        gpkg = (
+            # GPKG header
+            # "magic"
+            b'GP'
+            # version
+            b'\x00'
+            # flags
+            b'\x01'
+            # SRID
+            b'\xe6\x10\x00\x00'
+            # WKB geom
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
         )
         expected = {
             'type': 'Point',
@@ -225,9 +251,13 @@ class TestLoadsInvalidGPB(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage.loads(gpkg)
 
-        self.assertEquals(str(exc.exception),
-                         ("Could not read Geopackage geometry because of errors: "
-                         "Missing Geopackage header magic bytes"))
+        self.assertEquals(
+            str(exc.exception),
+            (
+                "Could not read Geopackage geometry because of errors: "
+                "Missing Geopackage header magic bytes"
+            )
+        )
 
     def test_wrong_version(self):
         gpkg = (
@@ -242,9 +272,11 @@ class TestLoadsInvalidGPB(unittest.TestCase):
             geopackage.loads(gpkg)
 
         print(str(exc.exception))
-        self.assertEquals(str(exc.exception),
-                         ("Could not read Geopackage geometry because of errors: "
-                          "Geopackage version must be 0"))
+        self.assertEquals(
+            str(exc.exception),
+            ("Could not read Geopackage geometry because of errors: "
+             "Geopackage version must be 0")
+        )
 
     def test_bad_envelope(self):
         gpkg = (
@@ -259,9 +291,11 @@ class TestLoadsInvalidGPB(unittest.TestCase):
             geopackage.loads(gpkg)
 
         print(str(exc.exception))
-        self.assertEquals(str(exc.exception),
-                         ("Could not read Geopackage geometry because of errors: "
-                          "Envelope indicator must be between 0-4"))
+        self.assertEquals(
+            str(exc.exception),
+            ("Could not read Geopackage geometry because of errors: "
+             "Envelope indicator must be between 0-4")
+        )
 
 
 class TestFileInteractions(unittest.TestCase):
@@ -436,9 +470,11 @@ class TestIsValid(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage._check_is_valid(header)
 
-        self.assertEqual(str(exc.exception),
-                         "Could not read Geopackage geometry because of errors: "
-                         "Missing Geopackage header magic bytes")
+        self.assertEqual(
+            str(exc.exception),
+            "Could not read Geopackage geometry because of errors: "
+            "Missing Geopackage header magic bytes"
+        )
 
     def check_is_valid_not_raise(self):
         header = build_header()
@@ -478,7 +514,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'coordinates': [1.0, 1.0],
             'type': 'Point'
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=True)
 
         expected = b'GP\x00\x01\x00\x00\x00\x00'
 
@@ -489,7 +526,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'coordinates': [1.0, 1.0],
             'type': 'Point'
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=False)
 
         expected = b'GP\x00\x00\x00\x00\x00\x00'
 
@@ -501,7 +539,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326}
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=True)
 
         expected = b'GP\x00\x01\xe6\x10\x00\x00'
 
@@ -513,7 +552,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326}
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=False)
 
         expected = b'GP\x00\x00\x00\x00\x10\xe6'
 
@@ -528,7 +568,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             },
             'bbox': (1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=True)
 
         expected = (b'GP\x00\x03\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -545,7 +586,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=False)
 
         expected = (b'GP\x00\x02\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'
@@ -561,7 +603,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)}
-        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=True)
 
         expected = (b'GP\x00\x05\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -580,7 +623,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=False)
 
         expected = (b'GP\x00\x04\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'
@@ -599,7 +643,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=True)
 
         expected = (b'GP\x00\t\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -620,7 +665,8 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
+        header = geopackage._build_geopackage_header(
+            geom, is_little_endian=False)
 
         expected = (b'GP\x00\x08\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'

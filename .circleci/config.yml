@@ -1,0 +1,186 @@
+version: 2.1
+
+# Common definition of the build container.
+# Helps keep job configs (below) a bit more concise.
+# circleci/python:* containers are debian based
+py27_container: &py27_container
+    docker:
+        - image: circleci/python:2.7
+    resource_class: small
+    working_directory: ~/project
+py34_container: &py34_container
+    docker:
+        - image: circleci/python:3.4
+    resource_class: small
+    working_directory: ~/project
+py35_container: &py35_container
+    docker:
+        - image: circleci/python:3.5
+    resource_class: small
+    working_directory: ~/project
+py36_container: &py36_container
+    docker:
+        - image: circleci/python:3.6
+    resource_class: small
+    working_directory: ~/project
+py37_container: &py37_container
+    docker:
+        - image: circleci/python:3.7
+    resource_class: small
+    working_directory: ~/project
+
+filter_build_test_package: &filter_build_test_package
+    filters:
+        tags: 
+            ignore: release-*
+        branches:
+            ignore: release-*
+
+# Use this ONLY for release builds.
+filter_release: &filter_release
+    filters:
+        tags:
+            ignore: /.*/
+        branches:
+            only: release-*
+
+commands:
+    build_test_package:
+        description: "Build, test, and package GeoMet"
+        parameters:
+            py_ver:
+                type: string
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - run:
+                name: Build, test, and package Python << parameters.py_ver >>
+                command: |
+                    python -m virtualenv geomet_ci
+                    . geomet_ci/bin/activate
+                    ./build-scripts/00-install-dependencies.sh
+                    ./build-scripts/01-build.sh
+                    ./build-scripts/02-test.sh py<< parameters.py_ver >>
+                    ./build-scripts/03-package.sh
+
+jobs:
+    code_checkout:
+        <<: *py37_container
+        steps:
+            - checkout
+            - attach_workspace:
+                at: ~/project
+            - persist_to_workspace:
+                root: .
+                paths:
+                    # Persist everything that we checked out
+                    - "."
+    build_test_package_py27:
+        <<: *py27_container
+        steps:
+            - build_test_package:
+                py_ver: "27"
+    build_test_package_py34:
+        <<: *py34_container
+        steps:
+            - build_test_package:
+                py_ver: "34"
+    build_test_package_py35:
+        <<: *py35_container
+        steps:
+            - build_test_package:
+                py_ver: "35"
+    build_test_package_py36:
+        <<: *py36_container
+        steps:
+            - build_test_package:
+                py_ver: "36"
+    build_test_package_py37:
+        <<: *py37_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - build_test_package:
+                py_ver: "37"
+            - persist_to_workspace:
+                root: .
+                paths:
+                    # Persist the entire workspace, including the
+                    # checked-out repo and the venv we just created.
+                    - "."
+    publish_to_test_pypi:
+        <<: *py37_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - run:
+                name: Try publishing the distribution package to the PyPI test server
+                command: |
+                    . geomet_ci/bin/activate
+                    ./build-scripts/04-push-test-pypi.sh
+    publish:
+        <<: *py37_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - run:
+                name: Publish distribution package to PyPI
+                command: |
+                    . geomet_ci/bin/activate
+                    ./build-scripts/05-push.sh
+
+workflows:
+    version: 2.1
+    build_test_package:
+        jobs:
+            - code_checkout:
+                <<: *filter_build_test_package
+            - build_test_package_py27:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
+            - build_test_package_py34:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
+            - build_test_package_py35:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
+            - build_test_package_py36:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
+            - build_test_package_py37:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
+    release:
+        jobs:
+            - code_checkout:
+                <<: *filter_release
+            - build_test_package_py27:
+                <<: *filter_release
+                requires: [code_checkout]
+            - build_test_package_py34:
+                <<: *filter_release
+                requires: [code_checkout]
+            - build_test_package_py35:
+                <<: *filter_release
+                requires: [code_checkout]
+            - build_test_package_py36:
+                <<: *filter_release
+                requires: [code_checkout]
+            - build_test_package_py37:
+                <<: *filter_release
+                requires: [code_checkout]
+            - publish_to_test_pypi:
+                <<: *filter_release
+                requires:
+                    - build_test_package_py27
+                    - build_test_package_py34
+                    - build_test_package_py35
+                    - build_test_package_py36
+                    - build_test_package_py37
+            - approve_publish:
+                <<: *filter_release
+                type: approval
+                requires: [publish_to_test_pypi]
+            - publish:
+                <<: *filter_release
+                requires: [approve_publish]
