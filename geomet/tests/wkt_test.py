@@ -822,6 +822,31 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, wkt.dumps(gc, decimals=3))
 
+    def test_with_empty_component_simple(self):
+        gc = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'type': 'Point', 'coordinates': [0, 0]},
+                {'type': 'Point', 'coordinates': []}
+            ]
+        }
+
+        expected = 'GEOMETRYCOLLECTION (POINT (0 0),POINT EMPTY)'
+
+        self.assertEqual(expected, wkt.dumps(gc, decimals=0))
+
+    def test_with_empty_component(self):
+        # Example from https://github.com/geomet/geomet/issues/49
+        gc = {'type': 'GeometryCollection', 'geometries': [
+            {'type': 'Polygon', 'coordinates': [
+                [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0], [27.0, 25.0]]]},
+            {'type': 'LineString', 'coordinates': []}
+        ]}
+
+        expected = 'GEOMETRYCOLLECTION (POLYGON ((27 25, 102 36, 102 46, 92 61, 13 41, 16 30, 27 25)),LINESTRING EMPTY)'
+
+        self.assertEqual(expected, wkt.dumps(gc, decimals=0))
+
 
 class GeometryCollectionLoadsTestCase(unittest.TestCase):
 
@@ -961,6 +986,31 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
             'type': 'GeometryCollection',
             'meta': dict(srid=662),
         }
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_with_empty_component_simple(self):
+        gc = 'GEOMETRYCOLLECTION (POINT (0 0), POINT EMPTY)'
+
+        expected = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'type': 'Point', 'coordinates': [0, 0]},
+                {'type': 'Point', 'coordinates': []}
+            ]
+        }
+
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_with_empty_component(self):
+        # Example from https://github.com/geomet/geomet/issues/49
+        gc = 'GEOMETRYCOLLECTION (POLYGON((27 25,102 36,102 46,92 61,13 41,16 30,27 25)),LINESTRING EMPTY)'
+
+        expected = {'type': 'GeometryCollection', 'geometries': [
+            {'type': 'Polygon', 'coordinates': [
+                [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0], [27.0, 25.0]]]},
+            {'type': 'LineString', 'coordinates': []}
+        ]}
+
         self.assertEqual(expected, wkt.loads(gc))
 
 
