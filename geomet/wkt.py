@@ -552,7 +552,7 @@ def _load_multipolygon(tokens, string):
             if t == ')':
                 # we're done; no more polygons.
                 break
-        except StopIteration:
+        except (StopIteration, tokenize.TokenError):
             # If we reach this, the WKT is not valid.
             raise ValueError(INVALID_WKT_FMT % string)
 
@@ -583,7 +583,7 @@ def _load_multilinestring(tokens, string):
             if t == ')':
                 # we're done; no more linestrings.
                 break
-        except StopIteration:
+        except (StopIteration, tokenize.TokenError):
             # If we reach this, the WKT is not valid.
             raise ValueError(INVALID_WKT_FMT % string)
 
@@ -623,7 +623,7 @@ def _load_geometrycollection(tokens, string):
                 load_func = _loads_registry.get(geom_type)
                 geom = load_func(tokens, string)
                 geoms.append(geom)
-        except StopIteration:
+        except (StopIteration, tokenize.TokenError):
             raise ValueError(INVALID_WKT_FMT % string)
     return result
 
