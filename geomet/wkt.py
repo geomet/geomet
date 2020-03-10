@@ -601,8 +601,11 @@ def _load_geometrycollection(tokens, string):
         A GeoJSON `dict` GeometryCollection representation of the WKT
         ``string``.
     """
-    open_paren = next(tokens)
-    if not open_paren == '(':
+    next_token = next(tokens)
+
+    if next_token == 'EMPTY':
+        return dict(type='GeometryCollection', geometries=[])
+    elif not next_token == '(':
         raise ValueError(INVALID_WKT_FMT % string)
 
     geoms = []
