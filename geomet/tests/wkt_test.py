@@ -880,6 +880,7 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
 
         self.assertEqual(expected, wkt.dumps(gc))
 
+
 class GeometryCollectionLoadsTestCase(unittest.TestCase):
 
     def test_basic_gc(self):
