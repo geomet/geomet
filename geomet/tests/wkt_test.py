@@ -11,6 +11,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+try:
+    import StringIO
+except ImportError:
+    import io
+    StringIO = io
+
 import geomet
 import unittest
 
@@ -68,11 +74,18 @@ WKT['multipolygon'] = (
 
 class WKTTestCase(unittest.TestCase):
 
-    def test_unsupported_geom_type(self):
+    def test_dumps_unsupported_geom_type(self):
         geom = dict(type='Tetrahedron', coordinates=[])
         with self.assertRaises(ValueError) as ar:
             wkt.dumps(geom)
         self.assertEqual("Unsupported geometry type 'Tetrahedron'",
+                         str(ar.exception))
+
+    def test_loads_unsupported_geom_type(self):
+        geom = 'TETRAHEDRON (0 0)'  # This obviously isn't a valid tetrahedron
+        with self.assertRaises(ValueError) as ar:
+            wkt.loads(geom)
+        self.assertEqual("Unsupported geometry type 'TETRAHEDRON'",
                          str(ar.exception))
 
     def test_dumps_empty_geoms(self):
@@ -123,6 +136,30 @@ class WKTTestCase(unittest.TestCase):
         for each in bad_geojson:
             with self.assertRaises(geomet.InvalidGeoJSONException):
                 wkt.dumps(each)
+
+
+class TestFileInteractions(unittest.TestCase):
+    def test_load(self):
+        fobj = StringIO.StringIO()
+
+        geom = 'POINT (0 0)'
+        fobj.write(geom)
+        fobj.seek(0)
+
+        loaded = wkt.load(fobj)
+        expected = dict(type='Point', coordinates=[0, 0])
+        self.assertEqual(expected, loaded)
+
+    def test_dump(self):
+        fobj = StringIO.StringIO()
+
+        geom = dict(type='Point', coordinates=[0, 0])
+        wkt.dump(geom, fobj)
+        fobj.seek(0)
+
+        written = fobj.read()
+        expected = 'POINT (0.0000000000000000 0.0000000000000000)'
+        self.assertEqual(expected, written)
 
 
 class PointDumpsTestCase(unittest.TestCase):
@@ -466,6 +503,14 @@ class MultiPointLoadsTestCase(unittest.TestCase):
             meta=dict(srid=4326),
         )
         self.assertEqual(expected, wkt.loads(mp))
+
+    def test_malformed_wkt(self):
+        mp = 'MULTIPOINT 0 1, 0 0'
+        with self.assertRaises(ValueError) as ar:
+            wkt.loads(mp)
+
+        expected = 'Invalid WKT: `MULTIPOINT 0 1, 0 0`'
+        self.assertEqual(expected, str(ar.exception))
 
 
 class MultiPointDumpsTestCase(unittest.TestCase):
