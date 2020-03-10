@@ -867,16 +867,17 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         gc = {
             'type': 'GeometryCollection',
             'geometries': [
-                {'coordinates': [], 'type': 'Point'},
+                {'geometries': [], 'type': 'GeometryCollection'},
                 {'coordinates': [], 'type': 'LineString'},
-                {'coordinates': [], 'type': 'Polygon'},
-                {'coordinates': [], 'type': 'MultiPoint'},
                 {'coordinates': [], 'type': 'MultiLineString'},
+                {'coordinates': [], 'type': 'MultiPoint'},
                 {'coordinates': [], 'type': 'MultiPolygon'},
-                {'geometries': [], 'type': 'GeometryCollection'}],
+                {'coordinates': [], 'type': 'Point'},
+                {'coordinates': [], 'type': 'Polygon'}
+            ]
         }
 
-        expected = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in wkt._type_map_caps_to_mixed.keys())
+        expected = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in sorted(wkt._type_map_caps_to_mixed.keys()))
 
         self.assertEqual(expected, wkt.dumps(gc))
 
@@ -1063,18 +1064,19 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
         self.assertEqual(expected, wkt.loads(gc))
 
     def test_all_types_empty(self):
-        gc = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in wkt._type_map_caps_to_mixed.keys())
+        gc = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in sorted(wkt._type_map_caps_to_mixed.keys()))
 
         expected = {
             'type': 'GeometryCollection',
             'geometries': [
-                {'coordinates': [], 'type': 'Point'},
+                {'geometries': [], 'type': 'GeometryCollection'},
                 {'coordinates': [], 'type': 'LineString'},
-                {'coordinates': [], 'type': 'Polygon'},
-                {'coordinates': [], 'type': 'MultiPoint'},
                 {'coordinates': [], 'type': 'MultiLineString'},
+                {'coordinates': [], 'type': 'MultiPoint'},
                 {'coordinates': [], 'type': 'MultiPolygon'},
-                {'geometries': [], 'type': 'GeometryCollection'}],
+                {'coordinates': [], 'type': 'Point'},
+                {'coordinates': [], 'type': 'Polygon'}
+            ]
         }
         self.assertEqual(expected, wkt.loads(gc))
 
