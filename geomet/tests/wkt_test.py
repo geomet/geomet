@@ -837,16 +837,48 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
 
     def test_with_empty_component(self):
         # Example from https://github.com/geomet/geomet/issues/49
-        gc = {'type': 'GeometryCollection', 'geometries': [
-            {'type': 'Polygon', 'coordinates': [
-                [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0], [27.0, 25.0]]]},
-            {'type': 'LineString', 'coordinates': []}
-        ]}
+        gc = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'type': 'Polygon', 'coordinates': [
+                    [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0],
+                     [27.0, 25.0]]]},
+                {'type': 'LineString', 'coordinates': []}
+            ]}
 
         expected = 'GEOMETRYCOLLECTION (POLYGON ((27 25, 102 36, 102 46, 92 61, 13 41, 16 30, 27 25)),LINESTRING EMPTY)'
 
         self.assertEqual(expected, wkt.dumps(gc, decimals=0))
 
+    def test_empty_component_with_srid(self):
+        gc = {
+            'type': 'GeometryCollection',
+            'meta': {'srid': 4326},
+            'geometries': [
+                {'type': 'Point', 'coordinates': []}
+            ]
+        }
+
+        expected = 'SRID=4326;GEOMETRYCOLLECTION (POINT EMPTY)'
+
+        self.assertEqual(expected, wkt.dumps(gc))
+
+    def test_all_types_empty(self):
+        gc = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'coordinates': [], 'type': 'Point'},
+                {'coordinates': [], 'type': 'LineString'},
+                {'coordinates': [], 'type': 'Polygon'},
+                {'coordinates': [], 'type': 'MultiPoint'},
+                {'coordinates': [], 'type': 'MultiLineString'},
+                {'coordinates': [], 'type': 'MultiPolygon'},
+                {'geometries': [], 'type': 'GeometryCollection'}],
+        }
+
+        expected = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in wkt._type_map_caps_to_mixed.keys())
+
+        self.assertEqual(expected, wkt.dumps(gc))
 
 class GeometryCollectionLoadsTestCase(unittest.TestCase):
 
@@ -1005,12 +1037,44 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
         # Example from https://github.com/geomet/geomet/issues/49
         gc = 'GEOMETRYCOLLECTION (POLYGON((27 25,102 36,102 46,92 61,13 41,16 30,27 25)),LINESTRING EMPTY)'
 
-        expected = {'type': 'GeometryCollection', 'geometries': [
-            {'type': 'Polygon', 'coordinates': [
-                [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0], [27.0, 25.0]]]},
-            {'type': 'LineString', 'coordinates': []}
-        ]}
+        expected = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'type': 'Polygon', 'coordinates': [
+                    [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0],
+                     [27.0, 25.0]]]},
+                {'type': 'LineString', 'coordinates': []}
+            ]}
 
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_empty_component_with_srid(self):
+        gc = 'SRID=4326;GEOMETRYCOLLECTION (POINT EMPTY)'
+
+        expected = {
+            'type': 'GeometryCollection',
+            'meta': {'srid': 4326},
+            'geometries': [
+                {'type': 'Point', 'coordinates': []}
+            ]
+        }
+
+        self.assertEqual(expected, wkt.loads(gc))
+
+    def test_all_types_empty(self):
+        gc = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in wkt._type_map_caps_to_mixed.keys())
+
+        expected = {
+            'type': 'GeometryCollection',
+            'geometries': [
+                {'coordinates': [], 'type': 'Point'},
+                {'coordinates': [], 'type': 'LineString'},
+                {'coordinates': [], 'type': 'Polygon'},
+                {'coordinates': [], 'type': 'MultiPoint'},
+                {'coordinates': [], 'type': 'MultiLineString'},
+                {'coordinates': [], 'type': 'MultiPolygon'},
+                {'geometries': [], 'type': 'GeometryCollection'}],
+        }
         self.assertEqual(expected, wkt.loads(gc))
 
 
