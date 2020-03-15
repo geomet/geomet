@@ -116,7 +116,7 @@ def _get_geom_type(type_bytes):
         since this is big endian byte order), indicated as 0x20. If the SRID
         flag is not set, the high byte will always be null (0x00).
     :returns:
-        3-tuple ofGeoJSON geometry type label, the bytes resprenting the
+        3-tuple ofGeoJSON geometry type label, the bytes representing the
         geometry type, and a separate "has SRID" flag. If the input
         `type_bytes` contains an SRID flag, it will be removed.
 
@@ -212,17 +212,6 @@ def dumps(obj, big_endian=True):
     :param bool big_endian:
         Defaults to `True`. If `True`, data values in the generated WKB will
         be represented using big endian byte order. Else, little endian.
-
-    TODO: remove this
-
-    :param str dims:
-        Indicates to WKB representation desired from converting the given
-        GeoJSON `dict` ``obj``. The accepted values are:
-
-        * '2D': 2-dimensional geometry (X, Y)
-        * 'Z': 3-dimensional geometry (X, Y, Z)
-        * 'M': 3-dimensional geometry (X, Y, M)
-        * 'ZM': 4-dimensional geometry (X, Y, Z, M)
 
     :returns:
         A WKB binary string representing of the ``obj``.
