@@ -38,17 +38,13 @@ def loads(string):
 
     header = as_bin_str(take(_GeoPackageConstants.HEADER_LEN, string))
     _check_is_valid(header)
-    g, p, version, flags, srid, envelope_indicator = _unpack_header(header)
+    g, p, version, flags, srid, envelope_indicator, is_little_endian = _unpack_header(header)
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
     envelope_data = as_bin_str(take((wkb_offset - _GeoPackageConstants.HEADER_LEN), string))
 
-    print("envelope indicator:", envelope_indicator)
-    print(envelope_data)
     if envelope_data:
-        print(envelope_data)
-        envelope = _get_envelope(envelope_indicator, envelope_data)
-        print(envelope)
+        envelope = _get_envelope(envelope_indicator, envelope_data, is_little_endian)
 
     result = wkb.loads(string)
 
@@ -88,11 +84,12 @@ _geopackage_envelope_formatters = {
 def _unpack_header(header):
     g, p, version, flags, srid = struct.unpack("<BBBBI", header)
     envelope_indicator = (flags >> 1) & 0x07
-    return g, p, version, flags, srid, envelope_indicator
+    endianess = _geopackage_header_is_little_endian(flags)
+    return g, p, version, flags, srid, envelope_indicator, endianess
 
 
 def is_valid(data):
-    g, p, version, flags, srid, envelope_indicator = _unpack_header(data[:8])
+    g, p, version, flags, srid, envelope_indicator, _ = _unpack_header(data[:8])
     if (g != _GeoPackageConstants.MAGIC1) \
             or (p != _GeoPackageConstants.MAGIC2):
         return False
@@ -124,8 +121,13 @@ def _get_wkb_offset(envelope_indicator):
         return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_4D_LEN
 
 
-def _get_envelope(envelope_indicator, envelope):
-    return struct.unpack(_geopackage_envelope_formatters[envelope_indicator], envelope)
+def _get_envelope(envelope_indicator, envelope, header_is_little_endian):
+    fmt = _geopackage_envelope_formatters[envelope_indicator]
+    # if header_is_little_endian:
+    #     fmt = '<' + fmt
+    # else:
+    #     fmt = '>' + fmt
+    return struct.unpack(fmt, envelope)
 
 
 def _generate_geopackage_header(obj):
