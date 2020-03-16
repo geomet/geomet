@@ -34,11 +34,11 @@ class TestGeoPackageLoads(unittest.TestCase):
         gpkg = (
             b'GP'
             b'\x00'
-            b'\x02'
+            b'\x03'
             b'\xe6\x10\x00\x00' 
             b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
             b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB
         )
-        expected = {'type': 'Point', 'coordinates': [9.615277517659223, 38.55870291467437], 'meta': {'srid': 4326, 'envelope': (9.615277517659223, 38.55870291467437, 9.615277517659223, 38.55870291467437)}, 'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
+        expected = {'type': 'Point', 'bbox': (9.615277517659223, 38.55870291467437, 9.615277517659223, 38.55870291467437), 'coordinates': [9.615277517659223, 38.55870291467437], 'meta': {'srid': 4326}, 'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
 
         self.assertEqual(expected, geopackage.loads(gpkg))
