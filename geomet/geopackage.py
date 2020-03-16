@@ -12,18 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import binascii
 import struct
 
 from geomet.util import as_bin_str, take
-from geomet.wkb import (
-    _get_geom_type,
-    _unsupported_geom_type,
-    _dumps_registry,
-    _loads_registry,
-    BIG_ENDIAN,
-    LITTLE_ENDIAN,
-)
+from geomet import wkb
 
 
 def dump(obj, destination_file, decimals=16, envelope=True):
@@ -44,98 +36,68 @@ def loads(string):
     """
     string = iter(string)
 
-    endianness = as_bin_str(take(1, string))
-    if endianness == BIG_ENDIAN:
-        big_endian = True
-    elif endianness == LITTLE_ENDIAN:
-        big_endian = False
-    else:
-        raise ValueError("Invalid endian byte: '0x%s'. Expected 0x00 or 0x01"
-                         % binascii.hexlify(endianness.encode()).decode())
+    header = as_bin_str(take(_GeoPackageConstants.HEADER_LEN, string))
+    _check_is_valid(header)
+    g, p, version, flags, srid, envelope_indicator = _unpack_header(header)
 
-    endian_token = '>' if big_endian else '<'
+    wkb_offset = _get_wkb_offset(envelope_indicator)
+    envelope_data = as_bin_str(take((wkb_offset - _GeoPackageConstants.HEADER_LEN), string))
 
-    header_bytes = as_bin_str(take(_GeoPackageConstants.GEOPACKAGE_HEADER_LEN, string))
-    _check_is_valid(header_bytes)
+    print("envelope indicator:", envelope_indicator)
+    print(envelope_data)
+    if envelope_data:
+        print(envelope_data)
+        envelope = _get_envelope(envelope_indicator, envelope_data)
+        print(envelope)
 
-    type_bytes = as_bin_str(take(4, string))
-    if not big_endian:
-        # To identify the type, order the type bytes in big endian:
-        type_bytes = type_bytes[::-1]
+    result = wkb.loads(string)
 
-    geom_type, type_bytes, has_srid = _get_geom_type(type_bytes)
-    srid = None
-    if has_srid:
-        srid_field = as_bin_str(take(4, string))
-        [srid] = struct.unpack('%si' % endian_token, srid_field)
-
-    data_bytes = string
-
-    importer = _loads_registry.get(geom_type)
-
-    if importer is None:
-        _unsupported_geom_type(geom_type)
-
-    data_bytes = iter(data_bytes)
-    result = importer(big_endian, type_bytes, data_bytes)
-    if has_srid:
-        # As mentioned in the docstring above, include both approaches to
-        # indicating the SRID.
+    if srid:
         result['meta'] = {'srid': int(srid)}
         result['crs'] = {
             'type': 'name',
             'properties': {'name': 'EPSG%s' % srid},
         }
+
+    if envelope_data:
+        result['meta']['envelope'] = envelope
+
     return result
 
 
 class _GeoPackageConstants:
-    GEOPACKAGE_MAGIC1 = 0x47
-    GEOPACKAGE_MAGIC2 = 0x50
-    GEOPACKAGE_VERSION1 = 0x00
-    GEOPACKAGE_FLAGS_LITTLEENDIAN_NOENVELOPE = 0x01
-    GEOPACKAGE_HEADER_LEN = 8
-    GEOPACKAGE_NO_ENVELOPE_LEN = 0
-    GEOPACKAGE_2D_ENVELOPE_LEN = 32
-    GEOPACKAGE_3D_ENVELOPE_LEN = 48
-    GEOPACKAGE_4D_ENVELOPE_LEN = 64
+    MAGIC1 = 0x47
+    MAGIC2 = 0x50
+    VERSION1 = 0x00
+    FLAGS_LITTLEENDIAN_NOENVELOPE = 0x01
+    HEADER_LEN = 8
+    ENVELOPE_2D_LEN = 32
+    ENVELOPE_3D_LEN = 48
+    ENVELOPE_4D_LEN = 64
 
 
-# class _GeoPackageFlags:
-#     def __init__(self,):
-#         pass
-#
-#
-# class _GeoPackageHeader:
-#     def __init__(self, ):
-#         pass
+_geopackage_envelope_formatters = {
+    0: '',
+    1: 'dddd',
+    2: 'dddddd',
+    3: 'dddddd',
+    4: 'dddddddd',
+}
 
 
 def _unpack_header(header):
     g, p, version, flags, srid = struct.unpack("<BBBBI", header)
-    empty = (flags >> 1) & 0x04
     envelope_indicator = (flags >> 1) & 0x07
-    return
-
-
-
-def _get_flags(data):
-    return struct.unpack("<B", data[3])[0]
-
-
-def _get_envelope_indicator_code(data):
-    envelope_indicator = (_get_flags(data) >> 1) & 0x07
-    return envelope_indicator
+    return g, p, version, flags, srid, envelope_indicator
 
 
 def is_valid(data):
-    geopackage_header = struct.unpack("<BBBB", data[:4])
-    if (geopackage_header[0] != _GeoPackageConstants.GEOPACKAGE_MAGIC1) \
-            or (geopackage_header[1] != _GeoPackageConstants.GEOPACKAGE_MAGIC2):
+    g, p, version, flags, srid, envelope_indicator = _unpack_header(data[:8])
+    if (g != _GeoPackageConstants.MAGIC1) \
+            or (p != _GeoPackageConstants.MAGIC2):
         return False
-    if geopackage_header[2] != _GeoPackageConstants.GEOPACKAGE_VERSION1:
+    if version != _GeoPackageConstants.VERSION1:
         return False
-    envelope_indicator = _get_envelope_indicator_code(data)
     if (envelope_indicator < 0) or (envelope_indicator > 4):
         return False
     return True
@@ -147,37 +109,28 @@ def _check_is_valid(data):
                            "while reading geopackage input.")
 
 
-def _get_wkb_offset(data):
-    envelope_indicator = _get_envelope_indicator_code(data)
+def _geopackage_header_is_little_endian(flags):
+        return flags & 0x01
+
+
+def _get_wkb_offset(envelope_indicator):
     if envelope_indicator == 0:
-        return _GeoPackageConstants.GEOPACKAGE_HEADER_LEN
+        return _GeoPackageConstants.HEADER_LEN
     elif envelope_indicator == 1:
-        return _GeoPackageConstants.GEOPACKAGE_HEADER_LEN + _GeoPackageConstants.GEOPACKAGE_2D_ENVELOPE_LEN
+        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_2D_LEN
     elif envelope_indicator in (2, 3):
-        return _GeoPackageConstants.GEOPACKAGE_HEADER_LEN + _GeoPackageConstants.GEOPACKAGE_3D_ENVELOPE_LEN
+        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_3D_LEN
     elif envelope_indicator == 4:
-        return _GeoPackageConstants.GEOPACKAGE_HEADER_LEN + _GeoPackageConstants.GEOPACKAGE_4D_ENVELOPE_LEN
-    else:
-        # this should be prevented by the check is isValidGeoPackage, just defensive coding
-        raise ValueError("Could not create geometry because of errors "
-                           "while reading geopackage input.")
+        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_4D_LEN
 
 
-def _geopackage_header_is_little_endian(data):
-    return _get_flags(data) & 0x01
-
-
-def _get_srid(data):
-    if _geopackage_header_is_little_endian(data):
-        (srid,) = struct.unpack("<I", data[4:8])
-    else:
-        (srid,) = struct.unpack(">I", data[4:8])
-    return srid
+def _get_envelope(envelope_indicator, envelope):
+    return struct.unpack(_geopackage_envelope_formatters[envelope_indicator], envelope)
 
 
 def _generate_geopackage_header(obj):
-    return struct.pack("<BBBBI", _GeoPackageConstants.GEOPACKAGE_MAGIC1,
-                       _GeoPackageConstants.GEOPACKAGE_MAGIC2,
-                       _GeoPackageConstants.GEOPACKAGE_VERSION1,
-                       _GeoPackageConstants.GEOPACKAGE_FLAGS_LITTLEENDIAN_NOENVELOPE,
+    return struct.pack("<BBBBI", _GeoPackageConstants.MAGIC1,
+                       _GeoPackageConstants.MAGIC2,
+                       _GeoPackageConstants.VERSION1,
+                       _GeoPackageConstants.FLAGS_LITTLEENDIAN_NOENVELOPE,
                        obj.get('meta', {}).get('srid', 0))
