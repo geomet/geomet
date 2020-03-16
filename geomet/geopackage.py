@@ -32,13 +32,17 @@ def dumps(obj, decimals=16, envelope=True):
 
 def loads(string):
     """
+    Envelope is added in the 'bbox' member of the geojson as per the GeoJSON spec, per [1].
 
+    References:
+        [1] https://tools.ietf.org/html/rfc7946#section-5
     """
     string = iter(string)
 
     header = as_bin_str(take(_GeoPackageConstants.HEADER_LEN, string))
+
     _check_is_valid(header)
-    g, p, version, flags, srid, envelope_indicator, is_little_endian = _unpack_header(header)
+    g, p, version, empty, envelope_indicator, is_little_endian, srid = _unpack_header(header)
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
     envelope_data = as_bin_str(take((wkb_offset - _GeoPackageConstants.HEADER_LEN), string))
@@ -56,7 +60,7 @@ def loads(string):
         }
 
     if envelope_data:
-        result['meta']['envelope'] = envelope
+        result['bbox'] = envelope
 
     return result
 
@@ -66,10 +70,14 @@ class _GeoPackageConstants:
     MAGIC2 = 0x50
     VERSION1 = 0x00
     FLAGS_LITTLEENDIAN_NOENVELOPE = 0x01
+    FLAGS_LITTLEENDIAN_2DENVELOPE = 0x03
     HEADER_LEN = 8
     ENVELOPE_2D_LEN = 32
     ENVELOPE_3D_LEN = 48
     ENVELOPE_4D_LEN = 64
+    ENVELOPE_MASK = 0b00001111
+    EMPTY_GEOM_MASK = 0b00011111
+    ENDIANESS_MASK = 0b00000001
 
 
 _geopackage_envelope_formatters = {
@@ -83,13 +91,19 @@ _geopackage_envelope_formatters = {
 
 def _unpack_header(header):
     g, p, version, flags, srid = struct.unpack("<BBBBI", header)
-    envelope_indicator = (flags >> 1) & 0x07
-    endianess = _geopackage_header_is_little_endian(flags)
-    return g, p, version, flags, srid, envelope_indicator, endianess
+    empty, envelope_indicator, endianess = _parse_flags(flags)
+    return g, p, version, empty, envelope_indicator, endianess, srid
+
+
+def _parse_flags(flags):
+    endianess = flags & _GeoPackageConstants.ENDIANESS_MASK
+    envelope_indicator = (flags & _GeoPackageConstants.ENVELOPE_MASK) >> 1
+    empty = (flags & _GeoPackageConstants.EMPTY_GEOM_MASK) >> 4
+    return empty, envelope_indicator, endianess
 
 
 def is_valid(data):
-    g, p, version, flags, srid, envelope_indicator, _ = _unpack_header(data[:8])
+    g, p, version, _, envelope_indicator, _, _ = _unpack_header(data[:8])
     if (g != _GeoPackageConstants.MAGIC1) \
             or (p != _GeoPackageConstants.MAGIC2):
         return False
@@ -106,33 +120,44 @@ def _check_is_valid(data):
                            "while reading geopackage input.")
 
 
-def _geopackage_header_is_little_endian(flags):
-        return flags & 0x01
-
-
 def _get_wkb_offset(envelope_indicator):
+    base_len = _GeoPackageConstants.HEADER_LEN
     if envelope_indicator == 0:
-        return _GeoPackageConstants.HEADER_LEN
+        return base_len
     elif envelope_indicator == 1:
-        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_2D_LEN
+        return base_len + base_len * 4
     elif envelope_indicator in (2, 3):
-        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_3D_LEN
+        return base_len + base_len * 6
     elif envelope_indicator == 4:
-        return _GeoPackageConstants.HEADER_LEN + _GeoPackageConstants.ENVELOPE_4D_LEN
+        return base_len + base_len * 8
 
 
 def _get_envelope(envelope_indicator, envelope, header_is_little_endian):
     fmt = _geopackage_envelope_formatters[envelope_indicator]
-    # if header_is_little_endian:
-    #     fmt = '<' + fmt
-    # else:
-    #     fmt = '>' + fmt
+    if header_is_little_endian:
+        fmt = '<' + fmt
+    else:
+        fmt = '>' + fmt
     return struct.unpack(fmt, envelope)
 
 
+def _build_flags(empty, envelope_indicator, endianess=1):
+    flags = 0b0
+    if empty:
+        flags = (flags | 1) << 3
+    if envelope_indicator:
+        flags = (flags | envelope_indicator) << 1
+
+    flags = flags | endianess
+    return flags
+
+
 def _generate_geopackage_header(obj):
-    return struct.pack("<BBBBI", _GeoPackageConstants.MAGIC1,
+    # empty = 0 if len(obj['coordinates'])
+    bbox_coords = len(obj.get('bbox', []))
+
+    header = struct.pack("<BBBBI", _GeoPackageConstants.MAGIC1,
                        _GeoPackageConstants.MAGIC2,
                        _GeoPackageConstants.VERSION1,
-                       _GeoPackageConstants.FLAGS_LITTLEENDIAN_NOENVELOPE,
+                       _build_flags(0, 0, 1),  # Defaults to little endian!
                        obj.get('meta', {}).get('srid', 0))
