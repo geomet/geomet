@@ -216,8 +216,19 @@ def dumps(obj, big_endian=True):
     :returns:
         A WKB binary string representing of the ``obj``.
     """
+    return _dumps(obj, big_endian)
+
+
+def _dumps(obj, big_endian=True, include_meta=True):
+    """
+    Basically perform the action of dumps, but with some extra flags for behavior
+    specifically needed by the internal API.
+    """
     geom_type = obj['type']
-    meta = obj.get('meta', {})
+    if include_meta:
+        meta = obj.get('meta', {})
+    else:
+        meta = {}
 
     exporter = _dumps_registry.get(geom_type)
     if exporter is None:
