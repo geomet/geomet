@@ -125,7 +125,7 @@ def _build_flags(empty, envelope_indicator, endianness=1):
     return (flags << 1) | endianness
 
 
-def _build_geopackage_header(obj, header_is_little_endian):
+def _build_geopackage_header(obj, is_little_endian):
 
     empty = 1 if len(obj['coordinates']) == 0 else 0
     bbox_coords = obj.get('bbox', [])
@@ -149,7 +149,7 @@ def _build_geopackage_header(obj, header_is_little_endian):
 
     fmt = "BBBBI"
 
-    if header_is_little_endian:
+    if is_little_endian:
         fmt = '<' + fmt
     else:
         fmt = '>' + fmt
@@ -158,7 +158,7 @@ def _build_geopackage_header(obj, header_is_little_endian):
         _GeoPackageConstants.MAGIC1,
         _GeoPackageConstants.MAGIC2,
         _GeoPackageConstants.VERSION1,
-        _build_flags(empty, envelope_indicator, header_is_little_endian),
+        _build_flags(empty, envelope_indicator, is_little_endian),
         srid
     ]
 
@@ -199,18 +199,19 @@ def _get_wkb_offset(envelope_indicator):
         return base_len + base_len * 8
 
 
-def _parse_envelope(envelope_indicator, envelope, little_endian):
+def _parse_envelope(envelope_indicator, envelope, is_little_endian):
     fmt = _geopackage_envelope_formatters[envelope_indicator]
-    if little_endian:
+    if is_little_endian:
         fmt = '<' + fmt
     else:
         fmt = '>' + fmt
     return struct.unpack(fmt, envelope)
 
 
-def _build_envelope(envelope_indicator, envelope, little_endian):
+def _build_envelope(envelope_indicator, envelope, is_little_endian):
+
     fmt = _geopackage_envelope_formatters[envelope_indicator]
-    if little_endian:
+    if is_little_endian:
         fmt = '<' + fmt
     else:
         fmt = '>' + fmt

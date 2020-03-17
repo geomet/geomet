@@ -267,7 +267,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'coordinates': [1.0, 1.0],
             'type': 'Point'
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
 
         expected = b'GP\x00\x01\x00\x00\x00\x00'
 
@@ -278,7 +278,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'coordinates': [1.0, 1.0],
             'type': 'Point'
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=False)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
 
         expected = b'GP\x00\x00\x00\x00\x00\x00'
 
@@ -290,7 +290,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326}
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
 
         expected = b'GP\x00\x01\xe6\x10\x00\x00'
 
@@ -302,7 +302,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326}
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=False)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
 
         expected = b'GP\x00\x00\x00\x00\x10\xe6'
 
@@ -317,7 +317,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             },
             'bbox': (1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
 
         expected = (b'GP\x00\x03\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -334,7 +334,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=False)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
 
         expected = (b'GP\x00\x02\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'
@@ -350,7 +350,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'type': 'Point',
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)}
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
 
         expected = (b'GP\x00\x05\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -369,7 +369,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=False)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
 
         expected = (b'GP\x00\x04\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'
@@ -388,7 +388,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=True)
 
         expected = (b'GP\x00\t\xe6\x10\x00\x00'
                     b'\x00\x00\x00\x00\x00\x00\xf0?'
@@ -409,7 +409,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
             'meta': {'srid': 4326},
             'bbox': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
         }
-        header = geopackage._build_geopackage_header(geom, header_is_little_endian=False)
+        header = geopackage._build_geopackage_header(geom, is_little_endian=False)
 
         expected = (b'GP\x00\x08\x00\x00\x10\xe6'
                     b'?\xf0\x00\x00\x00\x00\x00\x00'
@@ -432,7 +432,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
         }
 
         with self.assertRaises(ValueError) as exc:
-            geopackage._build_geopackage_header(geom, header_is_little_endian=True)
+            geopackage._build_geopackage_header(geom, is_little_endian=True)
 
             self.assertEqual(str(exc.exception),
                              "Bounding box must be of length 2*n where "
