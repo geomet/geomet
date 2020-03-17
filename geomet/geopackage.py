@@ -134,9 +134,7 @@ def loads(string):
     envelope_data = _as_bin_str(_take(left_to_take, string))
 
     if envelope_data:
-        envelope = _parse_envelope(envelope_indicator,
-                                   envelope_data,
-                                   is_little_endian)
+        envelope = _parse_envelope(envelope_indicator, envelope_data, is_little_endian)
 
     result = _wkb.loads(string)
 
@@ -158,6 +156,7 @@ class _GeoPackage:
     MAGIC2 = 0x50
     VERSION1 = 0x00
     HEADER_LEN = 8
+    HEADER_PACK_FMT = "BBBBI"
     ENVELOPE_2D_LEN = 32
     ENVELOPE_3D_LEN = 48
     ENVELOPE_4D_LEN = 64
@@ -166,13 +165,41 @@ class _GeoPackage:
     ENDIANNESS_MASK = 0b00000001
 
 
-_geopackage_envelope_formatters = {
-    0: '',
-    1: 'dddd',
-    2: 'dddddd',
-    3: 'dddddd',
-    4: 'dddddddd',
+_indicator_to_dim = {
+    0: 0,
+    1: 4,
+    2: 6,
+    3: 6,
+    4: 8,
 }
+
+_dim_to_indicator = {
+    0: 0,
+    4: 1,
+    6: 2,  # Follow the lead of wkb.dumps and default to Z
+    8: 4
+}
+
+
+def is_valid(data):
+    """
+    Check if the data represents a valid geopackage
+    geometry. Input can be either the full geometry or
+    just the header.
+
+    :param bytes data:
+        bytes representing the geopackage binary.
+
+    :return bool:
+    """
+    g, p, version, _, envelope_indicator, _, _ = _unpack_header(data[:8])
+    if (g != _GeoPackage.MAGIC1) or (p != _GeoPackage.MAGIC2):
+        return False
+    if version != _GeoPackage.VERSION1:
+        return False
+    if (envelope_indicator < 0) or (envelope_indicator > 4):
+        return False
+    return True
 
 
 def _header_is_little_endian(header):
@@ -206,13 +233,10 @@ def _unpack_header(header):
     :return 7-tuple:
         all attributes stored in the binary header.
     """
-    if _header_is_little_endian(header):
-        fmt = "<BBBBI"
-    else:
-        fmt = ">BBBBI"
+    is_little_endian = _header_is_little_endian(header)
+    fmt = _endian_token(is_little_endian) + _GeoPackage.HEADER_PACK_FMT
 
-    g, p, version, flags, srid = struct.unpack(fmt,
-                                               header[:_GeoPackage.HEADER_LEN])
+    g, p, version, flags, srid = struct.unpack(fmt, header[:_GeoPackage.HEADER_LEN])
     empty, envelope_indicator, endianness = _parse_flags(flags)
     return g, p, version, empty, envelope_indicator, endianness, srid
 
@@ -284,34 +308,17 @@ def _build_geopackage_header(obj, is_little_endian):
 
     :return bytes: geopackage header.
     """
-
+    # Collect geometry metadata.
     empty = 1 if len(obj['coordinates']) == 0 else 0
-    bbox_coords = obj.get('bbox', [])
-    num_bbox_coords = len(bbox_coords)
-
+    envelope = obj.get('bbox', [])
     srid = obj.get('meta', {}).get('srid', 0)
 
-    if num_bbox_coords == 0:
-        envelope_indicator = 0
-    elif num_bbox_coords == 4:
-        envelope_indicator = 1
-    elif num_bbox_coords == 6:
-        # TODO: Can we find out if this geometry has Z or M?
-        # We'll assume Z for now.
-        envelope_indicator = 2
-    elif num_bbox_coords == 8:
-        envelope_indicator = 4
-    else:
+    try:
+        envelope_indicator = _dim_to_indicator[len(envelope)]
+    except KeyError:
         raise ValueError("Bounding box must be of length 2*n where "
                          "n is the number of dimensions represented "
                          "in the contained geometries.")
-
-    fmt = "BBBBI"
-
-    if is_little_endian:
-        fmt = '<' + fmt
-    else:
-        fmt = '>' + fmt
 
     pack_args = [
         _GeoPackage.MAGIC1,
@@ -322,36 +329,17 @@ def _build_geopackage_header(obj, is_little_endian):
         # Conveniently, in Python, False == 0 and True == 1, so
         # we can pass the boolean right in and it works as expected.
         _build_flags(empty, envelope_indicator, is_little_endian),
-        srid
+        srid,
+        # This has no effect if the envelope is empty.
+        *envelope
     ]
 
-    if envelope_indicator:
-        fmt += _geopackage_envelope_formatters[envelope_indicator]
-        pack_args.extend(bbox_coords)
+    pack_fmt = _endian_token(is_little_endian) + _GeoPackage.HEADER_PACK_FMT
 
-    return struct.pack(fmt, *pack_args)
+    # This has no effect if we have a 0 envelope indicator.
+    pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
 
-
-def is_valid(data):
-    """
-    Check if the data represents a valid geopackage
-    geometry. Input can be either the full geometry or
-    just the header.
-
-    :param bytes data:
-        bytes representing the geopackage binary.
-
-    :return bool:
-    """
-    g, p, version, _, envelope_indicator, _, _ = _unpack_header(data[:8])
-    if (g != _GeoPackage.MAGIC1) \
-            or (p != _GeoPackage.MAGIC2):
-        return False
-    if version != _GeoPackage.VERSION1:
-        return False
-    if (envelope_indicator < 0) or (envelope_indicator > 4):
-        return False
-    return True
+    return struct.pack(pack_fmt, *pack_args)
 
 
 def _check_is_valid(data):
@@ -381,14 +369,7 @@ def _get_wkb_offset(envelope_indicator):
 
     """
     base_len = _GeoPackage.HEADER_LEN
-    if envelope_indicator == 0:
-        return base_len
-    elif envelope_indicator == 1:
-        return base_len + base_len * 4
-    elif envelope_indicator in (2, 3):
-        return base_len + base_len * 6
-    elif envelope_indicator == 4:
-        return base_len + base_len * 8
+    return (base_len * _indicator_to_dim[envelope_indicator]) + base_len
 
 
 def _parse_envelope(envelope_indicator, envelope, is_little_endian):
@@ -405,30 +386,13 @@ def _parse_envelope(envelope_indicator, envelope, is_little_endian):
 
     :return tuple[float]: Geometry envelope.
     """
-    fmt = _geopackage_envelope_formatters[envelope_indicator]
+    pack_fmt = _endian_token(is_little_endian)
+    pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
+    return struct.unpack(pack_fmt, envelope)
+
+
+def _endian_token(is_little_endian):
     if is_little_endian:
-        fmt = '<' + fmt
+        return '<'
     else:
-        fmt = '>' + fmt
-    return struct.unpack(fmt, envelope)
-
-
-def _build_envelope(envelope_indicator, envelope, is_little_endian):
-    """
-    Build the geopackage envelope bytestring.
-
-    :param int envelope_indicator:
-        indicates the dimensionality of the envelope.
-    :param tuple[float] envelope:
-        tuple of floats representing the envelope.
-    :param bool is_little_endian:
-        how to pack the bytes in the envelope.
-
-    :return bytes: Geometry envelope.
-    """
-    fmt = _geopackage_envelope_formatters[envelope_indicator]
-    if is_little_endian:
-        fmt = '<' + fmt
-    else:
-        fmt = '>' + fmt
-    return struct.pack(fmt, *envelope)
+        return '>'
