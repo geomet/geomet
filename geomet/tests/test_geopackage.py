@@ -208,7 +208,7 @@ class TestIsValid(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage._check_is_valid(header)
 
-        self.assertRegex(str(exc.exception), "Could not create geometry because of errors "
+        self.assertEqual(str(exc.exception), "Could not create geometry because of errors "
                                              "while reading geopackage header.")
 
     def check_is_valid_not_raise(self):
@@ -416,6 +416,6 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage._build_geopackage_header(geom, header_is_little_endian=True)
 
-            self.assertRegex(str(exc.exception), "Bounding box must be of length 2*n where "
+            self.assertEqual(str(exc.exception), "Bounding box must be of length 2*n where "
                              "n is the number of dimensions represented "
                              "in the contained geometries.")
