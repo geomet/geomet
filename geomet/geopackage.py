@@ -127,7 +127,7 @@ def loads(string):
     header = _as_bin_str(_take(_GeoPackage.HEADER_LEN, string))
 
     _check_is_valid(header)
-    g, p, version, empty, envelope_indicator, is_little_endian, srid = _unpack_header(header)
+    g, p, version, empty, envelope_indicator, is_little_endian, srid = _parse_header(header)
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
     left_to_take = (wkb_offset - _GeoPackage.HEADER_LEN)
@@ -192,7 +192,7 @@ def is_valid(data):
 
     :return bool:
     """
-    g, p, version, _, envelope_indicator, _, _ = _unpack_header(data[:8])
+    g, p, version, _, envelope_indicator, _, _ = _parse_header(data[:8])
     if (g != _GeoPackage.MAGIC1) or (p != _GeoPackage.MAGIC2):
         return False
     if version != _GeoPackage.VERSION1:
@@ -219,7 +219,7 @@ def _header_is_little_endian(header):
     return flags & _GeoPackage.ENDIANNESS_MASK
 
 
-def _unpack_header(header):
+def _parse_header(header):
     """
     Unpack all information from the geopackage
     header, including "magic" GP bytes. Returns

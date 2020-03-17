@@ -197,7 +197,7 @@ class TestHeaderIsLittleEndian(unittest.TestCase):
         self.assertFalse(geopackage._header_is_little_endian(header))
 
 
-class TestUnpackHeader(unittest.TestCase):
+class TestParseHeader(unittest.TestCase):
     pass
 
 
