@@ -329,15 +329,14 @@ def _build_geopackage_header(obj, is_little_endian):
         # Conveniently, in Python, False == 0 and True == 1, so
         # we can pass the boolean right in and it works as expected.
         _build_flags(empty, envelope_indicator, is_little_endian),
-        srid,
-        # This has no effect if the envelope is empty.
-        *envelope
+        srid
     ]
 
     pack_fmt = _endian_token(is_little_endian) + _GeoPackage.HEADER_PACK_FMT
 
     # This has no effect if we have a 0 envelope indicator.
     pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
+    pack_args.extend(envelope)
 
     return struct.pack(pack_fmt, *pack_args)
 
