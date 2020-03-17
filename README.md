@@ -3,7 +3,7 @@ GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=ma
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
-Text/Binary), and vice versa. [Extended WKB/WKT](https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT)
+Text/Binary) or [GeoPackage Binary](http://www.geopackage.org/spec/#gpb_format), and vice versa. [Extended WKB/WKT](https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT)
 are also supported. Conversion functions are exposed through
 idiomatic `load/loads/dump/dumps` interfaces.
 
@@ -27,6 +27,16 @@ WKT/EWKT <--> GeoJSON:
 - GeometryCollection
 
 WKB/EWKB <--> GeoJSON:
+
+- Point
+- LineString
+- Polygon
+- MultiPoint
+- MultiLineString
+- MultiPolygon
+- GeometryCollection
+
+GeoPackage Binary <--> GeoJSON:
 
 - Point
 - LineString
