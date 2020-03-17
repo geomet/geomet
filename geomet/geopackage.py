@@ -14,8 +14,8 @@
 
 import struct
 
-from geomet.util import as_bin_str, take
-from geomet import wkb
+from geomet.util import as_bin_str as _as_bin_str, take as _take
+from geomet import wkb as _wkb
 
 
 def dump(obj, dest_file, big_endian=True):
@@ -28,7 +28,7 @@ def load(source_file):
 
 def dumps(obj, big_endian=True):
     header = _build_geopackage_header(obj, not big_endian)
-    result = wkb._dumps(obj, big_endian, include_meta=False)
+    result = _wkb._dumps(obj, big_endian, include_meta=False)
     return header + result
 
 
@@ -42,21 +42,21 @@ def loads(string):
     """
     string = iter(string)
 
-    header = as_bin_str(take(_GeoPackageConstants.HEADER_LEN, string))
+    header = _as_bin_str(_take(_GeoPackageConstants.HEADER_LEN, string))
 
     _check_is_valid(header)
     g, p, version, empty, envelope_indicator, is_little_endian, srid = _unpack_header(header)
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
     left_to_take = (wkb_offset - _GeoPackageConstants.HEADER_LEN)
-    envelope_data = as_bin_str(take(left_to_take, string))
+    envelope_data = _as_bin_str(_take(left_to_take, string))
 
     if envelope_data:
         envelope = _parse_envelope(envelope_indicator,
                                    envelope_data,
                                    is_little_endian)
 
-    result = wkb.loads(string)
+    result = _wkb.loads(string)
 
     if srid:
         result['meta'] = {'srid': int(srid)}
@@ -126,8 +126,8 @@ def _build_flags(empty, envelope_indicator, endianness=1):
 
 
 def _build_geopackage_header(obj, header_is_little_endian):
-    empty = 1 if len(obj['coordinates']) == 0 else 0
 
+    empty = 1 if len(obj['coordinates']) == 0 else 0
     bbox_coords = obj.get('bbox', [])
     num_bbox_coords = len(bbox_coords)
 
