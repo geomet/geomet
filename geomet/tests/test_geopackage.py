@@ -34,8 +34,12 @@ class TestGeoPackageLoads(unittest.TestCase):
             b'\xe6\x10\x00\x00'  # SRID
             b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB geom
         )
-        expected = {'type': 'Point', 'coordinates': [9.615277517659223, 38.55870291467437], 'meta': {'srid': 4326},
-                    'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
+        expected = {
+            'type': 'Point',
+            'coordinates': [9.615277517659223, 38.55870291467437],
+            'meta': {'srid': 4326},
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}
+        }
 
         self.assertEqual(expected, geopackage.loads(gpkg))
 
@@ -45,12 +49,19 @@ class TestGeoPackageLoads(unittest.TestCase):
             b'\x00'
             b'\x03'
             b'\xe6\x10\x00\x00'
-            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
+            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
+            b'\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # Envelope
             b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'  # WKB
         )
         expected = {'type': 'Point',
-                    'bbox': (9.615277517659223, 38.55870291467437, 9.615277517659223, 38.55870291467437),
-                    'coordinates': [9.615277517659223, 38.55870291467437], 'meta': {'srid': 4326},
+                    'bbox': (
+                        9.615277517659223,
+                        38.55870291467437,
+                        9.615277517659223,
+                        38.55870291467437
+                    ),
+                    'coordinates': [9.615277517659223, 38.55870291467437],
+                    'meta': {'srid': 4326},
                     'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}}
 
         self.assertEqual(expected, geopackage.loads(gpkg))
@@ -85,17 +96,22 @@ class TestRoundTrip(unittest.TestCase):
             'bbox': (1.0, 1.0, 1.0, 1.0)
         }
 
-        expected_dumps = (b'GP\x00\x02\x00\x00\x10\xe6?\xf0\x00\x00\x00\x00\x00\x00?\xf0\x00\x00'
-                          b'\x00\x00\x00\x00?\xf0\x00\x00\x00\x00\x00\x00?\xf0\x00\x00\x00\x00\x00\x00'
-                          b'\x00\x00\x00\x00\x01?\xf0\x00\x00\x00\x00\x00\x00?\xf0\x00\x00\x00\x00\x00'
-                          b'\x00')
+        expected_dumps = (
+            b'GP\x00\x02\x00\x00\x10\xe6'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x01'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+            b'?\xf0\x00\x00\x00\x00\x00\x00'
+        )
 
         dumps_result = geopackage.dumps(expected_loads)
         self.assertEqual(expected_dumps, dumps_result)
 
         loads_result = geopackage.loads(dumps_result)
         self.assertEqual(expected_loads, loads_result)
-
 
 
 class TestBuildFlags(unittest.TestCase):
@@ -184,6 +200,7 @@ class TestHeaderIsLittleEndian(unittest.TestCase):
 class TestUnpackHeader(unittest.TestCase):
     pass
 
+
 class TestIsValid(unittest.TestCase):
 
     def test_no_magic_g(self):
@@ -208,8 +225,9 @@ class TestIsValid(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage._check_is_valid(header)
 
-        self.assertEqual(str(exc.exception), "Could not create geometry because of errors "
-                                             "while reading geopackage header.")
+        self.assertEqual(str(exc.exception),
+                         "Could not create geometry because of errors "
+                         "while reading geopackage header.")
 
     def check_is_valid_not_raise(self):
         header = build_header()
@@ -416,6 +434,7 @@ class TestBuildGeoPackageHeader(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage._build_geopackage_header(geom, header_is_little_endian=True)
 
-            self.assertEqual(str(exc.exception), "Bounding box must be of length 2*n where "
+            self.assertEqual(str(exc.exception),
+                             "Bounding box must be of length 2*n where "
                              "n is the number of dimensions represented "
                              "in the contained geometries.")

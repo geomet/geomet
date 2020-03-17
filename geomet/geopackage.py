@@ -34,7 +34,8 @@ def dumps(obj, big_endian=True):
 
 def loads(string):
     """
-    Envelope is added in the 'bbox' member of the geojson as per the GeoJSON spec, per [1].
+    Envelope is added in the 'bbox' member of the geojson
+    as per the GeoJSON spec, per [1].
 
     References:
         [1] https://tools.ietf.org/html/rfc7946#section-5
@@ -47,10 +48,13 @@ def loads(string):
     g, p, version, empty, envelope_indicator, is_little_endian, srid = _unpack_header(header)
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
-    envelope_data = as_bin_str(take((wkb_offset - _GeoPackageConstants.HEADER_LEN), string))
+    left_to_take = (wkb_offset - _GeoPackageConstants.HEADER_LEN)
+    envelope_data = as_bin_str(take(left_to_take, string))
 
     if envelope_data:
-        envelope = _parse_envelope(envelope_indicator, envelope_data, is_little_endian)
+        envelope = _parse_envelope(envelope_indicator,
+                                   envelope_data,
+                                   is_little_endian)
 
     result = wkb.loads(string)
 
@@ -154,7 +158,7 @@ def _build_geopackage_header(obj, header_is_little_endian):
         _GeoPackageConstants.MAGIC1,
         _GeoPackageConstants.MAGIC2,
         _GeoPackageConstants.VERSION1,
-        _build_flags(empty, envelope_indicator, header_is_little_endian),  # If True, we get 1, if False, 0.
+        _build_flags(empty, envelope_indicator, header_is_little_endian),
         srid
     ]
 
@@ -180,7 +184,7 @@ def is_valid(data):
 def _check_is_valid(data):
     if not is_valid(data):
         raise ValueError("Could not create geometry because of errors "
-                           "while reading geopackage header.")
+                         "while reading geopackage header.")
 
 
 def _get_wkb_offset(envelope_indicator):
