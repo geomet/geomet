@@ -365,10 +365,6 @@ class TestHeaderIsLittleEndian(unittest.TestCase):
         self.assertFalse(geopackage._header_is_little_endian(header))
 
 
-class TestParseHeader(unittest.TestCase):
-    pass
-
-
 class TestIsValid(unittest.TestCase):
 
     def test_no_magic_g(self):
