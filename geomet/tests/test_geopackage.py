@@ -115,7 +115,6 @@ class TestGeoPackageLoads(unittest.TestCase):
         self.assertEqual(expected, geopackage.loads(gpkg))
 
 
-
 class TestRoundTrip(unittest.TestCase):
     def test_without_envelope_with_srid_little_endian(self):
         gpkg = (  # GPKG header
