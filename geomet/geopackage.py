@@ -47,7 +47,7 @@ def load(source_file):
     :return:
         A GeoJSON `dict` representing the geometry read from the file.
     """
-    loads(source_file.read())
+    return loads(source_file.read())
 
 
 def dumps(obj, big_endian=True):

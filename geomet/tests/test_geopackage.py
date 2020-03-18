@@ -14,6 +14,8 @@
 import struct
 import unittest
 
+from io import BytesIO
+
 from geomet import geopackage
 
 
@@ -66,6 +68,57 @@ class TestGeoPackageLoads(unittest.TestCase):
 
         self.assertEqual(expected, geopackage.loads(gpkg))
 
+    def test_loads_polygon_no_srid_mixed_endian(self):
+        gpkg = (
+            # Little-endian header & envelope
+            b'GP\x00\x03\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x004@'
+            b'\x00\x00\x00\x00\x00@e@'
+            b'\x00\x00\x00\x00\x00\x00'
+            b'$@\x00\x00\x00\x00\x00\x80a@'
+            # Big-endian WKB
+            b'\x00\x00\x00\x00\x03\x00\x00'
+            b'\x00\x01\x00\x00\x00\t@4\x00'
+            b'\x00\x00\x00\x00\x00@4\x00'
+            b'\x00\x00\x00\x00\x00@A\x00'
+            b'\x00\x00\x00\x00\x00@_\x00'
+            b'\x00\x00\x00\x00\x00@Q\x80'
+            b'\x00\x00\x00\x00\x00@a\x80'
+            b'\x00\x00\x00\x00\x00@`@\x00'
+            b'\x00\x00\x00\x00@`@\x00\x00'
+            b'\x00\x00\x00@Q\x80\x00\x00'
+            b'\x00\x00\x00@Y\x00\x00\x00'
+            b'\x00\x00\x00@[\x80\x00\x00'
+            b'\x00\x00\x00@Q\x80\x00\x00'
+            b'\x00\x00\x00@e@\x00\x00\x00'
+            b'\x00\x00@4\x00\x00\x00\x00'
+            b'\x00\x00@V\x80\x00\x00\x00'
+            b'\x00\x00@$\x00\x00\x00\x00'
+            b'\x00\x00@4\x00\x00\x00\x00'
+            b'\x00\x00@4\x00\x00\x00\x00'
+            b'\x00\x00'
+        )
+
+        expected = {
+            'type': 'Polygon',
+            'coordinates': [
+                [
+                    [20.0, 20.0],
+                    [34.0, 124.0],
+                    [70.0, 140.0],
+                    [130.0, 130.0],
+                    [70.0, 100.0],
+                    [110.0, 70.0],
+                    [170.0, 20.0],
+                    [90.0, 10.0],
+                    [20.0, 20.0]
+                ]
+            ],
+            'bbox': (20.0, 170.0, 10.0, 140.0)
+        }
+        self.assertEqual(expected, geopackage.loads(gpkg))
+
+
 
 class TestRoundTrip(unittest.TestCase):
     def test_without_envelope_with_srid_little_endian(self):
@@ -112,6 +165,121 @@ class TestRoundTrip(unittest.TestCase):
 
         loads_result = geopackage.loads(dumps_result)
         self.assertEqual(expected_loads, loads_result)
+
+    def test_polygon_no_srid_with_envelope_little_endian(self):
+        expected_dumps = (
+            b'GP\x00\x03\x00\x00\x00\x00'
+            b'\x00\x00\x00\x00\x00\x004@'
+            b'\x00\x00\x00\x00\x00@e@\x00'
+            b'\x00\x00\x00\x00\x00$@\x00'
+            b'\x00\x00\x00\x00\x80a@\x01'
+            b'\x03\x00\x00\x00\x01\x00\x00'
+            b'\x00\t\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x004@\x00\x00\x00\x00'
+            b'\x00\x004@\x00\x00\x00\x00\x00'
+            b'\x00A@\x00\x00\x00\x00\x00\x00'
+            b'_@\x00\x00\x00\x00\x00\x80Q@\x00'
+            b'\x00\x00\x00\x00\x80a@\x00\x00'
+            b'\x00\x00\x00@`@\x00\x00\x00\x00'
+            b'\x00@`@\x00\x00\x00\x00\x00\x80'
+            b'Q@\x00\x00\x00\x00\x00\x00Y@\x00'
+            b'\x00\x00\x00\x00\x80[@\x00\x00'
+            b'\x00\x00\x00\x80Q@\x00\x00\x00'
+            b'\x00\x00@e@\x00\x00\x00\x00\x00'
+            b'\x004@\x00\x00\x00\x00\x00\x80'
+            b'V@\x00\x00\x00\x00\x00\x00$@\x00'
+            b'\x00\x00\x00\x00\x004@\x00\x00'
+            b'\x00\x00\x00\x004@'
+        )
+
+        expected_loads = {
+            'type': 'Polygon',
+            'coordinates': [
+                [
+                    [20.0, 20.0],
+                    [34.0, 124.0],
+                    [70.0, 140.0],
+                    [130.0, 130.0],
+                    [70.0, 100.0],
+                    [110.0, 70.0],
+                    [170.0, 20.0],
+                    [90.0, 10.0],
+                    [20.0, 20.0]
+                ]
+            ],
+            'bbox': (20.0, 170.0, 10.0, 140.0)
+        }
+
+        loads_result = geopackage.loads(expected_dumps)
+        self.assertEqual(expected_loads, loads_result)
+
+        dumps_result = geopackage.dumps(loads_result, big_endian=False)
+        self.assertEqual(expected_dumps, dumps_result)
+
+
+class TestFileInteractions(unittest.TestCase):
+    def test_load(self):
+        gpkg = (
+            b'GP'
+            b'\x00'
+            b'\x01'
+            b'\xe6\x10\x00\x00'
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+        )
+
+        expected = {
+            'type': 'Point',
+            'coordinates': [9.615277517659223, 38.55870291467437],
+            'meta': {'srid': 4326},
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}
+        }
+
+        fobj = BytesIO()
+        fobj.write(gpkg)
+        fobj.seek(0)
+
+        self.assertEqual(expected, geopackage.load(fobj))
+
+    def test_dump_little_endian(self):
+        geojson = {
+            'type': 'Point',
+            'coordinates': [9.615277517659223, 38.55870291467437],
+            'meta': {'srid': 4326},
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}
+        }
+
+        expected = (
+            b'GP'
+            b'\x00'
+            b'\x01'
+            b'\xe6\x10\x00\x00'
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+        )
+
+        fobj = BytesIO()
+        geopackage.dump(geojson, fobj, big_endian=False)
+        fobj.seek(0)
+
+        self.assertEqual(expected, fobj.read())
+
+    def test_dump_big_endian(self):
+        geojson = {
+            'type': 'Point',
+            'coordinates': [9.615277517659223, 38.55870291467437],
+            'meta': {'srid': 4326},
+            'crs': {'type': 'name', 'properties': {'name': 'EPSG4326'}}
+        }
+
+        expected = (
+            b'GP\x00\x00\x00\x00'
+            b'\x10\xe6\x00\x00'
+            b'\x00\x00\x01@#;\x05\xa7\xa0\x9e\xf0@CG\x83\x93\xbdZh')
+
+        fobj = BytesIO()
+        geopackage.dump(geojson, fobj)
+        fobj.seek(0)
+
+        self.assertEqual(expected, fobj.read())
 
 
 class TestBuildFlags(unittest.TestCase):
