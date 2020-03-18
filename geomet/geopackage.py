@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import struct
+import struct as _struct
 
 from geomet.util import as_bin_str as _as_bin_str, take as _take
 from geomet import wkb as _wkb
@@ -215,7 +215,7 @@ def _header_is_little_endian(header):
 
     :return bool: is the header little endian
     """
-    (flags,) = struct.unpack("B", header[3:4])
+    (flags,) = _struct.unpack("B", header[3:4])
     return flags & _GeoPackage.ENDIANNESS_MASK
 
 
@@ -236,7 +236,7 @@ def _parse_header(header):
     is_little_endian = _header_is_little_endian(header)
     fmt = _endian_token(is_little_endian) + _GeoPackage.HEADER_PACK_FMT
 
-    g, p, version, flags, srid = struct.unpack(fmt, header[:_GeoPackage.HEADER_LEN])
+    g, p, version, flags, srid = _struct.unpack(fmt, header[:_GeoPackage.HEADER_LEN])
     empty, envelope_indicator, endianness = _parse_flags(flags)
     return g, p, version, empty, envelope_indicator, endianness, srid
 
@@ -338,7 +338,7 @@ def _build_geopackage_header(obj, is_little_endian):
     pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
     pack_args.extend(envelope)
 
-    return struct.pack(pack_fmt, *pack_args)
+    return _struct.pack(pack_fmt, *pack_args)
 
 
 def _check_is_valid(data):
@@ -387,7 +387,7 @@ def _parse_envelope(envelope_indicator, envelope, is_little_endian):
     """
     pack_fmt = _endian_token(is_little_endian)
     pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
-    return struct.unpack(pack_fmt, envelope)
+    return _struct.unpack(pack_fmt, envelope)
 
 
 def _endian_token(is_little_endian):
