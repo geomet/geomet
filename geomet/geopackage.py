@@ -14,7 +14,11 @@
 
 import struct as _struct
 
-from geomet.util import as_bin_str as _as_bin_str, take as _take
+from geomet.util import (
+    as_bin_str as _as_bin_str,
+    take as _take,
+    endian_token as _endian_token
+)
 from geomet import wkb as _wkb
 
 
@@ -388,10 +392,3 @@ def _parse_envelope(envelope_indicator, envelope, is_little_endian):
     pack_fmt = _endian_token(is_little_endian)
     pack_fmt += ('d' * _indicator_to_dim[envelope_indicator])
     return _struct.unpack(pack_fmt, envelope)
-
-
-def _endian_token(is_little_endian):
-    if is_little_endian:
-        return '<'
-    else:
-        return '>'
