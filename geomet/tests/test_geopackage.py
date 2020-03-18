@@ -23,10 +23,6 @@ def build_header(magic1=0x47, magic2=0x50, version=0x00, flags=0x01, srid=4326):
     return struct.pack("<BBBBI", magic1, magic2, version, flags, srid)
 
 
-def build_flags(empty=0, envelope_indicator=0, endianess=1):
-    return geopackage._build_flags(empty, envelope_indicator, endianess)
-
-
 class TestGeoPackageLoads(unittest.TestCase):
     def test_loads_noenvelope_with_srid(self):
         gpkg = (  # GPKG header
