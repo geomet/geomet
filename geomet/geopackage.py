@@ -168,7 +168,10 @@ class _GeoPackage:
     EMPTY_GEOM_MASK = 0b00011111
     ENDIANNESS_MASK = 0b00000001
 
-
+# map the "envelope indicator" integer we get out of the geopackage header
+# to the dimensionality of the envelope.
+# more info here: http://www.geopackage.org/spec/#gpb_format
+# in the "flags" section, bits 3, 2, 1.
 _indicator_to_dim = {
     0: 0,
     1: 4,
@@ -177,10 +180,14 @@ _indicator_to_dim = {
     4: 8,
 }
 
+# Map the dimensionality of our envelope to the indicator
+# integer we will use in the geopackage binary header.
+# because we have no way to tell between Z and M values,
+# if the geometry has 3 dimensions we default to assume Z.
 _dim_to_indicator = {
     0: 0,
     4: 1,
-    6: 2,  # Follow the lead of wkb.dumps and default to Z
+    6: 2,
     8: 4
 }
 
