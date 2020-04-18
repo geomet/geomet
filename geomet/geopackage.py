@@ -108,7 +108,7 @@ def loads(string):
     Construct a GeoJSON `dict` from geopackage (string).
 
     This function strips the geopackage header from the
-    string and passes the WKB after it directly to the
+    string and passes the remaining WKB geometry to the
     `geomet.wkb.loads` function.
 
     The envelope, if present, is added to the GeoJSON as
