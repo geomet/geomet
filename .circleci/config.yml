@@ -7,6 +7,14 @@ build_container: &build_container
         # This image is Debian-based.
         - image: circleci/python:3.8
 
+filter_build_test_package: &filter_build_test_package
+    filters:
+        tags: 
+            ignore: release-*
+        branches:
+            ignore: release-*
+
+# Use this ONLY for release builds.
 filter_release: &filter_release
     filters:
         tags:
@@ -53,6 +61,29 @@ jobs:
                 command: |
                     . geomet_build_deps/bin/activate
                     ./build-scripts/02-test.sh
+    package:
+        <<: *build_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - checkout
+            - run:
+                name: Create built distribution package
+                command: |
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/03-package.sh
+    push_dryrun:
+        <<: *build_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - checkout
+            - run:
+                name: Perform PyPI publishing dry-run
+                command: |
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/04-push-dryrun.sh
+
 
 workflows:
     version: 2.1
@@ -61,8 +92,13 @@ workflows:
             - install_dependencies
             - build:
                 requires: [install_dependencies]
+                <<: *filter_build_test_package
             - test:
                 requires: [build]
-            # - package:
-            #     requires: build
+                <<: *filter_build_test_package
+            - package:
+                requires: [build]
+                <<: *filter_build_test_package
+            # - push_dryrun:
+            #     requires: [package]
     # release:
