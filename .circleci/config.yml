@@ -37,8 +37,8 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                    # Save the venv to be used in later steps
-                    # - geomet_build_deps
+                    # Persist the entire workspace, including the
+                    # checked-out repo and the venv we just created.
                     - "."
 
     build:
