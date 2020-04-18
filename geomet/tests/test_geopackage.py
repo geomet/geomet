@@ -225,7 +225,7 @@ class TestLoadsInvalidGPB(unittest.TestCase):
         with self.assertRaises(ValueError) as exc:
             geopackage.loads(gpkg)
 
-        self.assertRegex(str(exc.exception),
+        self.assertEquals(str(exc.exception),
                          ("Could not read Geopackage geometry because of errors: "
                          "Missing Geopackage header magic bytes"))
 
@@ -242,7 +242,7 @@ class TestLoadsInvalidGPB(unittest.TestCase):
             geopackage.loads(gpkg)
 
         print(str(exc.exception))
-        self.assertRegex(str(exc.exception),
+        self.assertEquals(str(exc.exception),
                          ("Could not read Geopackage geometry because of errors: "
                           "Geopackage version must be 0"))
 
@@ -259,7 +259,7 @@ class TestLoadsInvalidGPB(unittest.TestCase):
             geopackage.loads(gpkg)
 
         print(str(exc.exception))
-        self.assertRegex(str(exc.exception),
+        self.assertEquals(str(exc.exception),
                          ("Could not read Geopackage geometry because of errors: "
                           "Envelope indicator must be between 0-4"))
 
