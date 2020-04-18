@@ -156,7 +156,13 @@ def loads(string):
 
 
 class _GeoPackage:
+    """
+    Much more information on geopackage structure
+    can be found here: http://www.geopackage.org/spec/#gpb_format
+    """
+    # The ascii letter 'G'
     MAGIC1 = 0x47
+    # The ascii letter 'P'
     MAGIC2 = 0x50
     VERSION1 = 0x00
     HEADER_LEN = 8
@@ -201,16 +207,17 @@ def is_valid(data):
     :param bytes data:
         bytes representing the geopackage binary.
 
-    :return bool:
+    :return (bool, str):
+        Is the geopackage valid, if not, string describing why
     """
     g, p, version, _, envelope_indicator, _, _ = _parse_header(data[:8])
     if (g != _GeoPackage.MAGIC1) or (p != _GeoPackage.MAGIC2):
-        return False
+        return False, "Missing Geopackage header magic bytes"
     if version != _GeoPackage.VERSION1:
-        return False
+        return False, "Geopackage version must be 0"
     if (envelope_indicator < 0) or (envelope_indicator > 4):
-        return False
-    return True
+        return False, "Envelope indicator must be between 0-4"
+    return True, ""
 
 
 def _header_is_little_endian(header):
@@ -293,7 +300,8 @@ def _build_flags(empty, envelope_indicator, is_little_endian=1):
         whether the header should be
         little-endian encoded.
 
-    :return:
+    :return byte:
+        geopackage header flags
     """
     flags = 0b0
     if empty:
@@ -360,9 +368,10 @@ def _check_is_valid(data):
 
     :return None:
     """
-    if not is_valid(data):
-        raise ValueError("Could not create geometry because of errors "
-                         "while reading geopackage header.")
+    valid, reason = is_valid(data)
+    if not valid:
+        raise ValueError("Could not read Geopackage geometry "
+                         "because of errors: " + reason)
 
 
 def _get_wkb_offset(envelope_indicator):

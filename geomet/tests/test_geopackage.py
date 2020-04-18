@@ -212,6 +212,58 @@ class TestRoundTrip(unittest.TestCase):
         self.assertEqual(expected_dumps, dumps_result)
 
 
+class TestLoadsInvalidGPB(unittest.TestCase):
+    def test_no_magic(self):
+        gpkg = (
+            b''
+            b'\x00'
+            b'\x01'
+            b'\xe6\x10\x00\x00'
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+        )
+
+        with self.assertRaises(ValueError) as exc:
+            geopackage.loads(gpkg)
+
+        self.assertRegex(str(exc.exception),
+                         ("Could not read Geopackage geometry because of errors: "
+                         "Missing Geopackage header magic bytes"))
+
+    def test_wrong_version(self):
+        gpkg = (
+            b'GP'
+            b'\x01'
+            b'\x01'
+            b'\xe6\x10\x00\x00'
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+        )
+
+        with self.assertRaises(ValueError) as exc:
+            geopackage.loads(gpkg)
+
+        print(str(exc.exception))
+        self.assertRegex(str(exc.exception),
+                         ("Could not read Geopackage geometry because of errors: "
+                          "Geopackage version must be 0"))
+
+    def test_bad_envelope(self):
+        gpkg = (
+            b'GP'
+            b'\x00'
+            b'\x0b'
+            b'\xe6\x10\x00\x00'
+            b'\x01\x01\x00\x00\x00\xf0\x9e\xa0\xa7\x05;#@hZ\xbd\x93\x83GC@'
+        )
+
+        with self.assertRaises(ValueError) as exc:
+            geopackage.loads(gpkg)
+
+        print(str(exc.exception))
+        self.assertRegex(str(exc.exception),
+                         ("Could not read Geopackage geometry because of errors: "
+                          "Envelope indicator must be between 0-4"))
+
+
 class TestFileInteractions(unittest.TestCase):
     def test_load(self):
         gpkg = (
@@ -364,20 +416,20 @@ class TestIsValid(unittest.TestCase):
 
     def test_no_magic_g(self):
         header = build_header(magic1=0x00)
-        self.assertFalse(geopackage.is_valid(header))
+        self.assertFalse(geopackage.is_valid(header)[0])
 
     def test_no_magic_p(self):
         header = build_header(magic2=0x00)
-        self.assertFalse(geopackage.is_valid(header))
+        self.assertFalse(geopackage.is_valid(header)[0])
 
     def test_wrong_version(self):
         header = build_header(version=0x01)
-        self.assertFalse(geopackage.is_valid(header))
+        self.assertFalse(geopackage.is_valid(header)[0])
 
     def test_out_of_bounds_envelope(self):
         flags = geopackage._build_flags(0, 5, 1)
         header = build_header(flags=flags)
-        self.assertFalse(geopackage.is_valid(header))
+        self.assertFalse(geopackage.is_valid(header)[0])
 
     def test_check_is_valid_raises(self):
         header = build_header(magic1=0x58)
@@ -385,8 +437,8 @@ class TestIsValid(unittest.TestCase):
             geopackage._check_is_valid(header)
 
         self.assertEqual(str(exc.exception),
-                         "Could not create geometry because of errors "
-                         "while reading geopackage header.")
+                         "Could not read Geopackage geometry because of errors: "
+                         "Missing Geopackage header magic bytes")
 
     def check_is_valid_not_raise(self):
         header = build_header()
