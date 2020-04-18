@@ -2,6 +2,5 @@
 
 set -euxo pipefail
 
-pip install -r test-requirements.txt
-# Required for packaging:
-pip install setuptools wheel twine
+# Install depenencies for build/test/package steps:
+pip install -r test-requirements.txt -r packaging-requirements.txt
