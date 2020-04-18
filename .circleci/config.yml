@@ -44,18 +44,20 @@ jobs:
         steps:
             - attach_workspace:
                 at: ~/project
-            - checkout
+            # - checkout
             - run:
                 name: Build and install geomet
                 command: |
                     . geomet_build_deps/bin/activate
+                    pwd
+                    ls -la
                     ./build-scripts/01-build.sh
     test:
         <<: *build_container
         steps:
             - attach_workspace:
                 at: ~/project
-            - checkout
+            # - checkout
             - run:
                 name: Run test suite
                 command: |
@@ -66,7 +68,7 @@ jobs:
         steps:
             - attach_workspace:
                 at: ~/project
-            - checkout
+            # - checkout
             - run:
                 name: Create built distribution package
                 command: |
@@ -77,7 +79,7 @@ jobs:
         steps:
             - attach_workspace:
                 at: ~/project
-            - checkout
+            # - checkout
             - run:
                 name: Perform PyPI publishing dry-run
                 command: |
