@@ -25,6 +25,7 @@ filter_release: &filter_release
 jobs:
     install_dependencies:
         <<: *build_container
+
         steps:
             - checkout
             - run:
@@ -37,7 +38,8 @@ jobs:
                 root: .
                 paths:
                     # Save the venv to be used in later steps
-                    - geomet_build_deps
+                    # - geomet_build_deps
+                    - "."
 
     build:
         <<: *build_container
