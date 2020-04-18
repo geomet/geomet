@@ -46,7 +46,6 @@ jobs:
         steps:
             - attach_workspace:
                 at: ~/project
-            # - checkout
             - run:
                 name: Build and install geomet
                 command: |
@@ -54,12 +53,17 @@ jobs:
                     pwd
                     ls -la
                     ./build-scripts/01-build.sh
+            - persist_to_workspace:
+                root: .
+                paths:
+                    # Persist the entire workspace, including the
+                    # checked-out repo and the venv we just created.
+                    - "."
     test:
         <<: *build_container
         steps:
             - attach_workspace:
                 at: ~/project
-            # - checkout
             - run:
                 name: Run test suite
                 command: |
@@ -70,23 +74,37 @@ jobs:
         steps:
             - attach_workspace:
                 at: ~/project
-            # - checkout
             - run:
                 name: Create built distribution package
                 command: |
                     . geomet_build_deps/bin/activate
                     ./build-scripts/03-package.sh
-    push_dryrun:
+            - persist_to_workspace:
+                root: .
+                paths:
+                    # Persist the entire workspace, including the
+                    # checked-out repo and the venv we just created.
+                    - "."
+    publish_dryrun:
         <<: *build_container
         steps:
             - attach_workspace:
                 at: ~/project
-            # - checkout
             - run:
                 name: Perform PyPI publishing dry-run
                 command: |
                     . geomet_build_deps/bin/activate
                     ./build-scripts/04-push-dryrun.sh
+    publish:
+        <<: *build_container
+        steps:
+            - attach_workspace:
+                at: ~/project
+            - run:
+                name: Publish distribution package to PyPI
+                command: |
+                    . geomet_build_deps/bin/activate
+                    ./build-scripts/05-push.sh
 
 
 workflows:
@@ -105,4 +123,22 @@ workflows:
                 <<: *filter_build_test_package
             # - push_dryrun:
             #     requires: [package]
-    # release:
+    release:
+        jobs:
+            - install_dependencies
+            - build:
+                requires: [install_dependencies]
+                <<: *filter_release
+            - test:
+                requires: [build]
+                <<: *filter_release
+            - package:
+                requires: [build]
+                <<: *filter_release
+            - publish_dryrun:
+                requires: [package, test]
+                <<: *filter_release
+            - publish:
+                requires: [publish_dryrun]
+                <<: *filter_release
+
