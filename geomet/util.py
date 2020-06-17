@@ -126,3 +126,10 @@ def flatten_multi_dim(sequence):
                 yield y
         else:
             yield x
+
+
+def endian_token(is_little_endian):
+    if is_little_endian:
+        return '<'
+    else:
+        return '>'
