@@ -15,12 +15,14 @@
 import os
 import six
 import sys
+sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
 import json
 import tempfile
 import unittest
 from geomet import esri
 
 IS_PY3 = six.PY3
+IS_PY34 = six.PY34
 
 esri_json_pt = {"x":25282,"y":43770,"spatialReference":{"wkid":3857}}
 esri_json_mpt = {
@@ -90,11 +92,17 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
     """
     def test_loads_unsupported_geom_type(self):
         """Tests loading invalid geometry type """
-        invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
-        with self.assertRaises(ValueError) as ar:
-            esri.loads(invalid)
-        self.assertEqual("Invalid EsriJSON: {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], 'spatialReference': {'wkid': 4326}}",
-                         str(ar.exception))
+        if six.PY34:            
+            invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
+            with self.assertRaises(ValueError) as ar:
+                esri.loads(invalid)
+            self.assertTrue(str(ar.exception).lower().find('invalid esrijson') > -1)
+        else:
+            invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
+            with self.assertRaises(ValueError) as ar:
+                esri.loads(invalid)
+            self.assertEqual("Invalid EsriJSON: {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], 'spatialReference': {'wkid': 4326}}",
+                             str(ar.exception))            
     def test_loads_to_geojson_point(self):
         """Tests Loading Esri Point Geometry to Point GeoJSON"""
         self.assertEqual(esri.loads(esri_json_pt),
