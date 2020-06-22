@@ -49,7 +49,7 @@ def loads(string):
     elif 'points' in string:
         return _esri_to_geojson_convert['points'](string)
     else:
-        raise ValueError(f"Invalid EsriJSON: {string}")
+        raise ValueError("Invalid EsriJSON: %s" % string)
 #-------------------------------------------------------------------------
 def dump(obj, dest_file):
     """
@@ -68,7 +68,7 @@ def dumps(obj):
         convert = _gj_to_esri[obj['type'].lower()]
         return convert(obj)
     else:
-        raise ValueError(f"Invalid GeoJSON type {obj}")
+        raise ValueError("Invalid GeoJSON type %s" % obj)
 #-------------------------------------------------------------------------
 def _load_geojson_point(obj):
     """
