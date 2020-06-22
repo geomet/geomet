@@ -13,13 +13,14 @@
 #  limitations under the License.
 
 import os
+import six
 import sys
 import json
 import tempfile
 import unittest
 from geomet import esri
 
-
+IS_PY3 = six.PY3
 
 esri_json_pt = {"x":25282,"y":43770,"spatialReference":{"wkid":3857}}
 esri_json_mpt = {
@@ -51,22 +52,37 @@ class TestIOReaderWriter(unittest.TestCase):
         Tests the `dump` method
         """
         vcheck = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 4326}}
-        with tempfile.TemporaryDirectory() as d:
+        if IS_PY3:            
+            with tempfile.TemporaryDirectory() as d:
+                fp = os.path.join(d, "test.json")
+                assert esri.dump(gj_pt, fp)
+                with open(fp, 'r') as r:
+                    self.assertTrue(json.loads(r.read()) == vcheck)
+                self.assertTrue(os.path.isfile(fp))
+        else:
+            d = tempfile.gettempdir()
             fp = os.path.join(d, "test.json")
             assert esri.dump(gj_pt, fp)
             with open(fp, 'r') as r:
                 self.assertTrue(json.loads(r.read()) == vcheck)
             self.assertTrue(os.path.isfile(fp))
+            os.remove(fp)
     def test_io_load(self):
         """
         Tests the `load` method
         """
         vcheck = {'type': 'Point', 'coordinates': (25282, 43770)}
-        with tempfile.TemporaryDirectory() as d:
+        if IS_PY3:            
+            with tempfile.TemporaryDirectory() as d:
+                fp = os.path.join(d, "test.json")
+                
+                self.assertEqual(esri.load(esri.dump(gj_pt, fp)),vcheck)
+        else:
+            d = tempfile.gettempdir()
             fp = os.path.join(d, "test.json")
-            
-            self.assertEqual(esri.load(esri.dump(gj_pt, fp)),vcheck)
-
+            self.assertEqual(esri.load(esri.dump(gj_pt, fp)),vcheck)            
+            if os.path.isfile(fp):
+                os.remove(fp)
 
 class TestEsriJSONtoGeoJSON(unittest.TestCase):
     """
