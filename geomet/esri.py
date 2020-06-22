@@ -13,12 +13,12 @@
 #  limitations under the License.
 import json
 #-------------------------------------------------------------------------
-def load(source_file:str) -> dict:
+def load(source_file):
     """
     Converts Esri Json File to GeoJSON.
 
     :param source_file:
-        Open and readable file-like object.
+        Path to a file that contains the Esri JSON data.
     
     :returns: 
          A GeoJSON `dict` representing the geometry read from the file.
@@ -28,7 +28,7 @@ def load(source_file:str) -> dict:
         data = json.loads(reader.read())
         return loads(data)
 #-------------------------------------------------------------------------
-def loads(string:dict) -> dict:
+def loads(string):
     """
     Construct a GeoJSON `dict` from Esri JSON (string/dict).
 
@@ -44,10 +44,8 @@ def loads(string:dict) -> dict:
         return _esri_to_geojson_convert['rings'](string)
     elif 'paths' in string:
         return _esri_to_geojson_convert['paths'](string)
-    elif 'x' in string:
+    elif 'x' in string or 'y' in string:
         return _esri_to_geojson_convert['x'](string)
-    elif 'y' in string:
-        return _esri_to_geojson_convert['y'](string)
     elif 'points' in string:
         return _esri_to_geojson_convert['points'](string)
     else:
@@ -72,7 +70,7 @@ def dumps(obj):
     else:
         raise ValueError(f"Invalid GeoJSON type {obj}")
 #-------------------------------------------------------------------------
-def _load_geojson_point(obj:dict) -> dict:
+def _load_geojson_point(obj):
     """
     Loads GeoJSON to Esri JSON for Geometry type Point.
 
@@ -80,7 +78,7 @@ def _load_geojson_point(obj:dict) -> dict:
     coords = obj['coordinates'] 
     return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : 4326}}
 #-------------------------------------------------------------------------
-def _load_geojson_multipoint(obj:dict) -> dict:
+def _load_geojson_multipoint(obj):
     """
     Loads GeoJSON to Esri JSON for Geometry type MultiPoint.
 
@@ -89,7 +87,7 @@ def _load_geojson_multipoint(obj:dict) -> dict:
                      or ['coordinates']).pop()
     return {"points" : obj[coordkey], "spatialReference" : {"wkid" : 4326}}
 #-------------------------------------------------------------------------
-def _load_geojson_polyline(obj:dict) -> dict:
+def _load_geojson_polyline(obj):
     """
     Loads GeoJSON to Esri JSON for Geometry type Linstring and MultiLineString.
 
@@ -102,7 +100,7 @@ def _load_geojson_polyline(obj:dict) -> dict:
         coordinates = obj[coordkey]
     return {"paths" : coordinates, "spatialReference" : {"wkid" : 4326}}
 #-------------------------------------------------------------------------
-def _load_geojson_polygon(data:dict) -> dict:
+def _load_geojson_polygon(data):
     """
     Loads GeoJSON to Esri JSON for Geometry type Polygon or MultiPolygon.
 
@@ -126,7 +124,7 @@ def _load_geojson_polygon(data:dict) -> dict:
             part_list.append(part_item)
     return {'rings' : part_list, "spatialReference" : {"wkid" : 4326}}
 #-------------------------------------------------------------------------
-def _dump_esri_point(obj:dict) -> dict:
+def _dump_esri_point(obj):
     """
     Dump a Esri JSON Point to GeoJSON Point.
 
@@ -143,7 +141,7 @@ def _dump_esri_point(obj:dict) -> dict:
     return {'type': 'Point', 'coordinates': (obj.get("x"),
                                              obj.get("y"))}
 #-------------------------------------------------------------------------
-def _dump_esri_polygon(obj:dict) -> dict:
+def _dump_esri_polygon(obj):
     """
     Dump a EsriJSON-like Polygon object to GeoJSON.
 
@@ -165,7 +163,7 @@ def _dump_esri_polygon(obj:dict) -> dict:
                     for part in obj['rings']]
     return {'type': 'MultiPolygon', 'coordinates': part_json}
 #-------------------------------------------------------------------------
-def _dump_esri_multipoint(data:dict) -> dict:
+def _dump_esri_multipoint(data):
     """
     Dump a EsriJSON-like MultiPoint object to GeoJSON-dict.
 
@@ -177,7 +175,7 @@ def _dump_esri_multipoint(data:dict) -> dict:
 
     return {'type': 'Multipoint', 'coordinates': [pt for pt in data['points']]}
 #-------------------------------------------------------------------------
-def _dump_esri_polyline(data:dict) -> dict:
+def _dump_esri_polyline(data):
     """
     Dump a GeoJSON-like MultiLineString object to WKT.
 
@@ -193,9 +191,8 @@ _esri_to_geojson_convert = {
     "y" : _dump_esri_point,
     "points" : _dump_esri_multipoint,
     "rings" : _dump_esri_polygon,
-    "paths" : _dump_esri_polyline,
-    #"multilinestring" : _dump_esri_polyline
-}
+    "paths" : _dump_esri_polyline}
+#-------------------------------------------------------------------------
 _gj_to_esri = {
     "point" : _load_geojson_point,
     "multipoint" : _load_geojson_multipoint,
