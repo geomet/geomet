@@ -150,7 +150,7 @@ def _load_geojson_polygon(data):
                 part_item.append(coord)
         if part_item:
             part_list.append(part_item)
-    return {'rings' : part_list, "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
+    return {'rings' : part_list, "spatialReference" : {"wkid" : _extract_geojson_srid(data)}}
 
 def _dump_esri_point(obj):
     """
