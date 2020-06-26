@@ -15,7 +15,7 @@
 import os
 import six
 import sys
-
+sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
 import json
 import tempfile
 import unittest
