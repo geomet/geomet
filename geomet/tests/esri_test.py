@@ -15,12 +15,12 @@
 import os
 import six
 import sys
-sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
+
 import json
 import tempfile
 import unittest
 from geomet import esri
-
+from geomet import InvalidGeoJSONException
 IS_PY3 = six.PY3
 IS_PY34 = six.PY34
 
@@ -94,12 +94,12 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
         """Tests loading invalid geometry type """
         if six.PY34:            
             invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
-            with self.assertRaises(ValueError) as ar:
+            with self.assertRaises(InvalidGeoJSONException) as ar:
                 esri.loads(invalid)
             self.assertTrue(str(ar.exception).lower().find('invalid esrijson') > -1)
         else:
             invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
-            with self.assertRaises(ValueError) as ar:
+            with self.assertRaises(InvalidGeoJSONException) as ar:
                 esri.loads(invalid)
             self.assertEqual("Invalid EsriJSON: {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], 'spatialReference': {'wkid': 4326}}",
                              str(ar.exception))            
@@ -196,5 +196,3 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
     
-
-
