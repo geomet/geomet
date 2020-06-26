@@ -56,7 +56,7 @@ def dump(obj, dest_file):
     """
     Converts GeoJSON to Esri JSON File.
     """
-    return json.dump(obj, dest_file)
+    return json.dump(dumps(obj), dest_file)
 
 def dumps(obj):
     """
@@ -144,7 +144,7 @@ def _load_geojson_polygon(data):
             part_list.append(part_item)
     return {'rings' : part_list, "spatialReference" : {"wkid" : _extract_geojson_srid(data)}}
 
-def _dump_esri_point(obj):
+def _to_gj_point(obj):
     """
     Dump a Esri JSON Point to GeoJSON Point.
 
@@ -161,12 +161,12 @@ def _dump_esri_point(obj):
     return {'type': 'Point', 'coordinates': (obj.get("x"),
                                              obj.get("y"))}
 
-def _dump_esri_polygon(obj):
+def _to_gj_polygon(obj):
     """
     Dump a EsriJSON-like Polygon object to GeoJSON.
 
     Input parameters and return value are the POLYGON equivalent to
-    :func:`_dump_point`.
+    :func:`_to_gj_point`.
     """
     def split_part(a_part):
         part_list = []
@@ -183,19 +183,19 @@ def _dump_esri_polygon(obj):
                     for part in obj['rings']]
     return {'type': 'MultiPolygon', 'coordinates': part_json}
 
-def _dump_esri_multipoint(data):
+def _to_gj_multipoint(data):
     """
     Dump a EsriJSON-like MultiPoint object to GeoJSON-dict.
 
     Input parameters and return value are the MULTIPOINT equivalent to
-    :func:`_dump_esri_point`.
+    :func:`_to_gj_point`.
 
     :returns: `dict`
     """
 
     return {'type': 'Multipoint', 'coordinates': [pt for pt in data['points']]}
 
-def _dump_esri_polyline(data):
+def _to_gj_polyline(data):
     """
     Dump a GeoJSON-like MultiLineString object to WKT.
 
@@ -207,11 +207,11 @@ def _dump_esri_polyline(data):
                                                         for part in data["paths"]]}
 
 _esri_to_geojson_convert = {
-    "x" : _dump_esri_point,
-    "y" : _dump_esri_point,
-    "points" : _dump_esri_multipoint,
-    "rings" : _dump_esri_polygon,
-    "paths" : _dump_esri_polyline}
+    "x" : _to_gj_point,
+    "y" : _to_gj_point,
+    "points" : _to_gj_multipoint,
+    "rings" : _to_gj_polygon,
+    "paths" : _to_gj_polyline}
 
 _gj_to_esri = {
     "point" : _load_geojson_point,
