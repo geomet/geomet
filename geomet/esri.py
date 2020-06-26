@@ -70,13 +70,38 @@ def dumps(obj):
     else:
         raise ValueError("Invalid GeoJSON type %s" % obj)
 
+def _extract_geojson_srid(obj):
+    """
+    Extracts the SRID code (WKID code) from geojson. If not found, SRID=4326
+
+    :returns: Integer
+    """
+    meta_srid = obj.get('meta', {}).get('srid', None)
+    # Also try to get it from `crs.properties.name`:
+    crs_srid = obj.get('crs', {}).get('properties', {}).get('name', None)
+    if crs_srid is not None:
+        # Shave off the EPSG prefix to give us the SRID:
+        crs_srid = crs_srid.replace('EPSG', '')
+
+    if (meta_srid is not None and
+            crs_srid is not None and
+            str(meta_srid) != str(crs_srid)):
+        raise ValueError(
+            'Ambiguous CRS/SRID values: %s and %s' % (meta_srid, crs_srid)
+        )
+    srid = meta_srid or crs_srid
+
+    return srid or 4326
+
 def _load_geojson_point(obj):
     """
     Loads GeoJSON to Esri JSON for Geometry type Point.
 
     """
-    coords = obj['coordinates'] 
-    return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : 4326}}
+    coordkey = ([d for d in obj if d.lower() == 'coordinates']
+                     or ['coordinates']).pop()
+    coords = obj[coordkey] 
+    return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : _extract_geojson_srid(obj)}}
 
 def _load_geojson_multipoint(obj):
     """
@@ -85,7 +110,7 @@ def _load_geojson_multipoint(obj):
     """
     coordkey = ([d for d in obj if d.lower() == 'coordinates']
                      or ['coordinates']).pop()
-    return {"points" : obj[coordkey], "spatialReference" : {"wkid" : 4326}}
+    return {"points" : obj[coordkey], "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
 
 def _load_geojson_polyline(obj):
     """
@@ -98,7 +123,7 @@ def _load_geojson_polyline(obj):
         coordinates = [obj[coordkey]]
     else:
         coordinates = obj[coordkey]
-    return {"paths" : coordinates, "spatialReference" : {"wkid" : 4326}}
+    return {"paths" : coordinates, "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
 
 def _load_geojson_polygon(data):
     """
@@ -122,7 +147,7 @@ def _load_geojson_polygon(data):
                 part_item.append(coord)
         if part_item:
             part_list.append(part_item)
-    return {'rings' : part_list, "spatialReference" : {"wkid" : 4326}}
+    return {'rings' : part_list, "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
 
 def _dump_esri_point(obj):
     """
