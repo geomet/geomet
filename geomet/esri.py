@@ -25,9 +25,7 @@ def load(source_file):
          A GeoJSON `dict` representing the geometry read from the file.
 
     """
-    with open(source_file, 'r') as reader:
-        data = json.loads(reader.read())
-        return loads(data)
+    return json.load(source_file)
 
 def loads(string):
     """
@@ -58,9 +56,7 @@ def dump(obj, dest_file):
     """
     Converts GeoJSON to Esri JSON File.
     """
-    with open(dest_file, 'w') as writer:
-        writer.write(json.dumps(dumps(obj)))
-    return dest_file
+    return json.dump(obj, dest_file)
 
 def dumps(obj):
     """
@@ -101,8 +97,7 @@ def _load_geojson_point(obj):
     Loads GeoJSON to Esri JSON for Geometry type Point.
 
     """
-    coordkey = ([d for d in obj if d.lower() == 'coordinates']
-                     or ['coordinates']).pop()
+    coordkey = 'coordinates'
     coords = obj[coordkey] 
     return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : _extract_geojson_srid(obj)}}
 
@@ -111,8 +106,7 @@ def _load_geojson_multipoint(obj):
     Loads GeoJSON to Esri JSON for Geometry type MultiPoint.
 
     """
-    coordkey = ([d for d in obj if d.lower() == 'coordinates']
-                     or ['coordinates']).pop()
+    coordkey = 'coordinates'
     return {"points" : obj[coordkey], "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
 
 def _load_geojson_polyline(obj):
@@ -120,8 +114,7 @@ def _load_geojson_polyline(obj):
     Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
 
     """
-    coordkey = ([d for d in obj if d.lower() == 'coordinates']
-                or ['coordinates']).pop()
+    coordkey = 'coordinates'
     if obj['type'].lower() == 'linestring':
         coordinates = [obj[coordkey]]
     else:
@@ -133,8 +126,7 @@ def _load_geojson_polygon(data):
     Loads GeoJSON to Esri JSON for Geometry type Polygon or MultiPolygon.
 
     """
-    coordkey = ([d for d in data if d.lower() == 'coordinates']
-                     or ['coordinates']).pop()
+    coordkey = 'coordinates'
     coordinates = data[coordkey]
     typekey = ([d for d in data if d.lower() == 'type']
                  or ['type']).pop()
