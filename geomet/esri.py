@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import json
+import geomet
 
 def load(source_file):
     """
@@ -49,7 +50,9 @@ def loads(string):
     elif 'points' in string:
         return _esri_to_geojson_convert['points'](string)
     else:
-        raise ValueError("Invalid EsriJSON: %s" % string)
+        raise geomet.InvalidGeoJSONException('Invalid EsriJSON: %s' % string)
+
+        
 
 def dump(obj, dest_file):
     """
@@ -68,7 +71,7 @@ def dumps(obj):
         convert = _gj_to_esri[obj['type'].lower()]
         return convert(obj)
     else:
-        raise ValueError("Invalid GeoJSON type %s" % obj)
+        raise geomet.InvalidGeoJSONException("Invalid GeoJSON type %s" % obj)
 
 def _extract_geojson_srid(obj):
     """
@@ -114,7 +117,7 @@ def _load_geojson_multipoint(obj):
 
 def _load_geojson_polyline(obj):
     """
-    Loads GeoJSON to Esri JSON for Geometry type Linstring and MultiLineString.
+    Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
 
     """
     coordkey = ([d for d in obj if d.lower() == 'coordinates']
