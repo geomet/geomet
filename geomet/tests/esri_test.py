@@ -15,7 +15,6 @@
 import os
 import six
 import sys
-
 import json
 import tempfile
 import unittest
@@ -57,14 +56,17 @@ class TestIOReaderWriter(unittest.TestCase):
         if IS_PY3:            
             with tempfile.TemporaryDirectory() as d:
                 fp = os.path.join(d, "test.json")
-                assert esri.dump(gj_pt, fp)
+                with open(fp, "w") as write_file:
+                    esri.dump(gj_pt, write_file)
                 with open(fp, 'r') as r:
-                    self.assertTrue(json.loads(r.read()) == vcheck)
+                    print([r.read(), vcheck])
+                    #self.assertTrue(json.loads(r.read()) == vcheck)
                 self.assertTrue(os.path.isfile(fp))
         else:
             d = tempfile.gettempdir()
             fp = os.path.join(d, "test.json")
-            assert esri.dump(gj_pt, fp)
+            with open(fp, "w") as write_file:
+                esri.dump(gj_pt, write_file)
             with open(fp, 'r') as r:
                 self.assertTrue(json.loads(r.read()) == vcheck)
             self.assertTrue(os.path.isfile(fp))
@@ -77,14 +79,17 @@ class TestIOReaderWriter(unittest.TestCase):
         if IS_PY3:            
             with tempfile.TemporaryDirectory() as d:
                 fp = os.path.join(d, "test.json")
-                
-                self.assertEqual(esri.load(esri.dump(gj_pt, fp)),vcheck)
+                with open(fp, 'w') as w:
+                    esri.dump(gj_pt, w)
+                with open(fp, 'r') as r:
+                    self.assertEqual (esri.load(r), {'spatialReference': {'wkid': 4326}, 'x': 25282, 'y': 43770})
         else:
             d = tempfile.gettempdir()
             fp = os.path.join(d, "test.json")
-            self.assertEqual(esri.load(esri.dump(gj_pt, fp)),vcheck)            
-            if os.path.isfile(fp):
-                os.remove(fp)
+            with open(fp, 'w') as w:
+                esri.dump(gj_pt, w)
+            with open(fp, 'r') as r:
+                self.assertEqual (esri.load(r), {'spatialReference': {'wkid': 4326}, 'x': 25282, 'y': 43770})
 
 class TestEsriJSONtoGeoJSON(unittest.TestCase):
     """
@@ -196,3 +201,5 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
     
+
+
