@@ -100,8 +100,8 @@ _WKB = {
 #: geometry type.
 #: NOTE: Byte ordering is big endian.
 _BINARY_TO_GEOM_TYPE = dict(
-    chain(*((reversed(x) for x in wkb_map.items())
-            for wkb_map in _WKB.values()))
+    chain.from_iterable(((reversed(x) for x in wkb_map.items())
+                        for wkb_map in _WKB.values()))
 )
 
 _INT_TO_DIM_LABEL = {2: '2D', 3: 'Z', 4: 'ZM'}
