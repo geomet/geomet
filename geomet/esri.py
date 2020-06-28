@@ -52,20 +52,26 @@ def loads(string):
 
         
 
-def dump(obj, dest_file):
+def dump(obj, dest_file, srid=None):
     """
     Converts GeoJSON to Esri JSON File.
     """
-    return json.dump(dumps(obj), dest_file)
+    return json.dump(dumps(obj, srid=srid), dest_file)
 
-def dumps(obj):
+def dumps(obj, srid=None):
     """
     Dump a GeoJSON-like `dict` to a Esri JSON.
+
+    :param string:
+        The GeoJSON geometry representation
+    :param int:
+        The default SRID value if none is present.
+
     """
     if 'type' in obj and \
         obj['type'].lower() in _gj_to_esri.keys():
         convert = _gj_to_esri[obj['type'].lower()]
-        return convert(obj)
+        return convert(obj, srid=srid)
     else:
         raise geomet.InvalidGeoJSONException("Invalid GeoJSON type %s" % obj)
 
@@ -92,24 +98,27 @@ def _extract_geojson_srid(obj):
 
     return srid or 4326
 
-def _load_geojson_point(obj):
+def _load_geojson_point(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type Point.
 
+    
     """
     coordkey = 'coordinates'
     coords = obj[coordkey] 
-    return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : _extract_geojson_srid(obj)}}
+    srid = _extract_geojson_srid(obj) or srid
+    return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : srid}}
 
-def _load_geojson_multipoint(obj):
+def _load_geojson_multipoint(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type MultiPoint.
 
     """
     coordkey = 'coordinates'
-    return {"points" : obj[coordkey], "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
+    srid = _extract_geojson_srid(obj) or srid
+    return {"points" : obj[coordkey], "spatialReference" : {"wkid" : srid}}
 
-def _load_geojson_polyline(obj):
+def _load_geojson_polyline(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
 
@@ -119,9 +128,10 @@ def _load_geojson_polyline(obj):
         coordinates = [obj[coordkey]]
     else:
         coordinates = obj[coordkey]
-    return {"paths" : coordinates, "spatialReference" : {"wkid" : _extract_geojson_srid(obj)}}
+    srid = _extract_geojson_srid(obj) or srid
+    return {"paths" : coordinates, "spatialReference" : {"wkid" : srid}}
 
-def _load_geojson_polygon(data):
+def _load_geojson_polygon(data, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type Polygon or MultiPolygon.
 
@@ -142,7 +152,8 @@ def _load_geojson_polygon(data):
                 part_item.append(coord)
         if part_item:
             part_list.append(part_item)
-    return {'rings' : part_list, "spatialReference" : {"wkid" : _extract_geojson_srid(data)}}
+    srid = _extract_geojson_srid(data) or srid
+    return {'rings' : part_list, "spatialReference" : {"wkid" : srid}}
 
 def _to_gj_point(obj):
     """
