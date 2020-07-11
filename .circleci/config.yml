@@ -28,6 +28,11 @@ py37_container: &py37_container
         - image: circleci/python:3.7
     resource_class: small
     working_directory: ~/project
+py38_container: &py38_container
+    docker:
+        - image: circleci/python:3.8
+    resource_class: small
+    working_directory: ~/project
 
 filter_build_test_package: &filter_build_test_package
     filters:
@@ -108,6 +113,11 @@ jobs:
                     # Persist the entire workspace, including the
                     # checked-out repo and the venv we just created.
                     - "."
+    build_test_package_py38:
+        <<: *py38_container
+        steps:
+            - build_test_package:
+                py_ver: "38"
     publish_to_test_pypi:
         <<: *py37_container
         steps:
@@ -150,6 +160,9 @@ workflows:
             - build_test_package_py37:
                 <<: *filter_build_test_package
                 requires: [code_checkout]
+            - build_test_package_py38:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
     release:
         jobs:
             - code_checkout:
@@ -169,6 +182,9 @@ workflows:
             - build_test_package_py37:
                 <<: *filter_release
                 requires: [code_checkout]
+            - build_test_package_py38:
+                <<: *filter_release
+                requires: [code_checkout]
             - publish_to_test_pypi:
                 <<: *filter_release
                 requires:
@@ -177,6 +193,7 @@ workflows:
                     - build_test_package_py35
                     - build_test_package_py36
                     - build_test_package_py37
+                    - build_test_package_py38
             - approve_publish:
                 <<: *filter_release
                 type: approval
