@@ -163,41 +163,41 @@ workflows:
             - build_test_package_py38:
                 <<: *filter_build_test_package
                 requires: [code_checkout]
-    release:
-        jobs:
-            - code_checkout:
-                <<: *filter_release
-            - build_test_package_py27:
-                <<: *filter_release
-                requires: [code_checkout]
-            - build_test_package_py34:
-                <<: *filter_release
-                requires: [code_checkout]
-            - build_test_package_py35:
-                <<: *filter_release
-                requires: [code_checkout]
-            - build_test_package_py36:
-                <<: *filter_release
-                requires: [code_checkout]
-            - build_test_package_py37:
-                <<: *filter_release
-                requires: [code_checkout]
-            - build_test_package_py38:
-                <<: *filter_release
-                requires: [code_checkout]
-            - publish_to_test_pypi:
-                <<: *filter_release
-                requires:
-                    - build_test_package_py27
-                    - build_test_package_py34
-                    - build_test_package_py35
-                    - build_test_package_py36
-                    - build_test_package_py37
-                    - build_test_package_py38
-            - approve_publish:
-                <<: *filter_release
-                type: approval
-                requires: [publish_to_test_pypi]
-            - publish:
-                <<: *filter_release
-                requires: [approve_publish]
+    # release:
+    #     jobs:
+    #         - code_checkout:
+    #             <<: *filter_release
+    #         - build_test_package_py27:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - build_test_package_py34:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - build_test_package_py35:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - build_test_package_py36:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - build_test_package_py37:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - build_test_package_py38:
+    #             <<: *filter_release
+    #             requires: [code_checkout]
+    #         - publish_to_test_pypi:
+    #             <<: *filter_release
+    #             requires:
+    #                 - build_test_package_py27
+    #                 - build_test_package_py34
+    #                 - build_test_package_py35
+    #                 - build_test_package_py36
+    #                 - build_test_package_py37
+    #                 - build_test_package_py38
+    #         - approve_publish:
+    #             <<: *filter_release
+    #             type: approval
+    #             requires: [publish_to_test_pypi]
+    #         - publish:
+    #             <<: *filter_release
+    #             requires: [approve_publish]
