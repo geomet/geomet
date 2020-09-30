@@ -1,10 +1,15 @@
 language: python
+arch:
+  - amd64
+  - ppc64le
 python:
   - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
+before_install:
+  - sudo chown -Rvf $USER:$GROUP ~/.cache/pip/wheels
 install:
   - "./build-scripts/00-install-dependencies.sh"
 script: ./build-scripts/01-build.sh && ./build-scripts/02-test.sh
