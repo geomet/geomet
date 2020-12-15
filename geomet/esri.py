@@ -14,6 +14,7 @@
 import json
 import geomet
 
+
 def load(source_file):
     """
     Converts Esri Json File to GeoJSON.
@@ -26,6 +27,7 @@ def load(source_file):
 
     """
     return json.load(source_file)
+
 
 def loads(string):
     """
@@ -51,12 +53,12 @@ def loads(string):
         raise geomet.InvalidGeoJSONException('Invalid EsriJSON: %s' % string)
 
 
-
 def dump(obj, dest_file, srid=None):
     """
     Converts GeoJSON to Esri JSON File.
     """
     return json.dump(dumps(obj, srid=srid), dest_file)
+
 
 def dumps(obj, srid=None):
     """
@@ -69,11 +71,12 @@ def dumps(obj, srid=None):
 
     """
     if 'type' in obj and \
-        obj['type'].lower() in _gj_to_esri.keys():
+            obj['type'].lower() in _gj_to_esri.keys():
         convert = _gj_to_esri[obj['type'].lower()]
         return convert(obj, srid=srid)
     else:
         raise geomet.InvalidGeoJSONException("Invalid GeoJSON type %s" % obj)
+
 
 def _extract_geojson_srid(obj):
     """
@@ -98,6 +101,7 @@ def _extract_geojson_srid(obj):
 
     return srid or 4326
 
+
 def _dump_geojson_point(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type Point.
@@ -107,7 +111,8 @@ def _dump_geojson_point(obj, srid=None):
     coordkey = 'coordinates'
     coords = obj[coordkey]
     srid = _extract_geojson_srid(obj) or srid
-    return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : srid}}
+    return {'x': coords[0], 'y': coords[1], "spatialReference": {'wkid': srid}}
+
 
 def _dump_geojson_multipoint(obj, srid=None):
     """
@@ -116,7 +121,8 @@ def _dump_geojson_multipoint(obj, srid=None):
     """
     coordkey = 'coordinates'
     srid = _extract_geojson_srid(obj) or srid
-    return {"points" : obj[coordkey], "spatialReference" : {"wkid" : srid}}
+    return {"points": obj[coordkey], "spatialReference": {"wkid": srid}}
+
 
 def _dump_geojson_polyline(obj, srid=None):
     """
@@ -129,7 +135,8 @@ def _dump_geojson_polyline(obj, srid=None):
     else:
         coordinates = obj[coordkey]
     srid = _extract_geojson_srid(obj) or srid
-    return {"paths" : coordinates, "spatialReference" : {"wkid" : srid}}
+    return {"paths": coordinates, "spatialReference": {"wkid": srid}}
+
 
 def _dump_geojson_polygon(data, srid=None):
     """
@@ -139,7 +146,7 @@ def _dump_geojson_polygon(data, srid=None):
     coordkey = 'coordinates'
     coordinates = data[coordkey]
     typekey = ([d for d in data if d.lower() == 'type']
-                 or ['type']).pop()
+               or ['type']).pop()
     if data[typekey].lower() == "polygon":
         coordinates = [coordinates]
     part_list = []
@@ -153,7 +160,8 @@ def _dump_geojson_polygon(data, srid=None):
         if part_item:
             part_list.append(part_item)
     srid = _extract_geojson_srid(data) or srid
-    return {'rings' : part_list, "spatialReference" : {"wkid" : srid}}
+    return {'rings': part_list, "spatialReference": {"wkid": srid}}
+
 
 def _to_gj_point(obj):
     """
@@ -167,10 +175,11 @@ def _to_gj_point(obj):
         GeoJSON representation of the Esri JSON Point
     """
     if obj.get("x", None) is None or \
-        obj.get("y", None) is None:
+            obj.get("y", None) is None:
         return {'type': 'Point', 'coordinates': ()}
     return {'type': 'Point', 'coordinates': (obj.get("x"),
                                              obj.get("y"))}
+
 
 def _to_gj_polygon(obj):
     """
@@ -191,8 +200,9 @@ def _to_gj_polygon(obj):
         if part_list:
             yield part_list
     part_json = [list(split_part(part))
-                    for part in obj['rings']]
+                 for part in obj['rings']]
     return {'type': 'MultiPolygon', 'coordinates': part_json}
+
 
 def _to_gj_multipoint(data):
     """
@@ -206,6 +216,7 @@ def _to_gj_multipoint(data):
 
     return {'type': 'Multipoint', 'coordinates': [pt for pt in data['points']]}
 
+
 def _to_gj_polyline(data):
     """
     Dump a GeoJSON-like MultiLineString object to WKT.
@@ -213,21 +224,21 @@ def _to_gj_polyline(data):
     Input parameters and return value are the MULTILINESTRING equivalent to
     :func:`_dump_point`.
     """
-    return {'type': 'MultiLineString', 'coordinates': [[((pt[0], pt[1]) if pt else None)
-                                                        for pt in part]
-                                                        for part in data["paths"]]}
+    return {'type': 'MultiLineString', 'coordinates': [
+        [((pt[0], pt[1]) if pt else None) for pt in part] for part in data["paths"]]}
+
 
 _esri_to_geojson_convert = {
-    "x" : _to_gj_point,
-    "y" : _to_gj_point,
-    "points" : _to_gj_multipoint,
-    "rings" : _to_gj_polygon,
-    "paths" : _to_gj_polyline}
+    "x": _to_gj_point,
+    "y": _to_gj_point,
+    "points": _to_gj_multipoint,
+    "rings": _to_gj_polygon,
+    "paths": _to_gj_polyline}
 
 _gj_to_esri = {
-    "point" : _dump_geojson_point,
-    "multipoint" : _dump_geojson_multipoint,
-    "linestring" : _dump_geojson_polyline,
-    "multilinestring" : _dump_geojson_polyline,
-    "polygon" : _dump_geojson_polygon,
-    "multipolygon" : _dump_geojson_polygon}
+    "point": _dump_geojson_point,
+    "multipoint": _dump_geojson_multipoint,
+    "linestring": _dump_geojson_polyline,
+    "multilinestring": _dump_geojson_polyline,
+    "polygon": _dump_geojson_polygon,
+    "multipolygon": _dump_geojson_polygon}
