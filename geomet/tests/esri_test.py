@@ -27,17 +27,27 @@ IS_PY34 = six.PY34
 
 esri_json_pt = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 3857}}
 esri_json_mpt = {
-    "points": [[-97.06138, 32.837], [-97.06133, 32.836], [-97.06124, 32.834], [-97.06127, 32.832]],
+    "points": [
+        [-97.06138, 32.837], [-97.06133, 32.836],
+        [-97.06124, 32.834], [-97.06127, 32.832],
+    ],
     "spatialReference": {"wkid": 4326}
 }
 esri_json_polylines = {
-    "paths": [[[-97.06138, 32.837], [-97.06133, 32.836], [-97.06124, 32.834], [-97.06127, 32.832]],
-              [[-97.06326, 32.759], [-97.06298, 32.755]]],
+    "paths": [
+        [[-97.06138, 32.837], [-97.06133, 32.836],
+         [-97.06124, 32.834], [-97.06127, 32.832]],
+        [[-97.06326, 32.759], [-97.06298, 32.755]]
+    ],
     "spatialReference": {"wkid": 4326}
 }
 esri_json_polygon = {
-    "rings": [[[-97.06138, 32.837], [-97.06133, 32.836], [-97.06124, 32.834], [-97.06127, 32.832], [-97.06138, 32.837]],
-              [[-97.06326, 32.759], [-97.06298, 32.755], [-97.06153, 32.749], [-97.06326, 32.759]]],
+    "rings": [
+        [[-97.06138, 32.837], [-97.06133, 32.836], [-97.06124, 32.834],
+         [-97.06127, 32.832], [-97.06138, 32.837]],
+        [[-97.06326, 32.759], [-97.06298, 32.755],
+         [-97.06153, 32.749], [-97.06326, 32.759]]
+    ],
     "spatialReference": {"wkid": 4326}
 }
 
@@ -78,8 +88,13 @@ gj_multi_polygon = {'type': 'MultiPolygon',
                                          32.759)]]]}
 gj_polygon = {"type": "Polygon", "coordinates": [
     [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]]}
-gj_multi_pt = {'type': 'Multipoint', 'coordinates': [
-    [-97.06138, 32.837], [-97.06133, 32.836], [-97.06124, 32.834], [-97.06127, 32.832]]}
+gj_multi_pt = {
+    'type': 'Multipoint',
+    'coordinates': [
+        [-97.06138, 32.837], [-97.06133, 32.836],
+        [-97.06124, 32.834], [-97.06127, 32.832],
+    ]
+}
 
 
 class TestIOReaderWriter(unittest.TestCase):
@@ -114,7 +129,6 @@ class TestIOReaderWriter(unittest.TestCase):
         """
         Tests the `load` method
         """
-        vcheck = {'type': 'Point', 'coordinates': (25282, 43770)}
         if IS_PY3:
             with tempfile.TemporaryDirectory() as d:
                 fp = os.path.join(d, "test.json")
@@ -122,9 +136,13 @@ class TestIOReaderWriter(unittest.TestCase):
                     esri.dump(gj_pt, w)
                 with open(fp, 'r') as r:
                     self.assertEqual(
-                        esri.load(r), {
-                            'spatialReference': {
-                                'wkid': 4326}, 'x': 25282, 'y': 43770})
+                        esri.load(r),
+                        {
+                            'spatialReference': {'wkid': 4326},
+                            'x': 25282,
+                            'y': 43770,
+                        }
+                    )
         else:
             d = tempfile.gettempdir()
             fp = os.path.join(d, "test.json")
@@ -157,8 +175,11 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
             with self.assertRaises(InvalidGeoJSONException) as ar:
                 esri.loads(invalid)
             self.assertEqual(
-                "Invalid EsriJSON: {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], 'spatialReference': {'wkid': 4326}}", str(
-                    ar.exception))
+                "Invalid EsriJSON: "
+                "{'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], "
+                "'spatialReference': {'wkid': 4326}}",
+                str(ar.exception)
+            )
 
     def test_loads_to_geojson_point(self):
         """Tests Loading Esri Point Geometry to Point GeoJSON"""
@@ -167,9 +188,16 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
 
     def test_loads_to_geojson_multipoint(self):
         """Tests Loading Esri MultiPoint Geometry to MultiPoint GeoJSON"""
-        self.assertEqual(esri.loads(esri_json_mpt),
-                         {'type': 'Multipoint', 'coordinates': [[-97.06138, 32.837], [-97.06133, 32.836],
-                                                                [-97.06124, 32.834], [-97.06127, 32.832]]})
+        self.assertEqual(
+            esri.loads(esri_json_mpt),
+            {
+                'type': 'Multipoint',
+                'coordinates': [
+                    [-97.06138, 32.837], [-97.06133, 32.836],
+                    [-97.06124, 32.834], [-97.06127, 32.832],
+                ],
+            }
+        )
 
     def test_loads_to_geojson_linstring(self):
         """Tests Loading Esri Point Geometry to MultiLineString GeoJSON"""
@@ -190,11 +218,19 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
 
     def test_loads_to_geojson_polygon(self):
         """Tests Loading Esri Polygon Geometry to MultiPolygon GeoJSON"""
-        self.assertEqual(esri.loads(esri_json_polygon),
-                         {'type': 'MultiPolygon', 'coordinates': [
-                             [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)]],
-                             [[(-97.06326, 32.759), (-97.06298, 32.755), (-97.06153, 32.749), (-97.06326, 32.759)]]
-                         ]})
+        self.assertEqual(
+            esri.loads(esri_json_polygon),
+            {
+                'type': 'MultiPolygon',
+                'coordinates': [
+                    [[(-97.06138, 32.837), (-97.06133, 32.836),
+                      (-97.06124, 32.834), (-97.06127, 32.832),
+                      (-97.06138, 32.837)]],
+                    [[(-97.06326, 32.759), (-97.06298, 32.755),
+                      (-97.06153, 32.749), (-97.06326, 32.759)]],
+                ]
+            }
+        )
 
     def test_loads_empty_pt_to_gj(self):
         """Tests Loading an empty Esri JSON Point to GeoJSON"""
@@ -253,8 +289,13 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
 
     def test_dumps_to_esrijson_polyline1(self):
         """Tests Converting GeoJSON LineString to Esri JSON Polyline"""
-        self.assertEqual(esri.dumps(gj_lintstring), {'paths': [
-                         [[100.0, 100.0], [5.0, 5.0]]], 'spatialReference': {'wkid': 4326}})
+        self.assertEqual(
+            esri.dumps(gj_lintstring),
+            {
+                'paths': [[[100.0, 100.0], [5.0, 5.0]]],
+                'spatialReference': {'wkid': 4326},
+            }
+        )
 
     def test_dumps_to_esrijson_polyline2(self):
         """Tests Converting GeoJSON MultiLineString to Esri JSON Polyline"""

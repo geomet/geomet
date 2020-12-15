@@ -300,8 +300,14 @@ def _dump_multilinestring(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        linestrs = ('(%s)' % ', '.join(' '.join(_round_and_pad(c, decimals)
-                    for c in pt) for pt in linestr) for linestr in coords)
+        linestrs = (
+            '(%s)' %
+            ', '.join(
+                ' '.join(
+                    _round_and_pad(
+                        c,
+                        decimals) for c in pt
+                ) for pt in linestr) for linestr in coords)
 
         fmt = '(%s)' % ', '.join(ls for ls in linestrs)
 
@@ -632,7 +638,7 @@ def _load_geometrycollection(tokens, string):
 
 
 _dumps_registry = {
-    'Point':  _dump_point,
+    'Point': _dump_point,
     'LineString': _dump_linestring,
     'Polygon': _dump_polygon,
     'MultiPoint': _dump_multipoint,

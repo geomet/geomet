@@ -126,7 +126,8 @@ def _dump_geojson_multipoint(obj, srid=None):
 
 def _dump_geojson_polyline(obj, srid=None):
     """
-    Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
+    Loads GeoJSON to Esri JSON for Geometry type LineString and
+    MultiLineString.
 
     """
     coordkey = 'coordinates'
@@ -224,8 +225,13 @@ def _to_gj_polyline(data):
     Input parameters and return value are the MULTILINESTRING equivalent to
     :func:`_dump_point`.
     """
-    return {'type': 'MultiLineString', 'coordinates': [
-        [((pt[0], pt[1]) if pt else None) for pt in part] for part in data["paths"]]}
+    return {
+        'type': 'MultiLineString',
+        'coordinates': [
+            [((pt[0], pt[1]) if pt else None) for pt in part]
+            for part in data["paths"]
+        ],
+    }
 
 
 _esri_to_geojson_convert = {
