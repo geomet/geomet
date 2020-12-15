@@ -166,30 +166,30 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
             invalid = {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [
                 4, 5, 6]], 'spatialReference': {'wkid': 4326}}
             with self.assertRaises(InvalidGeoJSONException) as ar:
-                esri.loads(invalid)
+                esri.loads(json.dumps(invalid))
             self.assertTrue(str(ar.exception).lower().find(
                 'invalid esrijson') > -1)
         else:
             invalid = {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [
                 4, 5, 6]], 'spatialReference': {'wkid': 4326}}
             with self.assertRaises(InvalidGeoJSONException) as ar:
-                esri.loads(invalid)
+                esri.loads(json.dumps(invalid, sort_keys=True))
             self.assertEqual(
-                "Invalid EsriJSON: "
-                "{'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], "
-                "'spatialReference': {'wkid': 4326}}",
+                'Invalid EsriJSON: '
+                '{"Tetrahedron": [[1, 2, 34], [2, 3, 4], [4, 5, 6]], '
+                '"spatialReference": {"wkid": 4326}}',
                 str(ar.exception)
             )
 
     def test_loads_to_geojson_point(self):
         """Tests Loading Esri Point Geometry to Point GeoJSON"""
-        self.assertEqual(esri.loads(esri_json_pt),
+        self.assertEqual(esri.loads(json.dumps(esri_json_pt)),
                          {'type': 'Point', 'coordinates': (25282, 43770)})
 
     def test_loads_to_geojson_multipoint(self):
         """Tests Loading Esri MultiPoint Geometry to MultiPoint GeoJSON"""
         self.assertEqual(
-            esri.loads(esri_json_mpt),
+            esri.loads(json.dumps(esri_json_mpt)),
             {
                 'type': 'Multipoint',
                 'coordinates': [
@@ -201,7 +201,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
 
     def test_loads_to_geojson_linstring(self):
         """Tests Loading Esri Point Geometry to MultiLineString GeoJSON"""
-        self.assertEqual(esri.loads(esri_json_polylines),
+        self.assertEqual(esri.loads(json.dumps(esri_json_polylines)),
                          {'type': 'MultiLineString',
                           'coordinates': [[(-97.06138,
                                             32.837),
@@ -219,7 +219,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
     def test_loads_to_geojson_polygon(self):
         """Tests Loading Esri Polygon Geometry to MultiPolygon GeoJSON"""
         self.assertEqual(
-            esri.loads(esri_json_polygon),
+            esri.loads(json.dumps(esri_json_polygon)),
             {
                 'type': 'MultiPolygon',
                 'coordinates': [
@@ -234,39 +234,39 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
 
     def test_loads_empty_pt_to_gj(self):
         """Tests Loading an empty Esri JSON Point to GeoJSON"""
-        geom = {"x": None, "y": None, "spatialReference": {"wkid": 3857}}
+        geom = json.dumps(
+            {"x": None, "y": None, "spatialReference": {"wkid": 3857}}
+        )
         self.assertEqual(esri.loads(geom),
                          {'type': 'Point', 'coordinates': ()})
 
     def test_loads_to_empty_mpt_to_gj(self):
         """Tests Loading an empty Esri JSON MultiPoint to GeoJSON"""
-        geom = {
+        geom = json.dumps({
             "points": [],
             "spatialReference": {"wkid": 4326}
-        }
+        })
         geom_match = {'type': 'Multipoint', 'coordinates': []}
         self.assertEqual(esri.loads(geom),
                          geom_match)
 
     def test_loads_empty_polyline_to_gj(self):
         """Tests Loading an empty Esri JSON Polyline to GeoJSON"""
-        geom = {
+        geom = json.dumps({
             "paths": [],
             "spatialReference": {"wkid": 4326}
-        }
+        })
         geom_match = {'type': 'MultiLineString', 'coordinates': []}
-        self.assertEqual(esri.loads(geom),
-                         geom_match)
+        self.assertEqual(esri.loads(geom), geom_match)
 
     def test_loads_empty_polygon_to_gj(self):
         """Tests Loading an empty Esri JSON Polygon to GeoJSON"""
-        geom = {
+        geom = json.dumps({
             "rings": [],
             "spatialReference": {"wkid": 4326}
-        }
+        })
         geom_match = {'type': 'MultiPolygon', 'coordinates': []}
-        self.assertEqual(esri.loads(geom),
-                         geom_match)
+        self.assertEqual(esri.loads(geom), geom_match)
 
 
 class TestGeoJSONtoEsriJSON(unittest.TestCase):

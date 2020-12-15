@@ -39,16 +39,16 @@ def loads(string):
     :returns:
          A GeoJSON `dict` representing the geometry read from the file.
     """
-    if isinstance(string, str):
-        string = json.loads(string)
-    if 'rings' in string:
-        return _esri_to_geojson_convert['rings'](string)
-    elif 'paths' in string:
-        return _esri_to_geojson_convert['paths'](string)
-    elif 'x' in string or 'y' in string:
-        return _esri_to_geojson_convert['x'](string)
-    elif 'points' in string:
-        return _esri_to_geojson_convert['points'](string)
+    data = json.loads(string)
+
+    if 'rings' in data:
+        return _esri_to_geojson_convert['rings'](data)
+    elif 'paths' in data:
+        return _esri_to_geojson_convert['paths'](data)
+    elif 'x' in data or 'y' in data:
+        return _esri_to_geojson_convert['x'](data)
+    elif 'points' in data:
+        return _esri_to_geojson_convert['points'](data)
     else:
         raise geomet.InvalidGeoJSONException('Invalid EsriJSON: %s' % string)
 
