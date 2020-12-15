@@ -6,3 +6,4 @@ Sean Gillies <sean.gillies@gmail.com> - August 2014
 Tom Caruso <carusot42@gmail.com> - December 2018
 Paul Bryan <pbryan@anode.ca> - August 2019
 Ram Rachum <ram@rachum.com> - June 2020
+Andrew Chapkowski <andrewonboe@gmail.com> - June 2020
