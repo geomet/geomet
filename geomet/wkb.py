@@ -221,8 +221,8 @@ def dumps(obj, big_endian=True):
 
 def _dumps(obj, big_endian=True, include_meta=True):
     """
-    Basically perform the action of dumps, but with some extra flags for behavior
-    specifically needed by the geopackage...package.
+    Basically perform the action of dumps, but with some extra flags for
+    behavior specifically needed by the geopackage...package.
     """
     geom_type = obj['type']
     if include_meta:

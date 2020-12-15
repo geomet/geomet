@@ -218,8 +218,9 @@ def _dump_point(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        fmt = '(%s)' % (' '.join(_round_and_pad(c, decimals)
-                       for c in coords))
+        fmt = '(%s)' % (
+            ' '.join(_round_and_pad(c, decimals) for c in coords)
+        )
 
     return 'POINT %s' % fmt
 
@@ -236,8 +237,12 @@ def _dump_linestring(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        fmt = '(%s)' % (', '.join(' '.join(_round_and_pad(c, decimals)
-                                 for c in pt) for pt in coords))
+        fmt = '(%s)' % (
+            ', '.join(
+                ' '.join(_round_and_pad(c, decimals) for c in pt)
+                for pt in coords
+            )
+        )
 
     return 'LINESTRING %s' % fmt
 
@@ -358,10 +363,10 @@ def _dump_geometrycollection(obj, decimals):
 def _load_point(tokens, string):
     """
     :param tokens:
-        A generator of string tokens for the input WKT, beginning just after the
-        geometry type. The geometry type is consumed before we get to here. For
-        example, if :func:`loads` is called with the input 'POINT(0.0 1.0)',
-        ``tokens`` would generate the following values:
+        A generator of string tokens for the input WKT, beginning just after
+        the geometry type. The geometry type is consumed before we get to
+        here. For example, if :func:`loads` is called with the input
+        'POINT(0.0 1.0)', ``tokens`` would generate the following values:
 
         .. code-block:: python
             ['(', '0.0', '1.0', ')']
