@@ -1,0 +1,4 @@
+setuptools
+wheel
+twine
+readme-renderer==24.0

@@ -131,14 +131,18 @@ def loads(string):
     header = _as_bin_str(_take(_GeoPackage.HEADER_LEN, string))
 
     _check_is_valid(header)
-    g, p, version, empty, envelope_indicator, is_little_endian, srid = _parse_header(header)
+    g, p, version, empty, envelope_indicator, is_little_endian, srid = (
+        _parse_header(header)
+    )
 
     wkb_offset = _get_wkb_offset(envelope_indicator)
     left_to_take = (wkb_offset - _GeoPackage.HEADER_LEN)
     envelope_data = _as_bin_str(_take(left_to_take, string))
 
     if envelope_data:
-        envelope = _parse_envelope(envelope_indicator, envelope_data, is_little_endian)
+        envelope = _parse_envelope(
+            envelope_indicator, envelope_data, is_little_endian
+        )
 
     result = _wkb.loads(string)
 
@@ -173,6 +177,7 @@ class _GeoPackage:
     ENVELOPE_MASK = 0b00001111
     EMPTY_GEOM_MASK = 0b00011111
     ENDIANNESS_MASK = 0b00000001
+
 
 # map the "envelope indicator" integer we get out of the geopackage header
 # to the dimensionality of the envelope.
@@ -254,7 +259,9 @@ def _parse_header(header):
     is_little_endian = _header_is_little_endian(header)
     fmt = _endian_token(is_little_endian) + _GeoPackage.HEADER_PACK_FMT
 
-    g, p, version, flags, srid = _struct.unpack(fmt, header[:_GeoPackage.HEADER_LEN])
+    g, p, version, flags, srid = _struct.unpack(
+        fmt, header[:_GeoPackage.HEADER_LEN]
+    )
     empty, envelope_indicator, endianness = _parse_flags(flags)
     return g, p, version, empty, envelope_indicator, endianness, srid
 

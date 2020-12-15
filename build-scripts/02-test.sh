@@ -2,14 +2,25 @@
 
 set -euxo pipefail
 
-echo "Running tests..."
-nosetests --with-doctest --with-coverage --cover-package=geomet
+# Specify a tox env/version to run
+# If not specified, default to running everything
+# Valid versions are py27, py34, py36, etc.
+TOX_ENV=${1:-}
 
-# if [ "${TRAVIS:-}" = "true" ]; then
-#     echo "Running tests in Travis-CI environment..."
-#     export PY_TEST_VERSION=py$(echo ${TRAVIS_PYTHON_VERSION} | sed '/\.//')
-#     tox -e style,${PY_TEST_VERSION}
-# else
-#     echo "Running tests..."
-#     tox
-# fi
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR=${DIR}/..
+function cleanup {
+    popd > /dev/null
+}
+pushd ${ROOT_DIR}
+trap cleanup EXIT
+
+echo "Ensuring that tox is installed..."
+which tox || pip install tox
+
+echo "Running tests..."
+if [[ "${TOX_ENV}" == "" ]]; then
+    tox  # use default envlist
+else
+    tox -e ${TOX_ENV},style
+fi

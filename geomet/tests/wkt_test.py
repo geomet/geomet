@@ -637,11 +637,17 @@ class MultiPolygonLoadsTestCase(unittest.TestCase):
         self.assertEqual(expected, str(ar.exception))
 
     def test_malformed_wkt_misbalanced_parens(self):
-        mp = 'MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)), ((0 0, 0 1, 1 1, 1 0, 0 0))'
+        mp = (
+            'MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)), '
+            '((0 0, 0 1, 1 1, 1 0, 0 0))'
+        )
         with self.assertRaises(ValueError) as ar:
             wkt.loads(mp)
 
-        expected = 'Invalid WKT: `MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)), ((0 0, 0 1, 1 1, 1 0, 0 0))`'
+        expected = (
+            'Invalid WKT: `MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)), '
+            '((0 0, 0 1, 1 1, 1 0, 0 0))`'
+        )
         self.assertEqual(expected, str(ar.exception))
 
 
@@ -925,13 +931,28 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
         gc = {
             'type': 'GeometryCollection',
             'geometries': [
-                {'type': 'Polygon', 'coordinates': [
-                    [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0],
-                     [27.0, 25.0]]]},
+                {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [
+                            [27.0, 25.0],
+                            [102.0, 36.0],
+                            [102.0, 46.0],
+                            [92.0, 61.0],
+                            [13.0, 41.0],
+                            [16.0, 30.0],
+                            [27.0, 25.0]
+                        ]
+                    ]
+                },
                 {'type': 'LineString', 'coordinates': []}
             ]}
 
-        expected = 'GEOMETRYCOLLECTION (POLYGON ((27 25, 102 36, 102 46, 92 61, 13 41, 16 30, 27 25)),LINESTRING EMPTY)'
+        expected = (
+            'GEOMETRYCOLLECTION ('
+            'POLYGON ((27 25, 102 36, 102 46, 92 61, 13 41, 16 30, 27 25)),'
+            'LINESTRING EMPTY)'
+        )
 
         self.assertEqual(expected, wkt.dumps(gc, decimals=0))
 
@@ -962,7 +983,9 @@ class GeometryCollectionDumpsTestCase(unittest.TestCase):
             ]
         }
 
-        expected = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in sorted(wkt._type_map_caps_to_mixed.keys()))
+        expected = 'GEOMETRYCOLLECTION (%s)' % ','.join(
+            '%s EMPTY' % typ for typ in sorted(
+                wkt._type_map_caps_to_mixed.keys()))
 
         self.assertEqual(expected, wkt.dumps(gc))
 
@@ -1122,14 +1145,29 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
 
     def test_with_empty_component(self):
         # Example from https://github.com/geomet/geomet/issues/49
-        gc = 'GEOMETRYCOLLECTION (POLYGON((27 25,102 36,102 46,92 61,13 41,16 30,27 25)),LINESTRING EMPTY)'
+        gc = (
+            'GEOMETRYCOLLECTION ('
+            'POLYGON((27 25,102 36,102 46,92 61,13 41,16 30,27 25)),'
+            'LINESTRING EMPTY)'
+        )
 
         expected = {
             'type': 'GeometryCollection',
             'geometries': [
-                {'type': 'Polygon', 'coordinates': [
-                    [[27.0, 25.0], [102.0, 36.0], [102.0, 46.0], [92.0, 61.0], [13.0, 41.0], [16.0, 30.0],
-                     [27.0, 25.0]]]},
+                {
+                    'type': 'Polygon',
+                    'coordinates': [
+                        [
+                            [27.0, 25.0],
+                            [102.0, 36.0],
+                            [102.0, 46.0],
+                            [92.0, 61.0],
+                            [13.0, 41.0],
+                            [16.0, 30.0],
+                            [27.0, 25.0]
+                        ]
+                    ]
+                },
                 {'type': 'LineString', 'coordinates': []}
             ]}
 
@@ -1149,7 +1187,9 @@ class GeometryCollectionLoadsTestCase(unittest.TestCase):
         self.assertEqual(expected, wkt.loads(gc))
 
     def test_all_types_empty(self):
-        gc = 'GEOMETRYCOLLECTION (%s)' % ','.join('%s EMPTY' % typ for typ in sorted(wkt._type_map_caps_to_mixed.keys()))
+        gc = 'GEOMETRYCOLLECTION (%s)' % ','.join(
+            '%s EMPTY' % typ for typ in sorted(
+                wkt._type_map_caps_to_mixed.keys()))
 
         expected = {
             'type': 'GeometryCollection',
