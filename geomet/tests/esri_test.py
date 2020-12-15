@@ -18,8 +18,10 @@ import sys
 import json
 import tempfile
 import unittest
+sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
 from geomet import esri
 from geomet import InvalidGeoJSONException
+from geomet.esri import _extract_geojson_srid
 IS_PY3 = six.PY3
 IS_PY34 = six.PY34
 
@@ -29,18 +31,18 @@ esri_json_mpt = {
             "spatialReference" : {"wkid" : 4326}
 }
 esri_json_polylines = {
-                "paths" : [ [ [-97.06138,32.837], [-97.06133,32.836], [-97.06124,32.834], [-97.06127,32.832] ], 
+                "paths" : [ [ [-97.06138,32.837], [-97.06133,32.836], [-97.06124,32.834], [-97.06127,32.832] ],
                             [ [-97.06326,32.759], [-97.06298,32.755] ]],
                 "spatialReference" : {"wkid" : 4326}
 }
 esri_json_polygon = {
-            "rings" : [ [ [-97.06138,32.837], [-97.06133,32.836], [-97.06124,32.834], [-97.06127,32.832], [-97.06138,32.837] ], 
+            "rings" : [ [ [-97.06138,32.837], [-97.06133,32.836], [-97.06124,32.834], [-97.06127,32.832], [-97.06138,32.837] ],
                         [ [-97.06326,32.759], [-97.06298,32.755], [-97.06153,32.749], [-97.06326,32.759] ]],
             "spatialReference" : {"wkid" : 4326}
 }
 
 gj_pt = {'type': 'Point', 'coordinates': (25282, 43770)}
-gj_multi_linestring = {'type': 'MultiLineString', 'coordinates': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)], [(-97.06326, 32.759), (-97.06298, 32.755)]]} 
+gj_multi_linestring = {'type': 'MultiLineString', 'coordinates': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)], [(-97.06326, 32.759), (-97.06298, 32.755)]]}
 gj_lintstring =   { "type": "LineString","coordinates": [ [100.0, 100.0], [5.0, 5.0] ]}
 gj_multi_polygon = {'type': 'MultiPolygon', 'coordinates': [[[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)]], [[(-97.06326, 32.759), (-97.06298, 32.755), (-97.06153, 32.749), (-97.06326, 32.759)]]]}
 gj_polygon = { "type": "Polygon","coordinates": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]]}
@@ -53,14 +55,15 @@ class TestIOReaderWriter(unittest.TestCase):
         Tests the `dump` method
         """
         vcheck = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 4326}}
-        if IS_PY3:            
+        if IS_PY3:
             with tempfile.TemporaryDirectory() as d:
                 fp = os.path.join(d, "test.json")
                 with open(fp, "w") as write_file:
                     esri.dump(gj_pt, write_file)
                 with open(fp, 'r') as r:
-                    print([r.read(), vcheck])
-                    #self.assertTrue(json.loads(r.read()) == vcheck)
+                    data = r.read()
+                    data = json.loads(data)
+                    self.assertTrue(data == vcheck)
                 self.assertTrue(os.path.isfile(fp))
         else:
             d = tempfile.gettempdir()
@@ -76,7 +79,7 @@ class TestIOReaderWriter(unittest.TestCase):
         Tests the `load` method
         """
         vcheck = {'type': 'Point', 'coordinates': (25282, 43770)}
-        if IS_PY3:            
+        if IS_PY3:
             with tempfile.TemporaryDirectory() as d:
                 fp = os.path.join(d, "test.json")
                 with open(fp, 'w') as w:
@@ -97,7 +100,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
     """
     def test_loads_unsupported_geom_type(self):
         """Tests loading invalid geometry type """
-        if six.PY34:            
+        if six.PY34:
             invalid = {'Tetrahedron' : [[1,2,34], [2,3,4], [4,5,6]], 'spatialReference' : {'wkid' : 4326}}
             with self.assertRaises(InvalidGeoJSONException) as ar:
                 esri.loads(invalid)
@@ -107,7 +110,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
             with self.assertRaises(InvalidGeoJSONException) as ar:
                 esri.loads(invalid)
             self.assertEqual("Invalid EsriJSON: {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [4, 5, 6]], 'spatialReference': {'wkid': 4326}}",
-                             str(ar.exception))            
+                             str(ar.exception))
     def test_loads_to_geojson_point(self):
         """Tests Loading Esri Point Geometry to Point GeoJSON"""
         self.assertEqual(esri.loads(esri_json_pt),
@@ -115,18 +118,18 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
     def test_loads_to_geojson_multipoint(self):
         """Tests Loading Esri MultiPoint Geometry to MultiPoint GeoJSON"""
         self.assertEqual(esri.loads(esri_json_mpt),
-                          {'type': 'Multipoint', 'coordinates': [[-97.06138, 32.837], [-97.06133, 32.836], 
+                          {'type': 'Multipoint', 'coordinates': [[-97.06138, 32.837], [-97.06133, 32.836],
                           [-97.06124, 32.834], [-97.06127, 32.832]]})
     def test_loads_to_geojson_linstring(self):
         """Tests Loading Esri Point Geometry to MultiLineString GeoJSON"""
         self.assertEqual(esri.loads(esri_json_polylines),
-                          {'type': 'MultiLineString', 'coordinates': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)], 
+                          {'type': 'MultiLineString', 'coordinates': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)],
                           [(-97.06326, 32.759), (-97.06298, 32.755)]]})
     def test_loads_to_geojson_polygon(self):
         """Tests Loading Esri Polygon Geometry to MultiPolygon GeoJSON"""
         self.assertEqual(esri.loads(esri_json_polygon),
                          {'type': 'MultiPolygon', 'coordinates': [
-                             [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)]], 
+                             [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)]],
                          [[(-97.06326, 32.759), (-97.06298, 32.755), (-97.06153, 32.749), (-97.06326, 32.759)]]
                          ]})
     def test_loads_empty_pt_to_gj(self):
@@ -181,8 +184,8 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
                           {'paths': [[[100.0, 100.0], [5.0, 5.0]]], 'spatialReference': {'wkid': 4326}})
     def test_dumps_to_esrijson_polyline2(self):
         """Tests Converting GeoJSON MultiLineString to Esri JSON Polyline"""
-        
-        vcheck = {'paths': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)], 
+
+        vcheck = {'paths': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832)],
         [(-97.06326, 32.759), (-97.06298, 32.755)]], 'spatialReference': {'wkid': 4326}}
         self.assertEqual(esri.dumps(gj_multi_linestring),
                           vcheck)
@@ -193,13 +196,31 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
                           vcheck)
     def test_dumps_to_esrijson_polygon2(self):
         """Tests Converting GeoJSON MultiPolygon to Esri JSON Polygon"""
-        vcheck = {'rings': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)], 
+        vcheck = {'rings': [[(-97.06138, 32.837), (-97.06133, 32.836), (-97.06124, 32.834), (-97.06127, 32.832), (-97.06138, 32.837)],
         [(-97.06326, 32.759), (-97.06298, 32.755), (-97.06153, 32.749), (-97.06326, 32.759)]], 'spatialReference': {'wkid': 4326}}
         self.assertEqual(esri.dumps(gj_multi_polygon),
                           vcheck)
+    def test_srid_checks(self):
+        """tests the srid functionality"""
+        example = {
+            "type":"Polygon",
+            "coordinates":
+            [
+                [
+                    [-91.23046875,45.460130637921],
+                    [-79.8046875,49.837982453085],
+                    [-69.08203125,43.452918893555],
+                    [-88.2421875,32.694865977875],
+                    [-91.23046875,45.460130637921]
+                ]
+                ],
+            "crs":{"type":"name","properties":{"name":"EPSG:3857"}}
+        }
+        srid = _extract_geojson_srid(obj=example)
+        self.assertTrue(srid == "3857")
 
 if __name__ == "__main__":
     unittest.main()
-    
+
 
 

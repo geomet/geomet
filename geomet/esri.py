@@ -20,8 +20,8 @@ def load(source_file):
 
     :param source_file:
         Path to a file that contains the Esri JSON data.
-    
-    :returns: 
+
+    :returns:
          A GeoJSON `dict` representing the geometry read from the file.
 
     """
@@ -34,7 +34,7 @@ def loads(string):
     :param string:
         The Esri JSON geometry representation
 
-    :returns: 
+    :returns:
          A GeoJSON `dict` representing the geometry read from the file.
     """
     if isinstance(string, str):
@@ -50,7 +50,7 @@ def loads(string):
     else:
         raise geomet.InvalidGeoJSONException('Invalid EsriJSON: %s' % string)
 
-        
+
 
 def dump(obj, dest_file, srid=None):
     """
@@ -85,8 +85,8 @@ def _extract_geojson_srid(obj):
     # Also try to get it from `crs.properties.name`:
     crs_srid = obj.get('crs', {}).get('properties', {}).get('name', None)
     if crs_srid is not None:
-        # Shave off the EPSG prefix to give us the SRID:
-        crs_srid = crs_srid.replace('EPSG', '')
+        # Shave off the EPSG: prefix to give us the SRID:
+        crs_srid = crs_srid.replace('EPSG:', '')
 
     if (meta_srid is not None and
             crs_srid is not None and
@@ -98,18 +98,18 @@ def _extract_geojson_srid(obj):
 
     return srid or 4326
 
-def _load_geojson_point(obj, srid=None):
+def _dump_geojson_point(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type Point.
 
-    
+
     """
     coordkey = 'coordinates'
-    coords = obj[coordkey] 
+    coords = obj[coordkey]
     srid = _extract_geojson_srid(obj) or srid
     return {'x' : coords[0], 'y' : coords[1], "spatialReference" : {'wkid' : srid}}
 
-def _load_geojson_multipoint(obj, srid=None):
+def _dump_geojson_multipoint(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type MultiPoint.
 
@@ -118,7 +118,7 @@ def _load_geojson_multipoint(obj, srid=None):
     srid = _extract_geojson_srid(obj) or srid
     return {"points" : obj[coordkey], "spatialReference" : {"wkid" : srid}}
 
-def _load_geojson_polyline(obj, srid=None):
+def _dump_geojson_polyline(obj, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
 
@@ -131,7 +131,7 @@ def _load_geojson_polyline(obj, srid=None):
     srid = _extract_geojson_srid(obj) or srid
     return {"paths" : coordinates, "spatialReference" : {"wkid" : srid}}
 
-def _load_geojson_polygon(data, srid=None):
+def _dump_geojson_polygon(data, srid=None):
     """
     Loads GeoJSON to Esri JSON for Geometry type Polygon or MultiPolygon.
 
@@ -161,7 +161,7 @@ def _to_gj_point(obj):
 
     :param dict obj:
         A EsriJSON-like `dict` representing a Point.
-    
+
 
     :returns:
         GeoJSON representation of the Esri JSON Point
@@ -225,9 +225,9 @@ _esri_to_geojson_convert = {
     "paths" : _to_gj_polyline}
 
 _gj_to_esri = {
-    "point" : _load_geojson_point,
-    "multipoint" : _load_geojson_multipoint,
-    "linestring" : _load_geojson_polyline,
-    "multilinestring" : _load_geojson_polyline,
-    "polygon" : _load_geojson_polygon,
-    "multipolygon" : _load_geojson_polygon}
+    "point" : _dump_geojson_point,
+    "multipoint" : _dump_geojson_multipoint,
+    "linestring" : _dump_geojson_polyline,
+    "multilinestring" : _dump_geojson_polyline,
+    "polygon" : _dump_geojson_polygon,
+    "multipolygon" : _dump_geojson_polygon}
