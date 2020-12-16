@@ -39,16 +39,16 @@ def loads(string):
     :returns:
          A GeoJSON `dict` representing the geometry read from the file.
     """
-    if isinstance(string, str):
-        string = json.loads(string)
-    if 'rings' in string:
-        return _esri_to_geojson_convert['rings'](string)
-    elif 'paths' in string:
-        return _esri_to_geojson_convert['paths'](string)
-    elif 'x' in string or 'y' in string:
-        return _esri_to_geojson_convert['x'](string)
-    elif 'points' in string:
-        return _esri_to_geojson_convert['points'](string)
+    data = json.loads(string)
+
+    if 'rings' in data:
+        return _esri_to_geojson_convert['rings'](data)
+    elif 'paths' in data:
+        return _esri_to_geojson_convert['paths'](data)
+    elif 'x' in data or 'y' in data:
+        return _esri_to_geojson_convert['x'](data)
+    elif 'points' in data:
+        return _esri_to_geojson_convert['points'](data)
     else:
         raise geomet.InvalidGeoJSONException('Invalid EsriJSON: %s' % string)
 
@@ -126,7 +126,8 @@ def _dump_geojson_multipoint(obj, srid=None):
 
 def _dump_geojson_polyline(obj, srid=None):
     """
-    Loads GeoJSON to Esri JSON for Geometry type LineString and MultiLineString.
+    Loads GeoJSON to Esri JSON for Geometry type LineString and
+    MultiLineString.
 
     """
     coordkey = 'coordinates'
@@ -224,8 +225,13 @@ def _to_gj_polyline(data):
     Input parameters and return value are the MULTILINESTRING equivalent to
     :func:`_dump_point`.
     """
-    return {'type': 'MultiLineString', 'coordinates': [
-        [((pt[0], pt[1]) if pt else None) for pt in part] for part in data["paths"]]}
+    return {
+        'type': 'MultiLineString',
+        'coordinates': [
+            [((pt[0], pt[1]) if pt else None) for pt in part]
+            for part in data["paths"]
+        ],
+    }
 
 
 _esri_to_geojson_convert = {

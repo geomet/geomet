@@ -922,7 +922,7 @@ def _load_geometrycollection(big_endian, type_bytes, data_bytes):
 
 
 _dumps_registry = {
-    'Point':  _dump_point,
+    'Point': _dump_point,
     'LineString': _dump_linestring,
     'Polygon': _dump_polygon,
     'MultiPoint': _dump_multipoint,
