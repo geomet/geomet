@@ -187,6 +187,7 @@ workflows:
                 requires: [code_checkout]
             - publish_to_test_pypi:
                 <<: *filter_release
+                context: "Test PyPI"
                 requires:
                     - build_test_package_py27
                     - build_test_package_py34
@@ -199,5 +200,6 @@ workflows:
                 type: approval
                 requires: [publish_to_test_pypi]
             - publish:
+                context: "Prod PyPI"
                 <<: *filter_release
                 requires: [approve_publish]
