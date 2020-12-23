@@ -37,9 +37,9 @@ py38_container: &py38_container
 filter_build_test_package: &filter_build_test_package
     filters:
         tags:
-            ignore: release-*
+            ignore: /release-.*/
         branches:
-            ignore: release-*
+            ignore: /release-.*/
 
 # Use this ONLY for release builds.
 filter_release: &filter_release
@@ -47,7 +47,7 @@ filter_release: &filter_release
         tags:
             ignore: /.*/
         branches:
-            only: release-*
+            only: /release-.*/
 
 commands:
     build_test_package:
