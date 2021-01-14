@@ -1,6 +1,6 @@
 KT-GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=master)](http://travis-ci.org/geomet/geomet)
 ======
-Forked form https://github.com/geomet/geomet
+Forked form [geomet](https://github.com/geomet/geomet)
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
@@ -54,17 +54,13 @@ Note: Reading and writing empty GeoPackage geometries is not currently supported
 
 ### Installation ###
 
-Install from [PyPI](https://pypi.python.org/pypi) (easiest method):
-
-    $ pip install geomet
-
 Clone the source code from git and run:
 
     $ python setup.py install
 
 You can also install directly from the git repo using pip:
 
-    $ pip install git+git://github.com/geomet/geomet.git
+    $ pip install git+git://github.com/vadikko2/kt-geomet.git
 
 ### Example usage ###
 
