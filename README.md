@@ -1,5 +1,6 @@
-GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=master)](http://travis-ci.org/geomet/geomet)
+KT-GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=master)](http://travis-ci.org/geomet/geomet)
 ======
+Forked form https://github.com/geomet/geomet
 
 Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
 [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
