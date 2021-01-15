@@ -220,6 +220,9 @@ class PointDumpsTestCase(unittest.TestCase):
         self.assertEqual('Ambiguous CRS/SRID values: 4326 and 4327',
                          str(ar.exception))
 
+    def test_dumps_exponential_values(self):
+        wkt.dumps(dict(type='Point', coordinates=[0.6, 6e-6]))
+
 
 class PointLoadsTestCase(unittest.TestCase):
 
