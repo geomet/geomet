@@ -220,9 +220,6 @@ class PointDumpsTestCase(unittest.TestCase):
         self.assertEqual('Ambiguous CRS/SRID values: 4326 and 4327',
                          str(ar.exception))
 
-    def test_dumps_exponential_values(self):
-        wkt.dumps(dict(type='Point', coordinates=[0.6, 6e-6]))
-
 
 class PointLoadsTestCase(unittest.TestCase):
 
@@ -1230,7 +1227,9 @@ class TestRoundAndPad(unittest.TestCase):
         test_cases = [
             [(-1.000000000000000, 16), '-1.' + '0' * 16],
             [(-83.2496395, 16), '-83.2496395000000000'],
-            [(35.917330500000006, 16), '35.9173305000000060']
+            [(35.917330500000006, 16), '35.9173305000000060'],
+            [(6e-6, 16), '0.0000060000000000']
+
         ]
 
         for args, expected in test_cases:
