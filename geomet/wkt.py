@@ -196,7 +196,7 @@ def _round_and_pad(value, decimals):
         return repr(int(round(value, decimals)))
 
     format_string = '{:.%sf}' % decimals
-    rounded = format_string.format(round(value, decimals))
+    rounded = format_string.format(value)
     rounded += '0' * (decimals - len(rounded.split('.')[1]))
     return rounded
 
