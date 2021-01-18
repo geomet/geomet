@@ -20,10 +20,10 @@ try:
     import StringIO
 except ImportError:
     import io
+
     StringIO = io
 
 from geomet import util
-
 
 INVALID_WKT_FMT = 'Invalid WKT: `%s`'
 
@@ -195,11 +195,12 @@ def _round_and_pad(value, decimals):
         # if get a `decimals` value of 0, we want to return an int.
         return repr(int(round(value, decimals)))
 
-    if repr(value).find('e-') == 1:
-        rounded = format(value, '.{}f'.format(decimals))
-    else:
-        rounded = repr(round(value, decimals))
+    rounded = round(value, decimals)
 
+    if 'e' in repr(rounded):
+        rounded = format(rounded, '.{}f'.format(decimals))
+    else:
+        rounded = repr(rounded)
     rounded += '0' * (decimals - len(rounded.split('.')[1]))
     return rounded
 
@@ -650,7 +651,6 @@ _dumps_registry = {
     'MultiPolygon': _dump_multipolygon,
     'GeometryCollection': _dump_geometrycollection,
 }
-
 
 _loads_registry = {
     'POINT': _load_point,
