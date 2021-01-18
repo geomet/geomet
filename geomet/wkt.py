@@ -20,10 +20,10 @@ try:
     import StringIO
 except ImportError:
     import io
-
     StringIO = io
 
 from geomet import util
+
 
 INVALID_WKT_FMT = 'Invalid WKT: `%s`'
 
