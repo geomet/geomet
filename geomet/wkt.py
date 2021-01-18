@@ -652,6 +652,7 @@ _dumps_registry = {
     'GeometryCollection': _dump_geometrycollection,
 }
 
+
 _loads_registry = {
     'POINT': _load_point,
     'LINESTRING': _load_linestring,
