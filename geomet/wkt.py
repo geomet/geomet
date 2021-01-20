@@ -195,7 +195,12 @@ def _round_and_pad(value, decimals):
         # if get a `decimals` value of 0, we want to return an int.
         return repr(int(round(value, decimals)))
 
-    rounded = repr(round(value, decimals))
+    rounded = round(value, decimals)
+
+    if 'e' in repr(rounded):
+        rounded = format(rounded, '.{}f'.format(decimals))
+    else:
+        rounded = repr(rounded)
     rounded += '0' * (decimals - len(rounded.split('.')[1]))
     return rounded
 
