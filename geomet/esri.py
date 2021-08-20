@@ -110,7 +110,9 @@ def _dump_geojson_point(obj, srid=None):
     """
     coordkey = 'coordinates'
     coords = obj[coordkey]
-    srid = _extract_geojson_srid(obj) or srid
+    if srid is None:
+        srid = _extract_geojson_srid(obj) or srid
+        
     return {'x': coords[0], 'y': coords[1], "spatialReference": {'wkid': srid}}
 
 
@@ -120,7 +122,8 @@ def _dump_geojson_multipoint(obj, srid=None):
 
     """
     coordkey = 'coordinates'
-    srid = _extract_geojson_srid(obj) or srid
+    if srid is None:
+        srid = _extract_geojson_srid(obj) or srid
     return {"points": obj[coordkey], "spatialReference": {"wkid": srid}}
 
 
@@ -135,7 +138,8 @@ def _dump_geojson_polyline(obj, srid=None):
         coordinates = [obj[coordkey]]
     else:
         coordinates = obj[coordkey]
-    srid = _extract_geojson_srid(obj) or srid
+    if srid is None:
+        srid = _extract_geojson_srid(obj) or srid
     return {"paths": coordinates, "spatialReference": {"wkid": srid}}
 
 
@@ -160,7 +164,8 @@ def _dump_geojson_polygon(data, srid=None):
                 part_item.append(coord)
         if part_item:
             part_list.append(part_item)
-    srid = _extract_geojson_srid(data) or srid
+    if srid is None:
+        srid = _extract_geojson_srid(obj) or srid
     return {'rings': part_list, "spatialReference": {"wkid": srid}}
 
 
