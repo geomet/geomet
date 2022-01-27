@@ -33,6 +33,11 @@ py38_container: &py38_container
         - image: circleci/python:3.8
     resource_class: small
     working_directory: ~/project
+py39_container: &py39_container
+    docker:
+        - image: circleci/python:3.9
+    resource_class: small
+    working_directory: ~/project
 
 filter_build_test_package: &filter_build_test_package
     filters:
@@ -118,6 +123,11 @@ jobs:
         steps:
             - build_test_package:
                 py_ver: "38"
+    build_test_package_py39:
+        <<: *py39_container
+        steps:
+            - build_test_package:
+                py_ver: "39"
     publish_to_test_pypi:
         <<: *py37_container
         steps:
@@ -163,6 +173,9 @@ workflows:
             - build_test_package_py38:
                 <<: *filter_build_test_package
                 requires: [code_checkout]
+            - build_test_package_py39:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
     release:
         jobs:
             - code_checkout:
@@ -185,6 +198,9 @@ workflows:
             - build_test_package_py38:
                 <<: *filter_release
                 requires: [code_checkout]
+            - build_test_package_py39:
+                <<: *filter_release
+                requires: [code_checkout]
             - publish_to_test_pypi:
                 <<: *filter_release
                 context: "Test PyPI"
@@ -195,6 +211,7 @@ workflows:
                     - build_test_package_py36
                     - build_test_package_py37
                     - build_test_package_py38
+                    - build_test_package_py39
             - approve_publish:
                 <<: *filter_release
                 type: approval
