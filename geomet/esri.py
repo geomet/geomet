@@ -146,22 +146,19 @@ def _dump_geojson_polygon(data, srid=None):
     """
     coordkey = 'coordinates'
     coordinates = data[coordkey]
-    typekey = ([d for d in data if d.lower() == 'type']
-               or ['type']).pop()
+    typekey = ([d for d in data if d.lower() == 'type'] or ['type']).pop()
     if data[typekey].lower() == "polygon":
         coordinates = [coordinates]
     part_list = []
     for part in coordinates:
-        part_item = []
-        for idx, ring in enumerate(part):
-            if idx:
-                part_item.append(None)
-            for coord in ring:
-                part_item.append(coord)
-        if part_item:
-            part_list.append(part_item)
+        if len(part) == 1:
+            part_list.append(part[0])
+        else:
+            for seg in part:
+                part_list.append([list(coord) for coord in seg])
     srid = _extract_geojson_srid(data) or srid
     return {'rings': part_list, "spatialReference": {"wkid": srid}}
+
 
 
 def _to_gj_point(obj):
