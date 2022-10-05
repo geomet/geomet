@@ -89,7 +89,7 @@ gj_multi_polygon = {'type': 'MultiPolygon',
 gj_polygon = {"type": "Polygon", "coordinates": [
     [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]]}
 gj_multi_pt = {
-    'type': 'Multipoint',
+    'type': 'MultiPoint',
     'coordinates': [
         [-97.06138, 32.837], [-97.06133, 32.836],
         [-97.06124, 32.834], [-97.06127, 32.832],
@@ -191,7 +191,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
         self.assertEqual(
             esri.loads(json.dumps(esri_json_mpt)),
             {
-                'type': 'Multipoint',
+                'type': 'MultiPoint',
                 'coordinates': [
                     [-97.06138, 32.837], [-97.06133, 32.836],
                     [-97.06124, 32.834], [-97.06127, 32.832],
@@ -246,7 +246,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
             "points": [],
             "spatialReference": {"wkid": 4326}
         })
-        geom_match = {'type': 'Multipoint', 'coordinates': []}
+        geom_match = {'type': 'MultiPoint', 'coordinates': []}
         self.assertEqual(esri.loads(geom),
                          geom_match)
 

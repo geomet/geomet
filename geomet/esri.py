@@ -211,7 +211,7 @@ def _to_gj_multipoint(data):
     :returns: `dict`
     """
 
-    return {"type": "Multipoint", "coordinates": [pt for pt in data["points"]]}
+    return {"type": "MultiPoint", "coordinates": [pt for pt in data["points"]]}
 
 
 def _to_gj_polyline(data):
