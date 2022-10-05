@@ -95,7 +95,9 @@ def _extract_geojson_srid(obj):
         and crs_srid is not None
         and str(meta_srid) != str(crs_srid)
     ):
-        raise ValueError("Ambiguous CRS/SRID values: %s and %s" % (meta_srid, crs_srid))
+        raise ValueError(
+            "Ambiguous CRS/SRID values: %s and %s" % (meta_srid, crs_srid)
+        )
     srid = meta_srid or crs_srid
 
     return srid or 4326
@@ -222,7 +224,8 @@ def _to_gj_polyline(data):
     return {
         "type": "MultiLineString",
         "coordinates": [
-            [((pt[0], pt[1]) if pt else None) for pt in part] for part in data["paths"]
+            [((pt[0], pt[1]) if pt else None) for pt in part]
+            for part in data["paths"]
         ],
     }
 
