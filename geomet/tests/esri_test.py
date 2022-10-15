@@ -16,11 +16,9 @@ from geomet.esri import _extract_geojson_srid
 from geomet import InvalidGeoJSONException
 from geomet import esri
 import os
-import sys
 import json
 import tempfile
 import unittest
-sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
 
 esri_json_pt = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 3857}}
 esri_json_mpt = {
