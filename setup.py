@@ -41,7 +41,7 @@ setup(
     license='Apache 2.0',
     keywords='wkb wkt geojson',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
