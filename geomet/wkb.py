@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import binascii
-import six
 import struct
 
 from geomet.util import block_splitter
@@ -132,9 +131,7 @@ def _get_geom_type(type_bytes):
 
     """
     # slice off the high byte, which may contain the SRID flag
-    high_byte = type_bytes[0]
-    if six.PY3:
-        high_byte = bytes([high_byte])
+    high_byte = bytes([type_bytes[0]])
     has_srid = high_byte == b'\x20'
     if has_srid:
         # replace the high byte with a null byte
@@ -694,10 +691,7 @@ def _load_polygon(big_endian, type_bytes, data_bytes):
 
         verts_wkb = as_bin_str(take(8 * num_verts * num_dims, data_bytes))
         verts = block_splitter(verts_wkb, 8)
-        if six.PY2:
-            verts = (b''.join(x) for x in verts)
-        elif six.PY3:
-            verts = (b''.join(bytes([y]) for y in x) for x in verts)
+        verts = (b''.join(bytes([y]) for y in x) for x in verts)
         for vert_wkb in block_splitter(verts, num_dims):
             values = [struct.unpack('%sd' % endian_token, x)[0]
                       for x in vert_wkb]

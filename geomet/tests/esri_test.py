@@ -16,14 +16,9 @@ from geomet.esri import _extract_geojson_srid
 from geomet import InvalidGeoJSONException
 from geomet import esri
 import os
-import six
-import sys
 import json
 import tempfile
 import unittest
-sys.path.insert(0, r"C:\SVN\geomet_ajc_master")
-IS_PY3 = six.PY3
-IS_PY34 = six.PY34
 
 esri_json_pt = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 3857}}
 esri_json_mpt = {
@@ -105,54 +100,33 @@ class TestIOReaderWriter(unittest.TestCase):
         Tests the `dump` method
         """
         vcheck = {"x": 25282, "y": 43770, "spatialReference": {"wkid": 4326}}
-        if IS_PY3:
-            with tempfile.TemporaryDirectory() as d:
-                fp = os.path.join(d, "test.json")
-                with open(fp, "w") as write_file:
-                    esri.dump(gj_pt, write_file)
-                with open(fp, 'r') as r:
-                    data = r.read()
-                    data = json.loads(data)
-                    self.assertTrue(data == vcheck)
-                self.assertTrue(os.path.isfile(fp))
-        else:
-            d = tempfile.gettempdir()
+        with tempfile.TemporaryDirectory() as d:
             fp = os.path.join(d, "test.json")
             with open(fp, "w") as write_file:
                 esri.dump(gj_pt, write_file)
             with open(fp, 'r') as r:
-                self.assertTrue(json.loads(r.read()) == vcheck)
+                data = r.read()
+                data = json.loads(data)
+                self.assertTrue(data == vcheck)
             self.assertTrue(os.path.isfile(fp))
-            os.remove(fp)
 
     def test_io_load(self):
         """
         Tests the `load` method
         """
-        if IS_PY3:
-            with tempfile.TemporaryDirectory() as d:
-                fp = os.path.join(d, "test.json")
-                with open(fp, 'w') as w:
-                    esri.dump(gj_pt, w)
-                with open(fp, 'r') as r:
-                    self.assertEqual(
-                        esri.load(r),
-                        {
-                            'spatialReference': {'wkid': 4326},
-                            'x': 25282,
-                            'y': 43770,
-                        }
-                    )
-        else:
-            d = tempfile.gettempdir()
+        with tempfile.TemporaryDirectory() as d:
             fp = os.path.join(d, "test.json")
             with open(fp, 'w') as w:
                 esri.dump(gj_pt, w)
             with open(fp, 'r') as r:
                 self.assertEqual(
-                    esri.load(r), {
-                        'spatialReference': {
-                            'wkid': 4326}, 'x': 25282, 'y': 43770})
+                    esri.load(r),
+                    {
+                        'spatialReference': {'wkid': 4326},
+                        'x': 25282,
+                        'y': 43770,
+                    }
+                )
 
 
 class TestEsriJSONtoGeoJSON(unittest.TestCase):
@@ -162,24 +136,16 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
 
     def test_loads_unsupported_geom_type(self):
         """Tests loading invalid geometry type """
-        if six.PY34:
-            invalid = {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [
-                4, 5, 6]], 'spatialReference': {'wkid': 4326}}
-            with self.assertRaises(InvalidGeoJSONException) as ar:
-                esri.loads(json.dumps(invalid))
-            self.assertTrue(str(ar.exception).lower().find(
-                'invalid esrijson') > -1)
-        else:
-            invalid = {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [
-                4, 5, 6]], 'spatialReference': {'wkid': 4326}}
-            with self.assertRaises(InvalidGeoJSONException) as ar:
-                esri.loads(json.dumps(invalid, sort_keys=True))
-            self.assertEqual(
-                'Invalid EsriJSON: '
-                '{"Tetrahedron": [[1, 2, 34], [2, 3, 4], [4, 5, 6]], '
-                '"spatialReference": {"wkid": 4326}}',
-                str(ar.exception)
-            )
+        invalid = {'Tetrahedron': [[1, 2, 34], [2, 3, 4], [
+            4, 5, 6]], 'spatialReference': {'wkid': 4326}}
+        with self.assertRaises(InvalidGeoJSONException) as ar:
+            esri.loads(json.dumps(invalid, sort_keys=True))
+        self.assertEqual(
+            'Invalid EsriJSON: '
+            '{"Tetrahedron": [[1, 2, 34], [2, 3, 4], [4, 5, 6]], '
+            '"spatialReference": {"wkid": 4326}}',
+            str(ar.exception)
+        )
 
     def test_loads_to_geojson_point(self):
         """Tests Loading Esri Point Geometry to Point GeoJSON"""
