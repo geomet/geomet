@@ -17,7 +17,7 @@ import geomet
 
 def load(source_file):
     """
-    Converts Esri Json File to GeoJSON. 
+    Converts Esri Json File to GeoJSON.
 
     :param source_file:
         Path to a file that contains the Esri JSON data.
