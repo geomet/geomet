@@ -13,10 +13,7 @@
 #  limitations under the License.
 import itertools
 import six
-if six.PY2:
-    import collections
-else:
-    import collections.abc as collections
+import collections.abc as collections
 
 
 def block_splitter(data, block_size):
@@ -71,10 +68,7 @@ def take(n, iterable):
 
 
 def as_bin_str(a_list):
-    if six.PY2:
-        return b''.join(a_list)
-    else:
-        return bytes(a_list)
+    return bytes(a_list)
 
 
 def round_geom(geom, precision=None):
