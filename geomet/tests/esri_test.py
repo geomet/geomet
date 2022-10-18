@@ -332,6 +332,34 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
         srid = _extract_geojson_srid(obj=example)
         self.assertTrue(srid == "3857")
 
+    def test_multipolygon_nesting(self):
+        expected = {
+            'rings': [
+                [[102, 2], [103, 2], [103, 3], [102, 3], [102, 2]],
+                [[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]],
+                [
+                    [100.2, 0.2], [100.2, 0.8], [100.8, 0.8],
+                    [100.8, 0.2], [100.2, 0.2],
+                ],
+            ],
+            'spatialReference': {'wkid': 4326},
+        }
+        geojson_mp = {
+                "type": "MultiPolygon",
+                "coordinates": [
+                    [[[102, 2], [103, 2], [103, 3], [102, 3], [102, 2]]],
+                    [
+                        [[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]],
+                        [
+                            [100.2, 0.2], [100.2, 0.8], [100.8, 0.8],
+                            [100.8, 0.2], [100.2, 0.2],
+                        ],
+                    ],
+                ],
+            }
+        actual = esri.dumps(geojson_mp)
+        self.assertEqual(expected, actual)
+
 
 if __name__ == "__main__":
     unittest.main()
