@@ -165,7 +165,7 @@ def _dump_geojson_polygon(data, srid=None):
         if part_item:
             part_list.append(part_item)
     if srid is None:
-        srid = _extract_geojson_srid(obj) or srid
+        srid = _extract_geojson_srid(data) or srid
     return {'rings': part_list, "spatialReference": {"wkid": srid}}
 
 
