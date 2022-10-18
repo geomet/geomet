@@ -84,7 +84,7 @@ gj_multi_polygon = {'type': 'MultiPolygon',
 gj_polygon = {"type": "Polygon", "coordinates": [
     [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]]}
 gj_multi_pt = {
-    'type': 'Multipoint',
+    'type': 'MultiPoint',
     'coordinates': [
         [-97.06138, 32.837], [-97.06133, 32.836],
         [-97.06124, 32.834], [-97.06127, 32.832],
@@ -157,7 +157,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
         self.assertEqual(
             esri.loads(json.dumps(esri_json_mpt)),
             {
-                'type': 'Multipoint',
+                'type': 'MultiPoint',
                 'coordinates': [
                     [-97.06138, 32.837], [-97.06133, 32.836],
                     [-97.06124, 32.834], [-97.06127, 32.832],
@@ -212,7 +212,7 @@ class TestEsriJSONtoGeoJSON(unittest.TestCase):
             "points": [],
             "spatialReference": {"wkid": 4326}
         })
-        geom_match = {'type': 'Multipoint', 'coordinates': []}
+        geom_match = {'type': 'MultiPoint', 'coordinates': []}
         self.assertEqual(esri.loads(geom),
                          geom_match)
 
@@ -331,6 +331,34 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
         }
         srid = _extract_geojson_srid(obj=example)
         self.assertTrue(srid == "3857")
+
+    def test_multipolygon_nesting(self):
+        expected = {
+            'rings': [
+                [[102, 2], [103, 2], [103, 3], [102, 3], [102, 2]],
+                [[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]],
+                [
+                    [100.2, 0.2], [100.2, 0.8], [100.8, 0.8],
+                    [100.8, 0.2], [100.2, 0.2],
+                ],
+            ],
+            'spatialReference': {'wkid': 4326},
+        }
+        geojson_mp = {
+                "type": "MultiPolygon",
+                "coordinates": [
+                    [[[102, 2], [103, 2], [103, 3], [102, 3], [102, 2]]],
+                    [
+                        [[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]],
+                        [
+                            [100.2, 0.2], [100.2, 0.8], [100.8, 0.8],
+                            [100.8, 0.2], [100.2, 0.2],
+                        ],
+                    ],
+                ],
+            }
+        actual = esri.dumps(geojson_mp)
+        self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":
