@@ -1,71 +1,38 @@
-GeoMet [![Build Status](https://secure.travis-ci.org/geomet/geomet.png?branch=master)](http://travis-ci.org/geomet/geomet)
-======
+# GeoMet [![geomet](https://circleci.com/gh/geomet/geomet.svg?style=shield)](https://app.circleci.com/pipelines/github/geomet)
 
-Convert [GeoJSON](http://www.geojson.org/geojson-spec.html) to
-[WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known
-Text/Binary) or [GeoPackage Binary](http://www.geopackage.org/spec/#gpb_format), and vice versa. [Extended WKB/WKT](https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT)
-are also supported. Conversion functions are exposed through
-idiomatic `load/loads/dump/dumps` interfaces.
+Pure-Python conversion library for common geospatial data formats.
+Supported formats include:
+- [GeoJSON](http://www.geojson.org/geojson-spec.html)
+- [WKT/WKB](http://en.wikipedia.org/wiki/Well-known_text) (Well-Known Text/Binary)
+- [Extended WKB/WKT](https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT)
+- [GeoPackage Binary](http://www.geopackage.org/spec/#gpb_format)
 
-The name "GeoMet" was inspired by "met", the German word for
-[mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
-the word "geometry".
+
+## Install
+
+Install the latest version from [PyPI](https://pypi.org/project/geomet/):
+
+    $ pip install geomet
+
+## Functionality
+
+Converion functions are exposed through idiomatic `load/loads/dump/dumps`
+interfaces.
 
 GeoMet is intended to cover all common use cases for dealing with 2D, 3D, and
 4D geometries (including 'Z', 'M', and 'ZM').
 
-The following conversion functions are supported.
+| Geometry | WKT/EWKT | WKB/EWKB | GeoPackage Binary | EsriJSON |
+| -------- | :------: | :------: | :---------------: | :------: |
+| Point    | ✅ | ✅ | ✅| ✅ |
+| LineString    | ✅ | ✅ | ✅| ✅ |
+| Polygon    | ✅ | ✅ | ✅| ✅ |
+| MultiPoint    | ✅ | ✅ | ✅| ✅ |
+| MultiLineString    | ✅ | ✅ | ✅| ✅ |
+| MultiPolygon    | ✅ | ✅ | ✅| ✅ |
+| GeometryCollection    | ✅ | ✅ | ✅| ✅ |
 
-WKT/EWKT <--> GeoJSON:
-
-- Point
-- LineString
-- Polygon
-- MultiPoint
-- MultiLineString
-- MultiPolygon
-- GeometryCollection
-
-WKB/EWKB <--> GeoJSON:
-
-- Point
-- LineString
-- Polygon
-- MultiPoint
-- MultiLineString
-- MultiPolygon
-- GeometryCollection
-
-Note: Reading and writing empty WKB geometries is not currently supported.
-
-GeoPackage Binary <--> GeoJSON:
-
-- Point
-- LineString
-- Polygon
-- MultiPoint
-- MultiLineString
-- MultiPolygon
-- GeometryCollection
-
-Note: Reading and writing empty GeoPackage geometries is not currently supported.
-
-
-### Installation ###
-
-Install from [PyPI](https://pypi.python.org/pypi) (easiest method):
-
-    $ pip install geomet
-
-Clone the source code from git and run:
-
-    $ python setup.py install
-
-You can also install directly from the git repo using pip:
-
-    $ pip install git+git://github.com/geomet/geomet.git
-
-### Example usage ###
+## Example usage
 
 Coverting a 'Point' GeoJSON object to WKT:
 
@@ -155,8 +122,52 @@ header of the GeoPackage geometry:
 If an integer SRID identifier is present in a `'meta'` key (like `'meta': {'srid': 4326}`), then the SRID will be included in the
 GeoPackage header.
 
+## History
 
-### See Also ###
+This library was originally created as the result of a bug report related
+to another project: https://bugs.launchpad.net/openquake-old/+bug/1073909.
+The source of this issue was largely due to a dependency on
+[GEOS](https://libgeos.org/), which is written in C/C++. Depending on GEOS
+requires any data conversion bug fixes to happen upstream, which takes time
+and effort. Ultimately, this was the inspiration to create a more
+lightweight, pure-Python conversion library as an alterntive tool for
+reliably converting data between various geospatial formats.
+
+The name "GeoMet" was inspired by "met", the German word for
+[mead](http://en.wikipedia.org/wiki/Mead). It is also a shortened version of
+the word "geometry".
+
+## Limitations
+
+### Outputing "empty" geometries to binary formats is not supported
+
+Attempting to output an empty geometry to a binary format will result in an exception: `ValueError: Empty geometries cannot be represented in WKB. Reason: The dimensionality of the WKB would be ambiguous.` There are a few reasons for this this limitation:
+- Any `EMTPY` geometry (e.g., `POINT EMPTY`, `MULTIPOLYGON EMPTY`, etc.) cannot be converted into binary format because binary formats such as WKB require an explicit dimension type (2d, Z, M, or ZM). This means that some objects cannot be reliably converted to and from different formats in a [bijective](https://en.wikipedia.org/wiki/Bijection) manner.
+- The [GeoJSON standard](https://www.rfc-editor.org/rfc/rfc7946) does have a way of representing empty geometries; however, details are minimal and the dimensionality of such an object remains ambiguous.
+- Representing some geometry types (such as points and lines) as "empty" is [deeply flawed to begin with](http://aleph0.clarku.edu/~djoyce/elements/bookI/defI1.html). For example, a point can represent any location in 2d, 3d, or 4d space. However, a point is infinitesimally small (it has no size) and it can't contain anything (it can't be "full"), therefore, it doesn't make sense for a point to be "empty".
+
+As a result, GeoMet has chosen to not attempt to address these problems, and
+simply raise an exception instead.
+
+Example:
+
+    >>> import geomet
+    >>> import geomet.wkt as wkt
+    >>> import geomet.wkb as wkb
+    >>> pt = wkt.loads('POINT EMPTY')
+    >>> pt
+    {'type': 'Point', 'coordinates': []}
+    >>> wkb.dumps(pt)
+    Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "/home/jdoe/geomet/geomet/wkb.py", line 216, in dumps
+        return _dumps(obj, big_endian)
+    File "/home/jdoe/geomet/geomet/wkb.py", line 238, in _dumps
+        raise ValueError(
+    ValueError: Empty geometries cannot be represented in WKB. Reason: The dimensionality of the WKB would be ambiguous.
+
+
+## See also
 
 - [wellknown](https://github.com/mapbox/wellknown): A similar package for Node.js.
 - [geo](https://github.com/bryanjos/geo): A nearly-identical package for Elixir.
