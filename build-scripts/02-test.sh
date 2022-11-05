@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euxo pipefail
+set -euo pipefail
 
 # Specify a tox env/version to run
 # If not specified, default to running everything
