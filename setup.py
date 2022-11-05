@@ -33,7 +33,7 @@ setup(
     maintainer='Lars Butler',
     maintainer_email='lars.butler@gmail.com',
     url='https://github.com/geomet/geomet',
-    description='GeoJSON <-> WKT/WKB conversion utilities',
+    description='Conversion library for common geospatial data formats (GeoJSON/WKT/EWKT/WKB/EWKB/GeoPackage/EsriJson)',
     long_description=__doc__,
     platforms=['any'],
     packages=find_packages(exclude=['geomet.tests', 'geomet.tests.*']),
