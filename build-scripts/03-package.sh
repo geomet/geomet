@@ -10,5 +10,12 @@ function cleanup {
 pushd ${ROOT_DIR}
 trap cleanup EXIT
 
+# Clean any previous builds:
+rm -rfv geomet.egg-info
+rm -rfv dist
+
 # Create source and binary distributions:
-python setup.py sdist bdist_wheel
+python -m build
+
+# Check the package for publishing suitability:
+twine check --strict dist/*
