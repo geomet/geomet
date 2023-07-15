@@ -5,22 +5,22 @@ version: 2.1
 # circleci/python:* containers are debian based
 py37_container: &py37_container
     docker:
-        - image: circleci/python:3.7
+        - image: python:3.7-slim
     resource_class: small
     working_directory: ~/project
 py38_container: &py38_container
     docker:
-        - image: circleci/python:3.8
+        - image: python:3.8-slim
     resource_class: small
     working_directory: ~/project
 py39_container: &py39_container
     docker:
-        - image: circleci/python:3.9
+        - image: python:3.9-slim
     resource_class: small
     working_directory: ~/project
 py310_container: &py310_container
     docker:
-        - image: circleci/python:3.10
+        - image: python:3.10-slim
     resource_class: small
     working_directory: ~/project
 
@@ -51,6 +51,7 @@ commands:
             - run:
                 name: Build, test, and package Python << parameters.py_ver >>
                 command: |
+                    pip install virtualenv
                     python -m virtualenv geomet_ci
                     . geomet_ci/bin/activate
                     ./build-scripts/00-install-dependencies.sh
