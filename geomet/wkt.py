@@ -25,7 +25,7 @@ except ImportError:
 from geomet import util
 
 
-INVALID_WKT_FMT = 'Invalid WKT: `%s`'
+INVALID_WKT_FMT = 'Invalid WKT: `{}`'
 
 
 def dump(obj, dest_file):
@@ -72,9 +72,9 @@ def dumps(obj, decimals=16):
         else:
             # Geom has no coordinate values at all, and must be empty.
             if len(list(util.flatten_multi_dim(obj['coordinates']))) == 0:
-                return '%s EMPTY' % geom_type.upper()
+                return f'{geom_type.upper()} EMPTY'
     except KeyError:
-        raise geomet.InvalidGeoJSONException('Invalid GeoJSON: %s' % obj)
+        raise geomet.InvalidGeoJSONException(f'Invalid GeoJSON: {obj}')
 
     result = exporter(obj, decimals)
     # Try to get the SRID from `meta.srid`
@@ -89,14 +89,14 @@ def dumps(obj, decimals=16):
             crs_srid is not None and
             str(meta_srid) != str(crs_srid)):
         raise ValueError(
-            'Ambiguous CRS/SRID values: %s and %s' % (meta_srid, crs_srid)
+            f'Ambiguous CRS/SRID values: {meta_srid} and {crs_srid}'
         )
     srid = meta_srid or crs_srid
 
     # TODO: add tests for CRS input
     if srid is not None:
         # Prepend the SRID
-        result = 'SRID=%s;%s' % (srid, result)
+        result = f'SRID={srid};{result}'
     return result
 
 
@@ -104,7 +104,7 @@ def _assert_next_token(sequence, expected):
     next_token = next(sequence)
     if not next_token == expected:
         raise ValueError(
-            'Expected "%s" but found "%s"' % (expected, next_token)
+            f'Expected "{expected}" but found "{next_token}"'
         )
 
 
@@ -164,14 +164,14 @@ def _tokenize_wkt(tokens):
             continue
         else:
             if negative:
-                yield '-%s' % t
+                yield f'-{t}'
             else:
                 yield t
             negative = False
 
 
 def _unsupported_geom_type(geom_type):
-    raise ValueError("Unsupported geometry type '%s'" % geom_type)
+    raise ValueError(f"Unsupported geometry type '{geom_type}'")
 
 
 def _round_and_pad(value, decimals):
@@ -223,11 +223,11 @@ def _dump_point(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        fmt = '(%s)' % (
+        fmt = '({})'.format(
             ' '.join(_round_and_pad(c, decimals) for c in coords)
         )
 
-    return 'POINT %s' % fmt
+    return f'POINT {fmt}'
 
 
 def _dump_linestring(obj, decimals):
@@ -242,14 +242,14 @@ def _dump_linestring(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        fmt = '(%s)' % (
+        fmt = '({})'.format(
             ', '.join(
                 ' '.join(_round_and_pad(c, decimals) for c in pt)
                 for pt in coords
             )
         )
 
-    return 'LINESTRING %s' % fmt
+    return f'LINESTRING {fmt}'
 
 
 def _dump_polygon(obj, decimals):
@@ -268,9 +268,11 @@ def _dump_polygon(obj, decimals):
                                     for c in pt) for pt in ring)
                  for ring in coords)
 
-        fmt = '(%s)' % ', '.join('(%s)' % r for r in rings)
+        fmt = '({})'.format(
+            ', '.join(f'({r})' for r in rings)
+        )
 
-    return 'POLYGON %s' % fmt
+    return f'POLYGON {fmt}'
 
 
 def _dump_multipoint(obj, decimals):
@@ -288,9 +290,11 @@ def _dump_multipoint(obj, decimals):
         points = (' '.join(_round_and_pad(c, decimals)
                            for c in pt) for pt in coords)
         # Add parens around each point.
-        fmt = '(%s)' % ', '.join('(%s)' % pt for pt in points)
+        fmt = '({})'.format(
+            ', '.join(f'({pt})' for pt in points)
+        )
 
-    return 'MULTIPOINT %s' % fmt
+    return f'MULTIPOINT {fmt}'
 
 
 def _dump_multilinestring(obj, decimals):
@@ -306,17 +310,24 @@ def _dump_multilinestring(obj, decimals):
         fmt = 'EMPTY'
     else:
         linestrs = (
-            '(%s)' %
-            ', '.join(
-                ' '.join(
-                    _round_and_pad(
-                        c,
-                        decimals) for c in pt
-                ) for pt in linestr) for linestr in coords)
+            '({})'.format(
+                ', '.join(
+                    ' '.join(
+                        _round_and_pad(
+                            c,
+                            decimals
+                        )
+                        for c in pt
+                    )
+                    for pt in linestr
+                )
+            )
+            for linestr in coords
+        )
 
-        fmt = '(%s)' % ', '.join(ls for ls in linestrs)
+        fmt = '({})'.format(', '.join(ls for ls in linestrs))
 
-    return 'MULTILINESTRING %s' % fmt
+    return f'MULTILINESTRING {fmt}'
 
 
 def _dump_multipolygon(obj, decimals):
@@ -330,23 +341,32 @@ def _dump_multipolygon(obj, decimals):
     if not coords:
         fmt = 'EMPTY'
     else:
-        fmt = '(%s)' % (
+        fmt = '({})'.format(
             # join the polygons in the multipolygon
             ', '.join(
                 # join the rings in a polygon,
                 # and wrap in parens
-                '(%s)' % ', '.join(
-                    # join the points in a ring,
-                    # and wrap in parens
-                    '(%s)' % ', '.join(
-                        # join coordinate values of a vertex
-                        ' '.join(_round_and_pad(c, decimals) for c in pt)
-                        for pt in ring)
-                    for ring in poly)
-                for poly in coords)
+                '({})'.format(
+                    ', '.join(
+                        # join the points in a ring,
+                        # and wrap in parens
+                        '({})'.format(
+                            ', '.join(
+                                # join coordinate values of a vertex
+                                ' '.join(
+                                    _round_and_pad(c, decimals) for c in pt
+                                )
+                                for pt in ring
+                            )
+                        )
+                        for ring in poly
+                    )
+                )
+                for poly in coords
+            )
         )
 
-    return 'MULTIPOLYGON %s' % fmt
+    return f'MULTIPOLYGON {fmt}'
 
 
 def _dump_geometrycollection(obj, decimals):
@@ -367,8 +387,8 @@ def _dump_geometrycollection(obj, decimals):
         for geom in geoms:
             geom_type = geom['type']
             geoms_wkt.append(_dumps_registry.get(geom_type)(geom, decimals))
-        fmt = '(%s)' % ','.join(geoms_wkt)
-    return 'GEOMETRYCOLLECTION %s' % fmt
+        fmt = '({})'.format(','.join(geoms_wkt))
+    return f'GEOMETRYCOLLECTION {fmt}'
 
 
 def _load_point(tokens, string):
@@ -392,7 +412,7 @@ def _load_point(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='Point', coordinates=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     coords = []
     try:
@@ -402,7 +422,7 @@ def _load_point(tokens, string):
             else:
                 coords.append(float(t))
     except tokenize.TokenError:
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     return dict(type='Point', coordinates=coords)
 
@@ -420,7 +440,7 @@ def _load_linestring(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='LineString', coordinates=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     # a list of lists
     # each member list represents a point
@@ -438,7 +458,7 @@ def _load_linestring(tokens, string):
             else:
                 pt.append(float(t))
     except tokenize.TokenError:
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     return dict(type='LineString', coordinates=coords)
 
@@ -457,7 +477,7 @@ def _load_polygon(tokens, string):
 
     open_parens = next(tokens), next_token
     if not open_parens == ('(', '('):
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     # coords contains a list of rings
     # each ring contains a list of points
@@ -493,7 +513,7 @@ def _load_polygon(tokens, string):
             else:
                 pt.append(float(t))
     except tokenize.TokenError:
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     return dict(type='Polygon', coordinates=coords)
 
@@ -511,7 +531,7 @@ def _load_multipoint(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='MultiPoint', coordinates=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     coords = []
     pt = []
@@ -532,7 +552,7 @@ def _load_multipoint(tokens, string):
             else:
                 pt.append(float(t))
     except tokenize.TokenError:
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     # Given the way we're parsing, we'll probably have to deal with the last
     # point after the loop
@@ -555,7 +575,7 @@ def _load_multipolygon(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='MultiPolygon', coordinates=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     polygons = []
     while True:
@@ -568,7 +588,7 @@ def _load_multipolygon(tokens, string):
                 break
         except (StopIteration, tokenize.TokenError):
             # If we reach this, the WKT is not valid.
-            raise ValueError(INVALID_WKT_FMT % string)
+            raise ValueError(INVALID_WKT_FMT.format(string))
 
     return dict(type='MultiPolygon', coordinates=polygons)
 
@@ -586,7 +606,7 @@ def _load_multilinestring(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='MultiLineString', coordinates=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     linestrs = []
     while True:
@@ -599,7 +619,7 @@ def _load_multilinestring(tokens, string):
                 break
         except (StopIteration, tokenize.TokenError):
             # If we reach this, the WKT is not valid.
-            raise ValueError(INVALID_WKT_FMT % string)
+            raise ValueError(INVALID_WKT_FMT.format(string))
 
     return dict(type='MultiLineString', coordinates=linestrs)
 
@@ -620,7 +640,7 @@ def _load_geometrycollection(tokens, string):
     if next_token == 'EMPTY':
         return dict(type='GeometryCollection', geometries=[])
     elif not next_token == '(':
-        raise ValueError(INVALID_WKT_FMT % string)
+        raise ValueError(INVALID_WKT_FMT.format(string))
 
     geoms = []
     result = dict(type='GeometryCollection', geometries=geoms)
@@ -638,7 +658,7 @@ def _load_geometrycollection(tokens, string):
                 geom = load_func(tokens, string)
                 geoms.append(geom)
         except (StopIteration, tokenize.TokenError):
-            raise ValueError(INVALID_WKT_FMT % string)
+            raise ValueError(INVALID_WKT_FMT.format(string))
     return result
 
 
