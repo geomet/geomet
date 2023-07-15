@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import itertools
-import six
 import collections.abc as collections
 
 
@@ -115,7 +114,7 @@ def flatten_multi_dim(sequence):
     """
     for x in sequence:
         if (isinstance(x, collections.Iterable)
-                and not isinstance(x, six.string_types)):
+                and not isinstance(x, str)):
             for y in flatten_multi_dim(x):
                 yield y
         else:
