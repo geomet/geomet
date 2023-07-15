@@ -1,0 +1,65 @@
+[build-system]
+requires = [
+    "setuptools >=61",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geomet"
+maintainers = [
+    {name = "Lars Butler", email = "lars.butler@gmail.com"},
+]
+description = "Pure Python conversion library for common geospatial data formats"
+requires-python = ">=3.7"
+keywords = [
+    "esri",
+    "ewkb",
+    "ewkt",
+    "geojson",
+    "geopackage",
+    "geospatial",
+    "gis",
+    "spatial",
+    "wkb",
+    "wkt",
+]
+license = {text = "Apache-2.0"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "click",
+    "six",
+]
+dynamic = ["version"]
+
+[project.readme]
+text = """\
+GeoMet
+
+Convert GeoJSON to WKT/WKB (Well-Known Text/Binary), and vice versa.
+"""
+content-type = "text/x-rst"
+
+[project.scripts]
+geomet = "geomet.tool:cli"
+
+[project.urls]
+Repository = "https://github.com/geomet/geomet"
+
+[tool.setuptools.dynamic]
+version = {attr = "geomet.__init__.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["geomet", "geomet.*"]
+exclude = ["geomet.tests", "geomet.tests.*"]

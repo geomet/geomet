@@ -1,4 +1,2 @@
-setuptools
-wheel
+build
 twine
-readme-renderer
