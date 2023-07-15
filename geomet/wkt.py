@@ -13,7 +13,6 @@
 #  limitations under the License.
 import geomet
 import itertools
-import six
 import tokenize
 
 try:
@@ -134,7 +133,7 @@ def loads(string):
     if importer is None:
         _unsupported_geom_type(geom_type)
 
-    peek = six.advance_iterator(tokens)
+    peek = next(tokens)
     if peek == 'EMPTY':
         if geom_type == 'GEOMETRYCOLLECTION':
             return dict(type='GeometryCollection', geometries=[])
