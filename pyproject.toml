@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geomet"
+readme = "README.md"
 maintainers = [
     {name = "Lars Butler", email = "lars.butler@gmail.com"},
 ]
@@ -42,14 +43,6 @@ dependencies = [
     "six",
 ]
 dynamic = ["version"]
-
-[project.readme]
-text = """\
-GeoMet
-
-Convert GeoJSON to WKT/WKB (Well-Known Text/Binary), and vice versa.
-"""
-content-type = "text/x-rst"
 
 [project.scripts]
 geomet = "geomet.tool:cli"
