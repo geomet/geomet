@@ -11,17 +11,11 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import geomet
+import io
 import itertools
-import six
 import tokenize
 
-try:
-    import StringIO
-except ImportError:
-    import io
-    StringIO = io
-
+import geomet
 from geomet import util
 
 
@@ -112,7 +106,7 @@ def loads(string):
     """
     Construct a GeoJSON `dict` from WKT (`string`).
     """
-    sio = StringIO.StringIO(string)
+    sio = io.StringIO(string)
     # NOTE: This is not the intended purpose of `tokenize`, but it works.
     tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
     tokens = _tokenize_wkt(tokens)
@@ -134,7 +128,7 @@ def loads(string):
     if importer is None:
         _unsupported_geom_type(geom_type)
 
-    peek = six.advance_iterator(tokens)
+    peek = next(tokens)
     if peek == 'EMPTY':
         if geom_type == 'GEOMETRYCOLLECTION':
             return dict(type='GeometryCollection', geometries=[])
