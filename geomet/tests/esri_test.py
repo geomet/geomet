@@ -28,6 +28,13 @@ esri_json_mpt = {
     ],
     "spatialReference": {"wkid": 4326}
 }
+esri_json_mpt_srid_26955 = {
+    "points": [
+        [-97.06138, 32.837], [-97.06133, 32.836],
+        [-97.06124, 32.834], [-97.06127, 32.832],
+    ],
+    "spatialReference": {"wkid": 26955}
+}
 esri_json_polylines = {
     "paths": [
         [[-97.06138, 32.837], [-97.06133, 32.836],
@@ -359,6 +366,39 @@ class TestGeoJSONtoEsriJSON(unittest.TestCase):
             }
         actual = esri.dumps(geojson_mp)
         self.assertEqual(expected, actual)
+
+
+class TestGeoJSONtoEsriJSONCustomSRID(unittest.TestCase):
+    """Tests to convert GeoJSON to EsriJSON, with custom SRIDs.
+
+    Proof for https://github.com/geomet/geomet/issues/99.
+    """
+    def test_dumps_to_esrijson_point_custom_srid(self):
+        self.assertEqual(
+            esri.dumps(gj_pt, srid=2062), {
+                'spatialReference': {
+                    'wkid': 2062}, 'x': 25282, 'y': 43770})
+
+    def test_dumps_to_esrijson_multipoint_custom_srid(self):
+        self.assertEqual(
+            esri.dumps(gj_multi_pt, srid=26955),
+            esri_json_mpt_srid_26955,
+        )
+
+    def test_dumps_to_esrijson_polyline_custom_srid(self):
+        self.assertEqual(
+            esri.dumps(gj_lintstring, srid=3572),
+            {
+                'paths': [[[100.0, 100.0], [5.0, 5.0]]],
+                'spatialReference': {'wkid': 3572},
+            }
+        )
+
+    def test_dumps_to_esrijson_polygon_custom_srid(self):
+        vcheck = {'rings': [[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [
+            100.0, 1.0], [100.0, 0.0]]], 'spatialReference': {'wkid': 2263}}
+        self.assertEqual(esri.dumps(gj_polygon, srid=2263),
+                         vcheck)
 
 
 if __name__ == "__main__":
