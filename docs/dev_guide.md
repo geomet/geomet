@@ -8,14 +8,15 @@ NOTE: Only members of the `Owners` team on GitHub have the permissions to
 trigger a release of a new package versions to PyPI.
 
 NOTE: Release branches should not include new features or bug fixes, unless
-prescribed by the process below.
+prescribed by the process below. All fixes and features should already be
+merged to the `master` branch.
 
 1. Update the major or minor version string in `geomet/__init__.py`, following
   https://semver.org/ guidelines.
-2. Create a new branch called `release-X.Y`, where X is the major version,
+2. Create a new branch called `release-X.Y.Z`, where X is the major version,
   Y is the minor version.
 3. Push the branch to the central repo: https://github.com/geomet/geomet.
-4. Open a pull request from branch `release-X.Y` to the `master` branch.
+4. Open a pull request from branch `release-X.Y.Z` to the `master` branch.
 5. Ensure that all CI/CD tests and checks pass.
 6. Obtain a review/approval from a Maintainer.
 7. Trigger the manual approval gate in CircleCI to publish the package.
@@ -26,11 +27,9 @@ prescribed by the process below.
    have been added since the last release.
 11. Delete the `release-X.Y.Z` branch.
 
-NOTE: Sometimes releases don't always work on the first try. If something goes
-wrong while publishing to PyPI, due to tooling errors, bugs, misconfigurations,
-etc.:
-
-1. Add 1 or more new commits to attempt to fix the issue and push to the `release-X.Y` branch
-2. Increment the "patch" version (the last number) in the
-version string in `geomet/__init__.py`. As a separate commit from the fix.
-3. Repeat the process above beginning from step 5.
+NOTE: Sometimes releases don't always work on the first try. For example, there
+may be bug in the project configuration, build/release script, etc.
+If something goes wrong while publishing to PyPI, due to tooling errors, bugs,
+misconfigurations, etc., just submit patches to fix those issues and repeat the
+steps above until the release is successful. It's perfectly fine to increment
+the patch version (`Z`) a few times to get it right.
