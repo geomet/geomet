@@ -106,10 +106,7 @@ def loads(string):
     """
     Construct a GeoJSON `dict` from WKT (`string`).
     """
-    sio = io.StringIO(string)
-    # NOTE: This is not the intended purpose of `tokenize`, but it works.
-    tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
-    tokens = _tokenize_wkt(tokens)
+    tokens = _tokenize_wkt(string)
     geom_type_or_srid = next(tokens)
     srid = None
     geom_type = geom_type_or_srid
@@ -144,17 +141,25 @@ def loads(string):
     return result
 
 
-def _tokenize_wkt(tokens):
+def _tokenize_wkt(string):
     """
     Since the tokenizer treats "-" and numeric strings as separate values,
     combine them and yield them as a single token. This utility encapsulates
     parsing of negative numeric values from WKT can be used generically in all
     parsers.
     """
+    sio = io.StringIO(string)
+    # NOTE: This is not the intended purpose of `tokenize`, but it works.
+    tokens = (x[1] for x in tokenize.generate_tokens(sio.readline))
     negative = False
     for t in tokens:
         if t == '-':
             negative = True
+            continue
+        elif t == '':
+            # Ignore empty string tokens.
+            # This can happen in python3.12, seemingly due to
+            # https://peps.python.org/pep-0701/#changes-to-the-tokenize-module
             continue
         else:
             if negative:
