@@ -28,6 +28,11 @@ py311_container: &py311_container
         - image: python:3.11-slim
     resource_class: small
     working_directory: ~/project
+py312_container: &py312_container
+    docker:
+        - image: python:3.12-slim
+    resource_class: small
+    working_directory: ~/project
 
 filter_build_test_package: &filter_build_test_package
     filters:
@@ -111,6 +116,11 @@ jobs:
         steps:
             - build_test_package:
                 py_ver: "311"
+    build_test_package_py312:
+        <<: *py312_container
+        steps:
+            - build_test_package:
+                py_ver: "312"
     publish_to_test_pypi:
         <<: *py37_container
         steps:
@@ -153,6 +163,9 @@ workflows:
             - build_test_package_py311:
                 <<: *filter_build_test_package
                 requires: [code_checkout]
+            - build_test_package_py312:
+                <<: *filter_build_test_package
+                requires: [code_checkout]
     release:
         jobs:
             - code_checkout:
@@ -172,6 +185,9 @@ workflows:
             - build_test_package_py311:
                 <<: *filter_release
                 requires: [code_checkout]
+            - build_test_package_py312:
+                <<: *filter_release
+                requires: [code_checkout]
             - publish_to_test_pypi:
                 <<: *filter_release
                 context: "Test PyPI"
@@ -181,6 +197,7 @@ workflows:
                     - build_test_package_py39
                     - build_test_package_py310
                     - build_test_package_py311
+                    - build_test_package_py312
             - approve_publish:
                 <<: *filter_release
                 type: approval
