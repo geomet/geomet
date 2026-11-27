@@ -100,7 +100,7 @@ def dumps(obj, decimals=16):
         raise ValueError(
             'Ambiguous CRS/SRID values: %s and %s' % (meta_srid, crs_srid)
         )
-    srid = meta_srid or crs_srid
+    srid = meta_srid if meta_srid is not None else crs_srid
 
     # TODO: add tests for CRS input
     if srid is not None:

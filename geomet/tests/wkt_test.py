@@ -137,6 +137,18 @@ class WKTTestCase(unittest.TestCase):
             with self.assertRaises(geomet.InvalidGeoJSONException):
                 wkt.dumps(each)
 
+    def test_dumps_preserves_srid_zero(self):
+        geom = {
+            'type': 'Point',
+            'coordinates': [1, 2],
+            'meta': {'srid': 0},
+        }
+        self.assertEqual('SRID=0;POINT (1 2)', wkt.dumps(geom, decimals=0))
+
+        loaded = wkt.loads('SRID=0;POINT (1 2)')
+        self.assertEqual(0, loaded['meta']['srid'])
+        self.assertEqual('SRID=0;POINT (1 2)', wkt.dumps(loaded, decimals=0))
+
 
 class TestFileInteractions(unittest.TestCase):
     def test_load(self):
